@@ -1,5 +1,6 @@
-# optimal-charge-security-camera## Quickstart
+# optimal-charge-security-camera
 
+## Quickstart
 ```bash
 # 1) Install Python & create a project env (via uv)
 uv python install 3.12

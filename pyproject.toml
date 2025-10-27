@@ -10,6 +10,10 @@ dependencies = [
   "numpy",
   "pillow",
   "loguru",
+  "torch==2.3.1",
+  "torchvision==0.18.1",
+  "opencv-python>=4.11.0.86",
+  "codecarbon>=3.0.7",
 ]
 
 [project.scripts]
