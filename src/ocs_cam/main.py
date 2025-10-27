@@ -13,7 +13,8 @@ try:
 except Exception:
     Image = None
 
-def _read_frame(source: str|None, mode: str):
+
+def _read_frame(source: str | None, mode: str):
     if mode == "image":
         if not source:
             raise ValueError("Set OCS_INPUT=<path-to-image> for image mode")
@@ -26,10 +27,10 @@ def _read_frame(source: str|None, mode: str):
             return np.array(Image.open(source).convert("RGB"))
         raise RuntimeError("Need OpenCV or Pillow to read images")
 
-    if mode in ("webcam","video"):
+    if mode in ("webcam", "video"):
         if not cv2:
             raise RuntimeError("OpenCV required for webcam/video")
-        cap = cv2.VideoCapture(0 if mode=="webcam" else source)
+        cap = cv2.VideoCapture(0 if mode == "webcam" else source)
         ok, frame_bgr = cap.read()
         cap.release()
         if not ok:
@@ -39,9 +40,10 @@ def _read_frame(source: str|None, mode: str):
     # synthetic
     return (np.random.rand(480, 640, 3) * 255).astype("uint8")
 
+
 def main():
-    mode = os.environ.get("OCS_SOURCE", "image")   # image|webcam|video|synthetic
-    src  = os.environ.get("OCS_INPUT")
+    mode = os.environ.get("OCS_SOURCE", "image")  # image|webcam|video|synthetic
+    src = os.environ.get("OCS_INPUT")
     runs = os.environ.get("OCS_RUNS_DIR", "runs")
     interval = float(os.environ.get("OCS_INTERVAL_SEC", "2.0"))
 
@@ -59,8 +61,12 @@ def main():
             # fake compute baseline
             t0 = time.perf_counter()
             _ = float(np.mean(rgb))
-            latency_ms = (time.perf_counter() - t0)*1000
-            result = {"label": "person", "confidence": 0.42, "latency_ms": round(latency_ms,3)}
+            latency_ms = (time.perf_counter() - t0) * 1000
+            result = {
+                "label": "person",
+                "confidence": 0.42,
+                "latency_ms": round(latency_ms, 3),
+            }
 
             payload = {
                 "ts": datetime.now().isoformat(),
