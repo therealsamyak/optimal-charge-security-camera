@@ -268,3 +268,4 @@ coverage/
 .env.test.local
 .env.production.local
 .venv
+.venv
