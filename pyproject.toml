@@ -1,0 +1,22 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "optimal-charge-security-camera"
+version = "0.0.1"
+requires-python = ">=3.12"
+dependencies = [
+  "numpy",
+  "pillow",
+  "loguru",
+]
+
+[project.scripts]
+ocs-run = "ocs_cam.main:main"
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]
