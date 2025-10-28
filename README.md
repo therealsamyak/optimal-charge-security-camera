@@ -20,6 +20,19 @@ uv sync
 tail -f runs/logs.jsonl
 ```
 
+## Example Commands
+
+```bash
+# Webcam with larger YOLO model (yolov8l)
+./start.sh --webcam yolov8l
+
+# Webcam with smaller YOLO model (yolov8n)
+./start.sh --webcam yolov8n
+
+# Custom image with smaller YOLO model
+OCS_INPUT=path/to/your/image.jpg ./start.sh --image yolov8n
+```
+
 ## Usage
 
 ### Environment Variables

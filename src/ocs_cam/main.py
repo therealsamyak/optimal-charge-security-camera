@@ -13,6 +13,11 @@ try:
 except Exception:
     Image = None
 
+try:
+    from ultralytics import YOLO
+except Exception:
+    YOLO = None
+
 
 def _read_frame(source: str | None, mode: str):
     if mode == "image":
@@ -46,25 +51,51 @@ def main():
     src = os.environ.get("OCS_INPUT")
     runs = os.environ.get("OCS_RUNS_DIR", "runs")
     interval = float(os.environ.get("OCS_INTERVAL_SEC", "2.0"))
+    model_name = os.environ.get("OCS_MODEL", "yolov8n")
+
+    if not YOLO:
+        raise RuntimeError("ultralytics required for YOLO models")
+
+    # Load model
+    model = YOLO(f"models/{model_name}.pt")
 
     os.makedirs(runs, exist_ok=True)
     log_path = os.path.join(runs, "logs.jsonl")
 
     logger.info(f"Pipeline start @ {datetime.now().isoformat(timespec='seconds')}")
-    logger.info(f"source={mode} input={src} interval={interval}s")
+    logger.info(f"source={mode} input={src} interval={interval}s model={model_name}")
     logger.info(f"metrics -> {log_path} (Ctrl+C to stop)")
 
     try:
         while True:
             rgb = _read_frame(src, mode)
 
-            # fake compute baseline
+            # YOLO inference
             t0 = time.perf_counter()
-            _ = float(np.mean(rgb))
+            results = model(rgb, verbose=False)
             latency_ms = (time.perf_counter() - t0) * 1000
+
+            # Extract top detection
+            if results and len(results) > 0:
+                result = results[0]
+                if len(result.boxes) > 0:
+                    # Get the detection with highest confidence
+                    boxes = result.boxes
+                    confs = boxes.conf.cpu().numpy()
+                    classes = boxes.cls.cpu().numpy().astype(int)
+                    max_idx = np.argmax(confs)
+                    label = model.names[classes[max_idx]]
+                    confidence = float(confs[max_idx])
+                else:
+                    label = "no detection"
+                    confidence = 0.0
+            else:
+                label = "no detection"
+                confidence = 0.0
+
             result = {
-                "label": "person",
-                "confidence": 0.42,
+                "label": label,
+                "confidence": round(confidence, 3),
                 "latency_ms": round(latency_ms, 3),
             }
 
@@ -72,7 +103,7 @@ def main():
                 "ts": datetime.now().isoformat(),
                 "mode": mode,
                 "input": src,
-                "backend": "fake",
+                "backend": f"yolov8-{model_name}",
                 "result": result,
             }
             with open(log_path, "a", encoding="utf-8") as f:
