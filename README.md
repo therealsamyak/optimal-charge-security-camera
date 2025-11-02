@@ -22,7 +22,7 @@ An intelligent security camera system with optimal charge management that dynami
 # Clone and run
 git clone https://github.com/therealsamyak/optimal-charge-security-camera
 cd optimal-charge-security-camera
-./start.sh
+./scripts/start.sh
 ```
 
 ## Features
@@ -44,7 +44,7 @@ cd optimal-charge-security-camera
 Run the entire test suite:
 
 ```bash
-./tests.sh
+./scripts/tests.sh
 ```
 
 ## Troubleshooting
