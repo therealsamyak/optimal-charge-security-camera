@@ -273,5 +273,16 @@ coverage/
 .venv
 .venv
 # Model files (auto-downloaded by ultralytics)
+# Keep models in src/data/models/ but ignore the actual .pt files
+src/data/models/*.pt
 *.pt
-models/*.pt
+
+# Training data and models (can be large)
+src/data/training/*.pkl
+src/data/training/*.json
+src/data/training/*.csv
+
+# Output data (runtime generated)
+src/data/output/*.csv
+src/data/output/runs/
+src/data/logs/*.log
