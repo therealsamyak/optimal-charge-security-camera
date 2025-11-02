@@ -26,4 +26,4 @@ jobs:
         run: uv sync
 
       - name: Run CI tests
-        run: ./ci-tests.sh
+        run: ./scripts/ci-tests.sh

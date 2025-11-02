@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Optimal Charge Security Camera - Start Script
-# Usage: ./start.sh [OPTIONS]
+# Usage: ./scripts/start.sh [OPTIONS]
 # This script configures and runs the OCS camera system with various options
 
 set -e
@@ -36,7 +36,7 @@ show_help() {
 Optimal Charge Security Camera - Start Script
 
 USAGE:
-    ./start.sh [OPTIONS]
+    ./scripts/start.sh [OPTIONS]
 
 OPTIONS:
     Source Options:
@@ -67,19 +67,19 @@ OPTIONS:
 
 EXAMPLES:
     # Default webcam mode
-    ./start.sh
+    ./scripts/start.sh
 
     # Webcam with 1-second interval
-    ./start.sh --interval-ms 1000
+    ./scripts/start.sh --interval-ms 1000
 
     # ML-based controller with verbose logging
-    ./start.sh --controller ml_based --verbose
+    ./scripts/start.sh --controller ml_based --verbose
 
     # High-performance mode with relaxed battery constraints
-    ./start.sh --min-battery 10 --max-latency 150 --enable-charging
+    ./scripts/start.sh --min-battery 10 --max-latency 150 --enable-charging
 
     # Test model selection scenarios (for testing)
-    ./start.sh --test-scenarios
+    ./scripts/start.sh --test-scenarios
 
 EOF
 }

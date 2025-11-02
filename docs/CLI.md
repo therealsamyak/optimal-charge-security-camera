@@ -6,10 +6,10 @@ Complete command line interface documentation for the Optimal Charge Security Ca
 
 ```bash
 # Default webcam processing
-./start.sh
+./scripts/start.sh
 
 # With custom options
-./start.sh --controller hybrid --verbose --interval-ms 1000
+./scripts/start.sh --controller hybrid --verbose --interval-ms 1000
 ```
 
 ## Command Line Options
@@ -67,49 +67,49 @@ Complete command line interface documentation for the Optimal Charge Security Ca
 
 ```bash
 # Default webcam processing
-./start.sh
+./scripts/start.sh
 
 # Faster processing (1-second interval)
-./start.sh --interval-ms 1000
+./scripts/start.sh --interval-ms 1000
 
 # Headless mode (no display)
-./start.sh --no-display
+./scripts/start.sh --no-display
 ```
 
 ### Performance Tuning
 
 ```bash
 # High-performance mode (relaxed latency, high accuracy)
-./start.sh --max-latency 150 --min-accuracy 90
+./scripts/start.sh --max-latency 150 --min-accuracy 90
 
 # Energy-saving mode (strict latency, lower accuracy)
-./start.sh --max-latency 50 --min-accuracy 70
+./scripts/start.sh --max-latency 50 --min-accuracy 70
 
 # Verbose logging for debugging
-./start.sh --verbose
+./scripts/start.sh --verbose
 ```
 
 ### Controller Configuration
 
 ```bash
 # Hybrid controller (rule-based with ML augmentation)
-./start.sh --controller hybrid
+./scripts/start.sh --controller hybrid
 
 # ML-based controller (requires trained model)
-./start.sh --controller ml_based
+./scripts/start.sh --controller ml_based
 
 # Disable charging control
-./start.sh --disable-charging
+./scripts/start.sh --disable-charging
 ```
 
 ### Battery Simulation
 
 ```bash
 # Start with low battery to test conservation
-./start.sh --mock-battery 25
+./scripts/start.sh --mock-battery 25
 
 # Start with full battery
-./start.sh --mock-battery 95
+./scripts/start.sh --mock-battery 95
 ```
 
 ## Model Selection Logic
@@ -195,10 +195,10 @@ Real-time validation checks:
 
 ```bash
 # Enable verbose logging
-./start.sh --verbose
+./scripts/start.sh --verbose
 
 # Test without display
-./start.sh --no-display --verbose
+./scripts/start.sh --no-display --verbose
 ```
 
 ### Keyboard Controls
@@ -213,7 +213,7 @@ When running with display:
 Run the comprehensive test suite:
 
 ```bash
-./tests.sh
+./scripts/tests.sh
 ```
 
 This script tests all command line options, combinations, and edge cases with proper error handling and timeout management.
