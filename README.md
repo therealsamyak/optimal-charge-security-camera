@@ -1,50 +1,52 @@
 # Optimal Charge Security Camera
 
-A security camera system with optimal charge management.
+An intelligent security camera system with optimal charge management that dynamically selects YOLOv10 models based on battery level and energy cleanliness.
+
+## Prerequisites
+
+- **uv** - Python manager: [https://docs.astral.sh/uv/](https://docs.astral.sh/uv/)
+  - No need for `conda` or `pip`.
+- OpenCV (webcam support):
+
+  ```bash
+  # macOS
+  brew install opencv
+
+  # Ubuntu/Debian
+  sudo apt install python3-opencv libopencv-dev
+  ```
 
 ## Quick Start
 
 ```bash
-# Clone and setup
+# Clone and run
 git clone https://github.com/therealsamyak/optimal-charge-security-camera
 cd optimal-charge-security-camera
-uv sync
-
-# Run with webcam
-./start.sh -w
-
-# Or run with sample image
-./start.sh -i
-
-# View metrics
-tail -f runs/logs.jsonl
+./start.sh
 ```
 
-## Example Commands
+## Features
+
+- Real-time webcam processing with intelligent model selection
+- Energy-aware YOLOv10 model switching
+- Multiple controller types (rule-based, ML-based, hybrid)
+- Battery management with clean energy prioritization
+- Performance monitoring and CSV logging
+
+## Documentation
+
+- **CLI Reference**: [docs/CLI.md](docs/CLI.md) - Complete command line options
+- **Implementation**: [docs/IMPLEMENTATION.md](docs/IMPLEMENTATION.md) - Architecture details
+- **Configuration**: [src/config/configuration.yml](src/config/configuration.yml) - Default settings
+
+## Testing
+
+Run the entire test suite:
 
 ```bash
-# Webcam with larger YOLO model (yolov8l)
-./start.sh --webcam yolov8l
-
-# Webcam with smaller YOLO model (yolov8n)
-./start.sh --webcam yolov8n
-
-# Custom image with smaller YOLO model
-OCS_INPUT=path/to/your/image.jpg ./start.sh --image yolov8n
+./tests.sh
 ```
 
-## Usage
+## Troubleshooting
 
-### Environment Variables
-- `OCS_SOURCE`: Input source (`webcam` or `image`)
-- `OCS_INPUT`: Image file path (when using image source)
-- `OCS_INTERVAL_SEC`: Processing interval in seconds
-
-### Commands
-- `uv run ocs-run`: Run the main camera pipeline
-- `uv run python -m ocs_cam.main`: Alternative explicit invocation
-
-### Dependencies
-- Python 3.12+ (managed via uv)
-- OpenCV (for webcam support): `sudo apt install python3-opencv libopencv-dev`
-
+See [docs/CLI.md](docs/CLI.md#troubleshooting) for common issues and debug options.

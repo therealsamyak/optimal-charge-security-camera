@@ -1,0 +1,16 @@
+pre-commit:
+  commands:
+    py-lint:
+      glob: "**/*.py"
+      run: uvx ruff check --fix --force-exclude {staged_files}
+      stage_fixed: true
+
+    py-format:
+      glob: "**/*.py"
+      run: uvx ruff format {staged_files}
+      stage_fixed: true
+
+    json-md-yml-format:
+      glob: "**/*.{astro,html,js,jsx,md,mdx,svelte,ts,tsx,vue,json,css,yml,yaml}"
+      run: npx --yes prettier --write {staged_files}
+      stage_fixed: true
