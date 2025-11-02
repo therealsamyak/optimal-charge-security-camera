@@ -50,16 +50,16 @@ def _read_frame(source: str | None, mode: str):
 
 def main():
     mode = os.environ.get("OCS_SOURCE", "image")  # image|webcam|video|synthetic
-    src = os.environ.get("OCS_INPUT")
-    runs = os.environ.get("OCS_RUNS_DIR", "runs")
+    src = os.environ.get("OCS_INPUT", "data/input/sample.jpg")
+    runs = os.environ.get("OCS_RUNS_DIR", "data/output/runs")
     interval = float(os.environ.get("OCS_INTERVAL_SEC", "2.0"))
-    model_name = os.environ.get("OCS_MODEL", "yolov8n")
+    model_name = os.environ.get("OCS_MODEL", "yolov10n")
 
     if not YOLO:
         raise RuntimeError("ultralytics required for YOLO models")
 
-    # Load model
-    model = YOLO(f"models/{model_name}.pt")
+    # Load model (ultralytics will auto-download if not found locally)
+    model = YOLO(f"{model_name}.pt")
 
     os.makedirs(runs, exist_ok=True)
     log_path = os.path.join(runs, "logs.jsonl")
@@ -105,7 +105,7 @@ def main():
                 "ts": datetime.now().isoformat(),
                 "mode": mode,
                 "input": src,
-                "backend": f"yolov8-{model_name}",
+                "backend": f"yolov10-{model_name}",
                 "result": result,
             }
             with open(log_path, "a", encoding="utf-8") as f:
