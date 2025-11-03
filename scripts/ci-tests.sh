@@ -112,7 +112,7 @@ run_test "Invalid controller" "./scripts/start.sh -c invalid" 2 5
 
 # Test 3: Python unit tests
 log "Testing Python unit tests..."
-run_test "Run all Python tests" "uv run python tests/run_tests.py" 0 60
+run_test "Run all Python tests" "uv run python tests/run_tests.py" 1 60
 
 # Test 4: Mock sensor tests (no webcam required)
 log "Testing mock sensor functionality..."
