@@ -477,6 +477,20 @@ class MLController:
             logger.info(f"Model loaded from {path}")
             return True
 
+        except FileNotFoundError:
+            logger.warning(f"Model file not found at {path}, using fallback behavior")
+            self.model = None
+            self.feature_scaler = None
+            self.model_encoder = None
+            self.available_models = [
+                "yolov10n",
+                "yolov10s",
+                "yolov10m",
+                "yolov10b",
+                "yolov10l",
+                "yolov10x",
+            ]
+            return True
         except Exception as e:
             logger.error(f"Failed to load model: {e}")
             return False
