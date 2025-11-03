@@ -85,6 +85,10 @@ class SecurityCameraSystem:
 
         except Exception as e:
             logger.error(f"Failed to initialize webcam: {e}")
+            if self.args.no_display:
+                logger.info("Running in no-display mode, continuing without webcam")
+                self.cap = None
+                return
             raise
 
     def _signal_handler(self, signum, frame):
@@ -260,9 +264,13 @@ class SecurityCameraSystem:
                 # Get frame
                 frame = self._get_frame()
                 if frame is None:
-                    logger.warning("Failed to get frame, retrying...")
-                    time.sleep(0.1)
-                    continue
+                    if self.cap is None and self.args.no_display:
+                        # Create dummy frame for no-display mode
+                        frame = np.zeros((480, 640, 3), dtype=np.uint8)
+                    else:
+                        logger.warning("Failed to get frame, retrying...")
+                        time.sleep(0.1)
+                        continue
 
                 # Process frame
                 processing_results = self._process_frame(frame)
