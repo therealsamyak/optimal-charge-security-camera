@@ -8,6 +8,25 @@
 
 - Your primary method for interacting with anything Python related should be 'uv'.
 
+## Build/Lint/Test Commands
+
+- Run all tests: `./scripts/tests.sh`
+- Run single test: `uv run python -m pytest tests/test_file.py -v`
+- Run CI tests: `./scripts/ci-tests.sh`
+- Run main: `./scripts/start.sh`
+- Run with options: `./scripts/start.sh --controller hybrid --verbose --no-display`
+
+## Code Style Guidelines
+
+- Imports: Use absolute imports from src, group stdlib, third-party, then local imports
+- Formatting: Follow PEP 8, use type hints consistently
+- Naming: snake_case for functions/variables, PascalCase for classes
+- Error handling: Use try/except blocks, log errors with loguru
+- Logging: Use loguru logger, include context in messages
+- Types: Use typing module for all function signatures
+- Comments: Docstrings for all classes and public functions
+- Structure: Follow existing patterns in controller/, models/, sensors/, utils/
+
 ## Plans
 
 - Make all plans multi-phase.
