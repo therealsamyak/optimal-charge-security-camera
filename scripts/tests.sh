@@ -243,7 +243,11 @@ run_test "Long form controller" "./scripts/start.sh --controller hybrid" 124 5
 run_test "Short form verbose" "./scripts/start.sh -v" 124 5
 run_test "Long form verbose" "./scripts/start.sh --verbose" 124 5
 
-# Test 19: Option Order Independence
+# Test 19: Python Unit Tests
+log "Testing Python Unit Tests..."
+run_test "Run all Python tests" "uv run python tests/run_tests.py" 1 60
+
+# Test 20: Option Order Independence
 log "Testing Option Order Independence..."
 run_test "Order 1: Source first" "./scripts/start.sh -s webcam -c hybrid -t 1000" 124 5
 run_test "Order 2: Controller first" "./scripts/start.sh -c hybrid -s webcam -t 1000" 124 5
@@ -251,7 +255,7 @@ run_test "Order 3: Interval first" "./scripts/start.sh -t 1000 -s webcam -c hybr
 run_test "Order 4: Verbose last" "./scripts/start.sh -s webcam -c hybrid -t 1000 -v" 124 5
 run_test "Order 5: Verbose first" "./scripts/start.sh -v -s webcam -c hybrid -t 1000" 124 5
 
-# Test 20: Direct Python Examples
+# Test 21: Direct Python Examples
 log "Testing Direct Python Examples..."
 run_test "Direct: Default webcam processing" "uv run python src/main.py --no-display" 124 5
 run_test "Direct: Faster processing" "uv run python src/main.py --interval-ms 1000 --no-display" 124 5
