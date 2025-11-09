@@ -1,0 +1,455 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="robots" content="noindex, nofollow" />
+    <meta name="googlebot" content="noindex, nofollow" />
+    <title>Documentation - Optimal Charge Security Camera</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <!-- Top Navigation -->
+    <nav class="top-nav">
+      <a href="index.html" class="logo">OCS Camera</a>
+      <div class="nav-links">
+        <a href="index.html">Home</a>
+        <a href="docs.html" class="active">Documentation</a>
+        <a
+          href="https://github.com/therealsamyak/optimal-charge-security-camera"
+          target="_blank"
+          >GitHub</a
+        >
+      </div>
+    </nav>
+
+    <div class="layout-container">
+      <!-- Sidebar -->
+      <aside class="sidebar">
+        <h2>Table of Contents</h2>
+        <ul class="toc-links">
+          <li><a href="#cli-reference">CLI Reference</a></li>
+          <li><a href="#implementation">Implementation</a></li>
+        </ul>
+
+        <div class="footer-info">
+          <p><strong>Contributors:</strong><br />Samyak Kakatur, Jasper Lin</p>
+        </div>
+      </aside>
+
+      <!-- Main Content -->
+      <main class="main-content">
+        <div class="content-wrapper">
+          <h1>Documentation</h1>
+          <p>Complete reference for CLI usage and implementation details</p>
+
+          <!-- CLI Reference Section -->
+          <section id="cli-reference" class="section">
+            <h2>CLI Reference</h2>
+
+            <h3>Basic Usage</h3>
+            <pre><code># Default webcam processing
+./scripts/start.sh
+
+# With custom options
+./scripts/start.sh --controller hybrid --verbose --interval-ms 1000</code></pre>
+
+            <h3>Command Line Options</h3>
+
+            <h4>Runtime Options</h4>
+            <pre><code>-i, --interval-ms MS       Processing interval in milliseconds
+                          Default: 2000
+
+-v, --verbose              Enable verbose logging
+
+--no-display              Disable GUI display (headless mode)</code></pre>
+
+            <h4>Controller Options</h4>
+            <pre><code>-c, --controller TYPE      Controller type
+                          Options: rule_based, ml_based, hybrid
+                          Default: rule_based
+
+--enable-charging          Enable battery charging control
+                          Default: true
+
+--disable-charging         Disable battery charging control</code></pre>
+
+            <h4>Performance Requirements</h4>
+            <pre><code>--min-accuracy ACC         Minimum accuracy requirement (0-100)
+                          Default: 80.0
+
+--max-latency MS           Maximum latency requirement in ms
+                          Default: 100.0</code></pre>
+
+            <h4>Sensor Options</h4>
+            <pre><code>--mock-battery LEVEL       Initial mock battery level (0-100)
+                          Default: 80.0</code></pre>
+
+            <h3>Usage Examples</h3>
+
+            <h4>Basic Real-time Processing</h4>
+            <pre><code># Default webcam processing
+./scripts/start.sh
+
+# Faster processing (1-second interval)
+./scripts/start.sh --interval-ms 1000
+
+# Headless mode (no display)
+./scripts/start.sh --no-display</code></pre>
+
+            <h4>Performance Tuning</h4>
+            <pre><code># High-performance mode (relaxed latency, high accuracy)
+./scripts/start.sh --max-latency 150 --min-accuracy 90
+
+# Energy-saving mode (strict latency, lower accuracy)
+./scripts/start.sh --max-latency 50 --min-accuracy 70
+
+# Verbose logging for debugging
+./scripts/start.sh --verbose</code></pre>
+
+            <h4>Controller Configuration</h4>
+            <pre><code># Hybrid controller (rule-based with ML augmentation)
+./scripts/start.sh --controller hybrid
+
+# ML-based controller (requires trained model)
+./scripts/start.sh --controller ml_based
+
+# Disable charging control
+./scripts/start.sh --disable-charging</code></pre>
+
+            <h3>Model Selection Logic</h3>
+
+            <div style="margin: 20px 0">
+              <h4>High Resources (80%+ battery, 80%+ clean energy)</h4>
+              <p><strong>Selected Models:</strong> yolov10l, yolov10x</p>
+              <p><strong>Priority:</strong> Maximum accuracy and capability</p>
+              <p>
+                <strong>Use Case:</strong> When power is abundant and energy is
+                clean
+              </p>
+            </div>
+
+            <div style="margin: 20px 0">
+              <h4>Medium Resources (50-80% battery, 60%+ clean energy)</h4>
+              <p><strong>Selected Models:</strong> yolov10m, yolov10b</p>
+              <p>
+                <strong>Priority:</strong> Balance between performance and
+                efficiency
+              </p>
+              <p><strong>Use Case:</strong> Normal operating conditions</p>
+            </div>
+
+            <div style="margin: 20px 0">
+              <h4>Low Resources (&lt;30% battery)</h4>
+              <p><strong>Selected Models:</strong> yolov10n, yolov10s</p>
+              <p><strong>Priority:</strong> Battery conservation</p>
+              <p><strong>Use Case:</strong> Power-constrained situations</p>
+            </div>
+
+            <h3>Available Models</h3>
+            <table>
+              <thead>
+                <tr>
+                  <th>Model</th>
+                  <th>Accuracy</th>
+                  <th>Latency</th>
+                  <th>Battery Use</th>
+                  <th>Size</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><code>yolov10n</code></td>
+                  <td>65.0%</td>
+                  <td>15ms</td>
+                  <td>0.1</td>
+                  <td>Smallest</td>
+                </tr>
+                <tr>
+                  <td><code>yolov10s</code></td>
+                  <td>75.0%</td>
+                  <td>25ms</td>
+                  <td>0.2</td>
+                  <td>Small</td>
+                </tr>
+                <tr>
+                  <td><code>yolov10m</code></td>
+                  <td>82.0%</td>
+                  <td>40ms</td>
+                  <td>0.4</td>
+                  <td>Medium</td>
+                </tr>
+                <tr>
+                  <td><code>yolov10b</code></td>
+                  <td>87.0%</td>
+                  <td>60ms</td>
+                  <td>0.6</td>
+                  <td>Large</td>
+                </tr>
+                <tr>
+                  <td><code>yolov10l</code></td>
+                  <td>91.0%</td>
+                  <td>85ms</td>
+                  <td>0.8</td>
+                  <td>Extra Large</td>
+                </tr>
+                <tr>
+                  <td><code>yolov10x</code></td>
+                  <td>94.0%</td>
+                  <td>120ms</td>
+                  <td>1.0</td>
+                  <td>Largest</td>
+                </tr>
+              </tbody>
+            </table>
+
+            <h3>Testing</h3>
+            <div class="quick-start-box">
+              <p>Run the comprehensive test suite:</p>
+              <code>./scripts/tests.sh</code>
+            </div>
+          </section>
+
+          <!-- Implementation Section -->
+          <section id="implementation" class="section">
+            <h2>Implementation Documentation</h2>
+
+            <h3>Overview</h3>
+            <p>
+              The Optimal Charge Security Camera (OCS Camera) system is an
+              intelligent security camera platform that dynamically selects
+              YOLOv10 models based on battery level, energy cleanliness, and
+              user requirements. The system balances performance with energy
+              efficiency through intelligent controller logic.
+            </p>
+
+            <h3>Architecture</h3>
+
+            <h4>Core Components</h4>
+            <ul>
+              <li>
+                <strong>Main System</strong> (<code>src/main.py</code>): Entry
+                point and real-time processing loop
+              </li>
+              <li>
+                <strong>Configuration</strong> (<code>src/config/</code>):
+                YAML-based configuration management
+              </li>
+              <li>
+                <strong>Controllers</strong> (<code>src/controller/</code>):
+                Model selection and decision logic
+              </li>
+              <li>
+                <strong>Models</strong> (<code>src/models/</code>): YOLOv10
+                model management and inference
+              </li>
+              <li>
+                <strong>Sensors</strong> (<code>src/sensors/</code>): Battery
+                and energy monitoring interfaces
+              </li>
+              <li>
+                <strong>Utilities</strong> (<code>src/utils/</code>): Helper
+                functions and common utilities
+              </li>
+            </ul>
+
+            <h3>Source Implementation</h3>
+
+            <h4>Main System (<code>src/main.py</code>)</h4>
+            <p>
+              The <code>SecurityCameraSystem</code> class orchestrates the
+              entire application:
+            </p>
+            <ul>
+              <li>
+                <strong>Initialization:</strong> Sets up webcam, controllers,
+                model manager, and sensors
+              </li>
+              <li>
+                <strong>Processing Loop:</strong> Captures frames, makes
+                controller decisions, runs inference
+              </li>
+              <li>
+                <strong>Display:</strong> Shows real-time overlay with system
+                status and detection results
+              </li>
+              <li>
+                <strong>Resource Management:</strong> Handles battery
+                consumption and charging control
+              </li>
+            </ul>
+
+            <h4>Controllers (<code>src/controller/</code>)</h4>
+
+            <div
+              style="
+                margin: 20px 0;
+                padding: 15px;
+                background: #f8f9fa;
+                border-radius: 6px;
+              "
+            >
+              <h5>Intelligent Controller</h5>
+              <p>
+                Rule-based controller using heuristic scoring with multi-factor
+                evaluation
+              </p>
+            </div>
+
+            <div
+              style="
+                margin: 20px 0;
+                padding: 15px;
+                background: #f8f9fa;
+                border-radius: 6px;
+              "
+            >
+              <h5>ML Controller</h5>
+              <p>
+                Machine learning interface for future enhancement with feature
+                extraction
+              </p>
+            </div>
+
+            <div
+              style="
+                margin: 20px 0;
+                padding: 15px;
+                background: #f8f9fa;
+                border-radius: 6px;
+              "
+            >
+              <h5>Hybrid Controller</h5>
+              <p>Combines rule-based and ML approaches with decision fusion</p>
+            </div>
+
+            <h4>Model Management (<code>src/models/yolo_manager.py</code>)</h4>
+            <p>
+              <code>YOLOv10Manager</code> handles YOLOv10 model operations with
+              caching and performance tracking
+            </p>
+            <ul>
+              <li>
+                <strong>Model Caching:</strong> LRU cache for loaded models with
+                memory management
+              </li>
+              <li>
+                <strong>Performance Tracking:</strong> Records latency,
+                accuracy, battery consumption
+              </li>
+              <li>
+                <strong>Inference Pipeline:</strong> Runs inference with
+                comprehensive metrics
+              </li>
+            </ul>
+
+            <h4>Sensors (<code>src/sensors/</code>)</h4>
+            <p>
+              Battery and energy monitoring interfaces with mock implementations
+              for testing
+            </p>
+            <ul>
+              <li>
+                <strong>Battery Interface:</strong> Abstract interface for
+                hardware integration
+              </li>
+              <li>
+                <strong>Mock Battery:</strong> Simulation implementation for
+                testing
+              </li>
+              <li>
+                <strong>Energy Monitoring:</strong> Energy cleanliness tracking
+                and simulation
+              </li>
+            </ul>
+
+            <h3>Testing Implementation</h3>
+
+            <h4>Test Structure (<code>tests/</code>)</h4>
+            <ul>
+              <li>
+                <strong>Controller Tests:</strong> Core controller logic
+                validation
+              </li>
+              <li>
+                <strong>Mock Sensor Tests:</strong> Sensor data generation and
+                validation
+              </li>
+              <li>
+                <strong>Configuration Tests:</strong> YAML loading and
+                validation
+              </li>
+              <li>
+                <strong>Integration Tests:</strong> End-to-end system validation
+              </li>
+            </ul>
+
+            <h4>Test Data Generation</h4>
+            <p>
+              Generators for realistic sensor readings and performance
+              simulation with configurable scenarios
+            </p>
+
+            <h3>Data Flow</h3>
+            <div
+              style="
+                background: #f8f9fa;
+                padding: 20px;
+                border-radius: 6px;
+                border-left: 4px solid #007bff;
+              "
+            >
+              <ol>
+                <li>
+                  <strong>Sensor Input:</strong> Battery level, energy
+                  cleanliness, charging state
+                </li>
+                <li>
+                  <strong>Controller Decision:</strong> Model selection and
+                  charging logic
+                </li>
+                <li>
+                  <strong>Model Execution:</strong> YOLOv10 inference with
+                  performance tracking
+                </li>
+                <li>
+                  <strong>Performance Validation:</strong> Metrics collection
+                  and requirement checking
+                </li>
+                <li>
+                  <strong>System Update:</strong> Battery consumption, charging
+                  control, training data
+                </li>
+              </ol>
+            </div>
+
+            <h3>Configuration-Driven Behavior</h3>
+            <p>
+              The system is highly configurable through YAML with model
+              profiles, user requirements, controller behavior, and sensor
+              settings.
+            </p>
+
+            <h3>Performance Considerations</h3>
+            <ul>
+              <li>
+                <strong>Model Caching:</strong> LRU cache limits memory usage
+              </li>
+              <li><strong>Lazy Loading:</strong> Models loaded on-demand</li>
+              <li>
+                <strong>Performance Tracking:</strong> Minimal overhead metrics
+                collection
+              </li>
+              <li>
+                <strong>Memory Management:</strong> Explicit cleanup and garbage
+                collection
+              </li>
+            </ul>
+          </section>
+        </div>
+      </main>
+    </div>
+
+    <script src="script.js"></script>
+  </body>
+</html>

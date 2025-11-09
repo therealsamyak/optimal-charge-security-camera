@@ -9,124 +9,159 @@
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
-    <h1>Optimal Charge Security Camera</h1>
-    <p>
-      <strong>Contributors:</strong> Samyak Kakatur, Jasper Lin |
-      <strong>Code Repository:</strong>
-      <a
-        href="https://github.com/therealsamyak/optimal-charge-security-camera"
-        target="_blank"
-        >GitHub</a
-      >
-    </p>
+    <!-- Top Navigation -->
+    <nav class="top-nav">
+      <a href="index.html" class="logo">OCS Camera</a>
+      <div class="nav-links">
+        <a href="index.html" class="active">Home</a>
+        <a href="docs.html">Documentation</a>
+        <a
+          href="https://github.com/therealsamyak/optimal-charge-security-camera"
+          target="_blank"
+          >GitHub</a
+        >
+      </div>
+    </nav>
 
-    <div class="toc">
-      <h2>Table of Contents</h2>
-      <ul>
-        <li><a href="#goals">Goals</a></li>
-        <li><a href="#specific-aims">Specific Aims</a></li>
-        <li><a href="#approach">Approach</a></li>
-        <li><a href="#deliverables">Deliverables</a></li>
-        <li><a href="#timeline">Timeline</a></li>
-        <li><a href="#data">Data</a></li>
-        <li><a href="#methods">Methods</a></li>
-        <li><a href="#preliminary-results">Preliminary Results</a></li>
-      </ul>
+    <div class="layout-container">
+      <!-- Sidebar -->
+      <aside class="sidebar">
+        <h2>Table of Contents</h2>
+        <ul class="toc-links">
+          <li><a href="#quick-start">Quick Start</a></li>
+          <li><a href="#goals">Goals</a></li>
+          <li><a href="#specific-aims">Specific Aims</a></li>
+          <li><a href="#approach">Approach</a></li>
+          <li><a href="#deliverables">Deliverables</a></li>
+          <li><a href="#timeline">Timeline</a></li>
+        </ul>
+
+        <div class="footer-info">
+          <p><strong>Contributors:</strong><br />Samyak Kakatur, Jasper Lin</p>
+        </div>
+      </aside>
+
+      <!-- Main Content -->
+      <main class="main-content">
+        <div class="content-wrapper">
+          <h1>Optimal Charge Security Camera</h1>
+          <p>Intelligent security camera with energy-aware model selection</p>
+
+          <!-- Quick Start Section -->
+          <section id="quick-start" class="quick-start">
+            <h2>Quick Start</h2>
+            <p>Get running in 30 seconds</p>
+
+            <div class="quick-start-box">
+              <code>./scripts/start.sh</code>
+              <p>Default webcam processing with intelligent controller</p>
+            </div>
+
+            <div class="quick-start-box">
+              <code>./scripts/start.sh --controller hybrid --verbose</code>
+              <p>Hybrid controller with detailed logging</p>
+            </div>
+
+            <div class="quick-start-box">
+              <code>./scripts/tests.sh</code>
+              <p>Run comprehensive test suite</p>
+            </div>
+
+            <p>
+              <strong>Requirements:</strong> Python 3.8+, UV package manager,
+              webcam access
+            </p>
+          </section>
+
+          <!-- Goals Section -->
+          <section id="goals" class="section">
+            <h2>Goals</h2>
+            <ul>
+              <li>
+                Create a battery-powered security camera that runs local image
+                recognition
+              </li>
+              <li>Optimize energy usage based on clean energy availability</li>
+              <li>Balance model accuracy with power consumption</li>
+              <li>Make intelligent decisions about charging vs processing</li>
+            </ul>
+          </section>
+
+          <!-- Specific Aims Section -->
+          <section id="specific-aims" class="section">
+            <h2>Specific Aims</h2>
+            <ul>
+              <li>Implement context-aware battery management system</li>
+              <li>Integrate clean energy API for real-time grid information</li>
+              <li>
+                Develop controller that switches between YOLOv10 models based on
+                conditions
+              </li>
+              <li>Create simulation environment using Jetson hardware</li>
+              <li>Build software battery simulation for testing</li>
+            </ul>
+          </section>
+
+          <!-- Approach Section -->
+          <section id="approach" class="section">
+            <h2>Approach</h2>
+            <p>
+              We're building a system that considers multiple factors to
+              optimize security camera performance:
+            </p>
+            <ul>
+              <li>
+                <strong>Hardware:</strong> Jetson device simulating security
+                camera
+              </li>
+              <li>
+                <strong>Models:</strong> YOLOv10n (lightweight) and YOLOv10s
+                (more accurate)
+              </li>
+              <li>
+                <strong>Controller:</strong> Decision engine that evaluates:
+                <ul>
+                  <li>Current battery percentage</li>
+                  <li>Clean energy availability from external API</li>
+                  <li>User-defined metrics (accuracy, latency, frequency)</li>
+                </ul>
+              </li>
+              <li>
+                <strong>Battery Simulation:</strong> Software model where tasks
+                consume energy and charging can be toggled
+              </li>
+            </ul>
+          </section>
+
+          <!-- Deliverables Section -->
+          <section id="deliverables" class="section">
+            <h2>Deliverables</h2>
+            <ul>
+              <li>Functional controller system for model selection</li>
+              <li>Battery simulation software</li>
+              <li>Clean energy API integration</li>
+              <li>Jetson-based camera simulation</li>
+              <li>Performance metrics and optimization results</li>
+              <li>Documentation and code repository</li>
+            </ul>
+          </section>
+
+          <!-- Timeline Section -->
+          <section id="timeline" class="section">
+            <h2>Timeline</h2>
+            <p><strong>Each step: ~1 week</strong></p>
+            <ul>
+              <li>Set up Jetson environment and basic camera simulation</li>
+              <li>Implement battery simulation and YOLOv10 models</li>
+              <li>Integrate clean energy API and develop controller logic</li>
+              <li>Test and optimize decision-making algorithms</li>
+              <li>Final testing, documentation, and performance analysis</li>
+            </ul>
+          </section>
+        </div>
+      </main>
     </div>
 
-    <div class="section" id="goals">
-      <h2>Goals</h2>
-      <ul>
-        <li>
-          Create a battery-powered security camera that runs local image
-          recognition
-        </li>
-        <li>Optimize energy usage based on clean energy availability</li>
-        <li>Balance model accuracy with power consumption</li>
-        <li>Make intelligent decisions about charging vs processing</li>
-      </ul>
-    </div>
-
-    <div class="section" id="specific-aims">
-      <h2>Specific Aims</h2>
-      <ul>
-        <li>Implement context-aware battery management system</li>
-        <li>Integrate clean energy API for real-time grid information</li>
-        <li>
-          Develop controller that switches between YOLOv12 models based on
-          conditions
-        </li>
-        <li>Create simulation environment using Jetson hardware</li>
-        <li>Build software battery simulation for testing</li>
-      </ul>
-    </div>
-
-    <div class="section" id="approach">
-      <h2>Approach</h2>
-      <p>
-        We're building a system that considers multiple factors to optimize
-        security camera performance:
-      </p>
-      <ul>
-        <li>
-          <strong>Hardware:</strong> Jetson device simulating security camera
-        </li>
-        <li>
-          <strong>Models:</strong> YOLOv12n (lightweight) and YOLOv12s (more
-          accurate)
-        </li>
-        <li>
-          <strong>Controller:</strong> Decision engine that evaluates:
-          <ul>
-            <li>Current battery percentage</li>
-            <li>Clean energy availability from external API</li>
-            <li>User-defined metrics (accuracy, latency, frequency)</li>
-          </ul>
-        </li>
-        <li>
-          <strong>Battery Simulation:</strong> Software model where tasks
-          consume energy and charging can be toggled
-        </li>
-      </ul>
-    </div>
-
-    <div class="section" id="deliverables">
-      <h2>Deliverables</h2>
-      <ul>
-        <li>Functional controller system for model selection</li>
-        <li>Battery simulation software</li>
-        <li>Clean energy API integration</li>
-        <li>Jetson-based camera simulation</li>
-        <li>Performance metrics and optimization results</li>
-        <li>Documentation and code repository</li>
-      </ul>
-    </div>
-
-    <div class="section" id="timeline">
-      <h2>Timeline</h2>
-      <p><strong>Each step: ~1 week</strong></p>
-      <ul>
-        <li>Set up Jetson environment and basic camera simulation</li>
-        <li>Implement battery simulation and YOLOv12 models</li>
-        <li>Integrate clean energy API and develop controller logic</li>
-        <li>Test and optimize decision-making algorithms</li>
-        <li>Final testing, documentation, and performance analysis</li>
-      </ul>
-    </div>
-
-    <div class="section" id="data">
-      <h2>Data</h2>
-      <p>Data sources and collection methods to be added.</p>
-    </div>
-
-    <div class="section" id="methods">
-      <h2>Methods</h2>
-      <p>Technical implementation details to be added.</p>
-    </div>
-
-    <div class="section" id="preliminary-results">
-      <h2>Preliminary Results</h2>
-      <p>Initial findings and progress updates to be added.</p>
-    </div>
+    <script src="script.js"></script>
   </body>
 </html>

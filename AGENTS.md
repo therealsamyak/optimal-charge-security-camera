@@ -27,6 +27,12 @@
 - Comments: Docstrings for all classes and public functions
 - Structure: Follow existing patterns in controller/, models/, sensors/, utils/
 
+## Documentation
+
+- Primary documentation: https://therealsamyak.github.io/optimal-charge-security-camera/
+- Project structure: src/ (main code), tests/ (test suite), scripts/ (utility scripts), docs/ (website files)
+- Always update all .md files as necessary based on changes made after the changes are made
+
 ## Plans
 
 - Make all plans multi-phase.

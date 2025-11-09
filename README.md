@@ -35,8 +35,7 @@ cd optimal-charge-security-camera
 
 ## Documentation
 
-- **CLI Reference**: [docs/CLI.md](docs/CLI.md) - Complete command line options
-- **Implementation**: [docs/IMPLEMENTATION.md](docs/IMPLEMENTATION.md) - Architecture details
+- **Complete Documentation**: https://therealsamyak.github.io/optimal-charge-security-camera/ - CLI reference, implementation details, and more
 - **Configuration**: [src/config/configuration.yml](src/config/configuration.yml) - Default settings
 
 ## Testing
@@ -49,4 +48,4 @@ Run the entire test suite:
 
 ## Troubleshooting
 
-See [docs/CLI.md](docs/CLI.md#troubleshooting) for common issues and debug options.
+See https://therealsamyak.github.io/optimal-charge-security-camera/ for common issues and debug options.

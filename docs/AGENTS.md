@@ -1,40 +1,71 @@
 # Website Development Guidelines
 
+## Documentation Structure
+
+- **Main page** (`index.html`): Project overview, goals, quick start guide
+- **Documentation page** (`docs.html`): CLI reference and implementation details
+- **Styling**: Custom CSS in `styles.css` for responsive layout
+- **Navigation**: Top navigation bar + sidebar table of contents
+- **JavaScript**: Minimal functionality in `script.js` for navigation
+
 ## HTML Structure
+
 - Keep HTML plain and functional, not showy
 - Focus on content over presentation
 - Use semantic HTML elements appropriately
 - No unnecessary animations or flashy effects
+- Use custom CSS classes for layout and styling
 
 ## CSS Management
-- All CSS must be separated into `styles.css`
+
+- All custom CSS must be in `styles.css`
 - No inline styles or `<style>` tags in HTML
+- Use custom CSS for responsive design and layout
 - Keep styling simple and readable
 - Avoid overly complex layouts or effects
+- Use flexbox/grid for proper layout control
 
 ## JavaScript Policy
-**CRITICAL: JavaScript is generally NOT allowed**
 
-Before considering any JavaScript:
-1. Think again - can this be done with HTML/CSS only?
-2. If you absolutely must use JavaScript, you MUST ask for explicit permission first
-3. Every time you ask for JavaScript permission, the user gets very angry
-4. Be extremely careful and only request JavaScript when absolutely necessary
+**JavaScript is allowed for basic navigation functionality**
 
-Examples of when JavaScript might be considered (but still requires permission):
-- Complex form validation that cannot be done with HTML5 attributes
-- Interactive data visualization
-- Dynamic content loading (but consider if static content would work better)
+Allowed JavaScript uses:
 
-Examples of when JavaScript should NOT be used:
-- Simple hover effects (use CSS)
-- Basic form validation (use HTML5 attributes)
-- Styling changes (use CSS)
-- Simple animations (use CSS transitions/transforms)
+- Navigation highlighting and smooth scrolling
+- Active link management
+- Table of contents highlighting
+- Basic user interaction improvements
+
+JavaScript must be in `script.js` file only.
+
+## File Organization
+
+- `index.html`: Main landing page with project overview and quick start
+- `docs.html`: Comprehensive documentation (CLI + Implementation)
+- `styles.css`: All custom CSS styles for layout and design
+- `script.js`: JavaScript for navigation functionality
+- `CLI.md` and `IMPLEMENTATION.md`: Legacy markdown files (can be removed)
+- All navigation links should use relative paths for local development
+
+## Layout Structure
+
+- **Top Navigation**: Fixed header with logo and page links
+- **Sidebar**: Table of contents for current page only
+- **Main Content**: Wide content area with proper width control
+- **Responsive**: Mobile-friendly design with sidebar hidden on small screens
+
+## Deployment Notes
+
+- Website deployed at: https://therealsamyak.github.io/optimal-charge-security-camera/
+- Internal navigation uses relative paths
+- External links use full URLs
+- All assets (CSS, JS) are self-contained
 
 ## General Principles
+
 - Content first, presentation second
 - Accessibility matters
 - Mobile-friendly design
 - Fast loading times
 - No tracking scripts or analytics
+- Clean, maintainable code structure
