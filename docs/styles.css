@@ -290,10 +290,12 @@ tr:hover {
   .main-content {
     width: 100%;
     padding: 20px;
+    margin-left: 0;
   }
 
   .content-wrapper {
-    padding: 20px;
+    padding: 0;
+    max-width: 100%;
   }
 
   .top-nav .nav-links {
@@ -306,6 +308,25 @@ tr:hover {
 
   h2 {
     font-size: 1.5rem;
+  }
+
+  .top-nav .logo {
+    font-size: 1.2rem;
+    margin-right: 20px;
+  }
+
+  .top-nav {
+    padding: 0 15px;
+    height: 50px;
+  }
+
+  .top-nav .nav-links {
+    gap: 10px;
+  }
+
+  .top-nav .nav-links a {
+    padding: 6px 10px;
+    font-size: 0.9rem;
   }
 }
 
