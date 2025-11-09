@@ -11,7 +11,7 @@
 ## Build/Lint/Test Commands
 
 - Run all tests: `./scripts/tests.sh`
-- Run single test: `uv run python -m pytest tests/test_file.py -v`
+- Run single test: `uv run pytest tests/test_file.py -v`
 - Run CI tests: `./scripts/ci-tests.sh`
 - Run main: `./scripts/start.sh`
 - Run with options: `./scripts/start.sh --controller hybrid --verbose --no-display`

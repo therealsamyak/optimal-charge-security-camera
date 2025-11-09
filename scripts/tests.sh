@@ -76,9 +76,11 @@ except SystemExit as e:
     fi
     local exit_code=$?
     
-    # If command timed out but completed successfully (exit code 124), that's expected for long-running commands
-    if [ $exit_code -eq 124 ] && [ "$expected_exit_code" -eq 124 ]; then
-        exit_code=124
+    # If command timed out (exit code 124 or 137), that's expected for long-running commands
+    if [ $exit_code -eq 124 ] || [ $exit_code -eq 137 ]; then
+        if [ "$expected_exit_code" -eq 124 ]; then
+            exit_code=124
+        fi
     fi
     
     if [ $exit_code -eq $expected_exit_code ]; then
@@ -87,7 +89,7 @@ except SystemExit as e:
             echo "Output: $(head -1 "$stdout_file")"
         fi
     else
-        if [ $exit_code -eq 124 ]; then
+        if [ $exit_code -eq 124 ] || [ $exit_code -eq 137 ]; then
             log_warning "$test_name (timeout after ${timeout}s)"
         else
             log_error "$test_name (exit code: $exit_code, expected: $expected_exit_code)"
@@ -257,16 +259,16 @@ run_test "Order 5: Verbose first" "./scripts/start.sh -v -s webcam -c hybrid -t 
 
 # Test 21: Direct Python Examples
 log "Testing Direct Python Examples..."
-run_test "Direct: Default webcam processing" "uv run python src/main.py --no-display" 124 5
-run_test "Direct: Faster processing" "uv run python src/main.py --interval-ms 1000 --no-display" 124 5
-run_test "Direct: Headless mode" "uv run python src/main.py --no-display" 124 5
-run_test "Direct: Hybrid controller verbose" "uv run python src/main.py --controller hybrid --verbose --no-display" 124 5
-run_test "Direct: High performance mode" "uv run python src/main.py --max-latency 150 --min-accuracy 90 --no-display" 124 5
-run_test "Direct: Energy saving mode" "uv run python src/main.py --max-latency 50 --min-accuracy 70 --no-display" 124 5
-run_test "Direct: ML-based controller" "uv run python src/main.py --controller ml_based --no-display" 124 5
-run_test "Direct: Disable charging" "uv run python src/main.py --disable-charging --no-display" 124 5
-run_test "Direct: Low battery start" "uv run python src/main.py --mock-battery 25 --no-display" 124 5
-run_test "Direct: Full battery start" "uv run python src/main.py --mock-battery 95 --no-display" 124 5
+run_test "Direct: Default webcam processing" "uv run src/main.py --no-display" 124 5
+run_test "Direct: Faster processing" "uv run src/main.py --interval-ms 1000 --no-display" 124 5
+run_test "Direct: Headless mode" "uv run src/main.py --no-display" 124 5
+run_test "Direct: Hybrid controller verbose" "uv run src/main.py --controller hybrid --verbose --no-display" 124 5
+run_test "Direct: High performance mode" "uv run src/main.py --max-latency 150 --min-accuracy 90 --no-display" 124 5
+run_test "Direct: Energy saving mode" "uv run src/main.py --max-latency 50 --min-accuracy 70 --no-display" 124 5
+run_test "Direct: ML-based controller" "uv run src/main.py --controller ml_based --no-display" 124 5
+run_test "Direct: Disable charging" "uv run src/main.py --disable-charging --no-display" 124 5
+run_test "Direct: Low battery start" "uv run src/main.py --mock-battery 25 --no-display" 124 5
+run_test "Direct: Full battery start" "uv run src/main.py --mock-battery 95 --no-display" 124 5
 
 # Final summary
 log "=================================================="

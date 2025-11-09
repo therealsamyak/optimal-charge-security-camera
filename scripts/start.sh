@@ -141,7 +141,7 @@ while [[ $# -gt 0 ]]; do
             ;;
         --test-scenarios)
             echo "Running model selection test scenarios..."
-            uv run python tests/test_scenarios.py
+            uv run tests/test_scenarios.py
             exit 0
             ;;
         
@@ -189,7 +189,7 @@ trap cleanup_start EXIT INT TERM
 
 # Run main application
 echo "Starting OCS Camera..."
-uv run python src/main.py \
+uv run src/main.py \
     --source "$SOURCE_TYPE" \
     --interval-ms "$INTERVAL_MS" \
     --controller "$CONTROLLER_TYPE" \

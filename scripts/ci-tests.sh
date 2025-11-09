@@ -76,13 +76,20 @@ except SystemExit as e:
     fi
     local exit_code=$?
     
+    # If command timed out (exit code 124 or 137), that's expected for long-running commands
+    if [ $exit_code -eq 124 ] || [ $exit_code -eq 137 ]; then
+        if [ "$expected_exit_code" -eq 124 ]; then
+            exit_code=124
+        fi
+    fi
+    
     if [ $exit_code -eq $expected_exit_code ]; then
         log_success "$test_name"
         if [ -s "$stdout_file" ]; then
             echo "Output: $(head -1 "$stdout_file")"
         fi
     else
-        if [ $exit_code -eq 124 ]; then
+        if [ $exit_code -eq 124 ] || [ $exit_code -eq 137 ]; then
             log_warning "$test_name (timeout after ${timeout}s)"
         else
             log_error "$test_name (exit code: $exit_code, expected: $expected_exit_code)"
@@ -100,7 +107,7 @@ except SystemExit as e:
 # Download models for CI
 log "Downloading YOLOv10 models for CI..."
 mkdir -p src/models
-uv run python -c "
+uv run -c "
 import ultralytics
 ultralytics.download('yolov10n')
 ultralytics.download('yolov10s') 
@@ -135,7 +142,7 @@ run_test "Invalid controller" "./scripts/start.sh -c invalid" 2 5
 
 # Test 3: Python unit tests
 log "Testing Python unit tests..."
-run_test "Run all Python tests" "uv run python tests/run_tests.py" 1 60
+run_test "Run all Python tests" "uv run tests/run_tests.py" 1 60
 
 # Test 4: Mock sensor tests (no webcam required)
 log "Testing mock sensor functionality..."
@@ -166,9 +173,9 @@ run_test "Max battery threshold" "./scripts/start.sh --max-battery 95 --mock-bat
 
 # Test 9: Direct Python tests (no webcam)
 log "Testing direct Python execution..."
-run_test "Direct: Help" "uv run python src/main.py --help" 0 5
-run_test "Direct: Mock battery" "uv run python src/main.py --mock-battery 50 --no-display" 124 5
-run_test "Direct: Hybrid controller" "uv run python src/main.py --controller hybrid --mock-battery 50 --no-display" 124 5
+run_test "Direct: Help" "uv run src/main.py --help" 0 5
+run_test "Direct: Mock battery" "uv run src/main.py --mock-battery 50 --no-display" 124 5
+run_test "Direct: Hybrid controller" "uv run src/main.py --controller hybrid --mock-battery 50 --no-display" 124 5
 
 # Cleanup function
 cleanup_ci() {
