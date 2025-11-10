@@ -289,9 +289,24 @@ class SecurityCameraSystem:
                         f"Detection: {processing_results['detection_label']}"
                     )
 
-                # Maintain frame rate
+                # Maintain frame rate and update battery over time
                 processing_time = (time.time() - start_time) * 1000
                 sleep_time = max(0, (self.args.interval_ms - processing_time) / 1000)
+
+                # Total elapsed time this loop in seconds
+                elapsed_s = processing_time / 1000.0 + max(sleep_time, 0)
+
+                # Natural idle drain
+                if hasattr(self.battery_sensor, "simulate_time_passage"):
+                    self.battery_sensor.simulate_time_passage(elapsed_s)
+
+                # Charging refill when charging is on
+                if self.battery_sensor.is_charging() and hasattr(
+                    self.battery_sensor, "simulate_charging"
+                ):
+                    # About 0.1 percent per second
+                    self.battery_sensor.simulate_charging(charging_rate=0.1 * elapsed_s)
+
                 if sleep_time > 0:
                     time.sleep(sleep_time)
 

@@ -351,12 +351,18 @@ class YOLOv10Manager:
             # Extract detection metrics
             detection_metrics = self._extract_detection_metrics(results)
 
+            # Base linear battery cost from the model profile
+            base_cost = self._get_battery_consumption(model_name)
+
+            # Simple model: use the base cost directly as percent per inference
+            battery_consumption = base_cost
+
             # Record performance
             performance = ModelPerformance(
                 model_name=model_name,
                 accuracy=detection_metrics.get("confidence", 0.0) * 100,
                 latency_ms=timer.duration_ms,
-                battery_consumption=self._get_battery_consumption(model_name),
+                battery_consumption=battery_consumption,
                 inference_count=1,
                 total_confidence=detection_metrics.get("confidence", 0.0),
                 successful_detections=1
@@ -375,7 +381,7 @@ class YOLOv10Manager:
                 "confidence": detection_metrics.get("confidence", 0.0),
                 "has_detection": detection_metrics.get("has_detection", False),
                 "label": detection_metrics.get("label", "no detection"),
-                "battery_consumption": performance.battery_consumption,
+                "battery_consumption": battery_consumption,
                 "memory_usage_mb": performance.memory_usage_mb,
                 "cpu_usage_percent": performance.cpu_usage_percent,
             }

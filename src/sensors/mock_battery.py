@@ -128,15 +128,16 @@ class MockBatterySensor(BatterySensor):
             else 0.0,
         }
 
-    def simulate_charging(self, charging_rate: float = 2.0) -> None:
+    def simulate_charging(self, charging_rate: float = 0.3) -> None:
         """
         Simulate battery charging (for testing).
 
         Args:
-            charging_rate: Battery percentage increase per second
+            charging_rate: Battery percentage increase for this step
         """
         if self._is_charging:
             self._battery_level = min(100.0, self._battery_level + charging_rate)
+
 
     def simulate_time_passage(self, seconds: float) -> None:
         """
