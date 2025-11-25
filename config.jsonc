@@ -1,0 +1,4 @@
+{
+  "accuracy_threshold": 0.9,
+  "latency_threshold_ms": 10.0
+}
