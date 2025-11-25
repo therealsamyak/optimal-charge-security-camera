@@ -1,4 +1,52 @@
 {
-  "accuracy_threshold": 0.9,
-  "latency_threshold_ms": 10.0
+  // User performance requirements
+  "accuracy_threshold": 0.9,  // Unit: decimal (0.0-1.0). Example: 0.9 means 90% accuracy requirement
+  "latency_threshold_ms": 10.0,  // Unit: milliseconds. Example: 10.0 means max 10ms latency per inference
+  
+  // Simulation parameters
+  "simulation": {
+    "date": "2024-01-05",  // Unit: YYYY-MM-DD string. Example: "2024-01-05" for winter simulation
+    "image_quality": "good",  // Unit: string. Options: "good" (image1.png) or "bad" (image2.jpeg)
+    "output_interval_seconds": 10,  // Unit: seconds. Example: 10 means output CSV every 10 seconds
+    "controller_type": "custom"  // Unit: string. Options: "custom", "oracle", "benchmark"
+  },
+  
+  // Battery simulation parameters
+  "battery": {
+    "initial_capacity": 100.0,  // Unit: percentage (0-100). Example: 100.0 means full battery at start
+    "max_capacity": 100.0,     // Unit: percentage (0-100). Example: 100.0 means max battery is 100%
+    "charging_rate": 0.0035,     // Unit: % per second. Full charge in 8 hours (28,800 seconds)
+    "low_battery_threshold": 20.0  // Unit: percentage (0-100). Example: 20.0 means forced charging below 20%
+  },
+  
+  // YOLO model energy consumption rates (% per inference)
+  "model_energy_consumption": {
+    "YOLOv10-N": 0.004,   // Unit: % per inference. ~12 hours battery life
+    "YOLOv10-S": 0.007,   // Unit: % per inference. ~7 hours battery life  
+    "YOLOv10-M": 0.011,   // Unit: % per inference. ~4.5 hours battery life
+    "YOLOv10-B": 0.015,   // Unit: % per inference. ~3.2 hours battery life
+    "YOLOv10-L": 0.019,   // Unit: % per inference. ~2.5 hours battery life
+    "YOLOv10-X": 0.023    // Unit: % per inference. ~2 hours battery life
+  },
+  
+  // Custom controller weighting parameters (must sum to 1.0)
+  "custom_controller_weights": {
+    "accuracy_weight": 0.4,      // Unit: decimal (0.0-1.0). Example: 0.4 means 40% importance for accuracy
+    "latency_weight": 0.3,       // Unit: decimal (0.0-1.0). Example: 0.3 means 30% importance for latency
+    "energy_cleanliness_weight": 0.2,  // Unit: decimal (0.0-1.0). Example: 0.2 means 20% importance for clean energy
+    "battery_conservation_weight": 0.1   // Unit: decimal (0.0-1.0). Example: 0.1 means 10% importance for battery
+  },
+  
+  // Oracle controller (MILP) parameters
+  "oracle_controller": {
+    "optimization_horizon_hours": 24,  // Unit: hours. Example: 24 means optimize for full 24-hour day
+    "time_step_minutes": 5,            // Unit: minutes. Example: 5 means 5-minute timesteps (matches LDWP data)
+    "clean_energy_bonus_factor": 1.5   // Unit: multiplier. Example: 1.5 means clean energy gets 50% bonus in optimization
+  },
+  
+  // Benchmark controller parameters
+  "benchmark_controller": {
+    "prefer_largest_model": true,       // Unit: boolean. Example: true means always use YOLOv10-X model
+    "charge_when_below": 30.0           // Unit: percentage (0-100). Example: 30.0 means charge only when battery below 30%
+  }
 }
