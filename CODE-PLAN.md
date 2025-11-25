@@ -89,19 +89,19 @@ src/
 - [ ] Real-time webcam processing in `main.py` - Replace with simulation runner
 
 ## Phase 3: Controller Implementation
-[ ] Implement Custom Controller:
+[X] Implement Custom Controller:
 - Weighted scoring algorithm using config weights
 - Balances accuracy, latency, energy cleanliness, battery conservation
 - Real-time decision making based on current conditions
 
-[ ] Implement Oracle Controller:
+[X] Implement Oracle Controller:
 - Pyomo MILP solver for full 24-hour optimization
 - Variables: model selection and charging decisions for each 5-minute timestep
 - Objective: maximize total clean energy consumption over entire day
 - Constraints: battery capacity, performance thresholds, energy availability
 - Uses complete LDWP data for omniscient decision making
 
-[ ] Implement Benchmark Controller:
+[X] Implement Benchmark Controller:
 - Brute-force approach: always use largest available model (YOLOv10-X)
 - Ignore clean energy considerations
 - Charge battery only when below threshold (30%)
