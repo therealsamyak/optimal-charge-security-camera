@@ -62,7 +62,7 @@ When a phase / task of a plan is complete, mark the corresponding [ ] with an X 
 ```
 
 ## Phase 2: Core Architecture Simplification
-[ ] Create new simplified structure:
+[X] Create new simplified structure:
 ```
 src/
 ├── simulation/
@@ -78,14 +78,14 @@ src/
     └── config.py          # Configuration management
 ```
 
-[ ] Remove unnecessary files:
-- [ ] `src/controller/ml_controller.py` - ML training not needed
-- [ ] `src/controller/training_data.py` - No data collection required
-- [ ] `src/controller/performance_validator.py` - Over-engineered validation
-- [ ] `src/models/model_loader.py` - Simplify to direct CSV reading
-- [ ] `src/sensors/battery.py` - Abstract interface unnecessary
-- [ ] `src/sensors/energy.py` - Abstract interface unnecessary
-- [ ] `src/controller/hybrid_controller.py` - Replace with 3 specific controllers
+[X] Remove unnecessary files:
+- [X] `src/controller/ml_controller.py` - ML training not needed
+- [X] `src/controller/training_data.py` - No data collection required
+- [X] `src/controller/performance_validator.py` - Over-engineered validation
+- [X] `src/models/model_loader.py` - Simplify to direct CSV reading
+- [X] `src/sensors/battery.py` - Abstract interface unnecessary
+- [X] `src/sensors/energy.py` - Abstract interface unnecessary
+- [X] `src/controller/hybrid_controller.py` - Replace with 3 specific controllers
 - [ ] Real-time webcam processing in `main.py` - Replace with simulation runner
 
 ## Phase 3: Controller Implementation
