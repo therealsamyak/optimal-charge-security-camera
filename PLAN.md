@@ -1,32 +1,146 @@
+# Optimal Charge Security Camera - Simulation Framework
+
 ## Introduction
 
-our project is an adaptive camera that switches YOLO models based on battery level and clean energy input
-balances accuracy, efficiency, clean energy usage in real time
+This project is an adaptive security camera simulation that intelligently switches between YOLO models based on battery level and clean energy availability. The system balances accuracy, efficiency, and clean energy usage in real-time through a comprehensive simulation framework.
 
-the battery is fully software simulated, with each task siphoning energy from the virtual battery based on the model used
+### Key Components
 
-clean energy numbers are taken from the Los Angeles Department of Water and Power (LDWP) dataset, which provides 5-minute granularity carbon intensity data for the year 2024. More on how this is used later. You might not need all the information provided in the dataset, keep that in mind.
+- **Battery Simulation**: Fully software-simulated battery where each inference consumes energy based on selected YOLO model
+- **Clean Energy Data**: Uses Los Angeles Department of Water and Power (LDWP) dataset providing 5-minute granularity carbon intensity data for 2024
+- **Model Performance**: Utilizes YOLOv10 team benchmark data from `model-data.csv` for accuracy and latency metrics
+- **Configuration**: User-defined accuracy and latency thresholds specified in `config.jsonc`
 
-model criteria is provided by the YOLOv10 team's benchmark data in model-data.csv. You might not need all the information provided in the dataset, keep that in mind. 
+## Architecture
 
-The user will input their desired accuracy and latency thresholds through a root level .json file `config.jsonc`. This will also include any hardcoded constant parameters that we want to use throughout the system (that is for you to decide based on the simulation requirements).
+The simulation framework consists of:
 
+```
+src/
+├── simulation/
+│   ├── runner.py          # Main simulation orchestrator
+│   ├── controllers.py     # Custom, Oracle, Benchmark controllers
+│   └── metrics.py         # Performance tracking and analysis
+├── data/
+│   ├── energy_loader.py   # LDWP data integration
+│   └── model_data.py      # YOLO model data management
+├── sensors/
+│   └── simulation_sensors.py  # Battery and energy simulation
+├── utils/
+│   └── config.py          # Configuration management
+└── main_simulation.py     # Simulation entry point
+```
 
-## Evaluation
+## Evaluation Methodology
 
-We will run the camera for “24 hour” simulations, based on historical clean energy data for multiple different days throughout the year (one in each season; 4 days total. These days are january 5th, april 15th, july 4th, october 20th). We will repeat these simulations with different user-defined accuracy and latency metrics. The camera feed will be a static image, but we will have different static images of varying quality. For simplicity, the camera model will run on a consistent interval in every simulation. For each simulation, we compare multiple different controllers:
+### Simulation Parameters
 
-OUR CUSTOM CONTROLLER: Picks the model based on accuracy, latency, clean energy. Battery charging also determined by this controller. This controller will use an algorithm that gives weights to the user-defined accuracy & latency, the cleanliness of the energy coming in, and the existing model benchmarks provided by the YOLOv10 team.
+- **Duration**: 24-hour simulations
+- **Seasonal Coverage**: Four representative days:
+  - January 5th (Winter)
+  - April 15th (Spring) 
+  - July 4th (Summer)
+  - October 20th (Fall)
+- **Image Processing**: Static images with varying quality levels
+- **Interval**: Consistent processing intervals (configurable)
 
-ORACLE (OMNISCIENT): Takes in all problem information (historical clean energy data, accuracy, latency requirements), and uses a Mixed-Integer Linear Programming (MILP) solver (python has many pre-existing libraries that do this) to maximize the amount of clean energy used ONLY. Due to the nature of MILP solvers, optimizing for a proportion won’t work, hence why we are optimizing for amount of clean energy consumed instead. Full transparency, I got this idea from AI, but even then I think it should work.
+### Controller Comparison
 
-BENCHMARK: Uses the most powerful model possible in the situation, ignoring clean energy entirely, charges battery only when low. This represents a ‘brute force’ approach.
+Three distinct controller approaches are compared:
 
-Note: there are a LOT of simulations that need to be ran, as we have many many different combinations of test cases including different days, accuracy thresholds, and latency requirements, among other things. 
+#### 1. Custom Controller
+- **Algorithm**: Weighted scoring balancing multiple factors
+- **Inputs**: User-defined accuracy/latency requirements, energy cleanliness, battery level
+- **Weights**: Configurable weights for accuracy, latency, clean energy, and battery conservation
+- **Decision**: Real-time model selection and charging decisions
 
-With these simulations, we will take 2 key metrics:
+#### 2. Oracle Controller (Omniscient)
+- **Algorithm**: Mixed-Integer Linear Programming (MILP) optimization
+- **Objective**: Maximize total clean energy consumption over 24-hour period
+- **Knowledge**: Complete historical energy data and future awareness
+- **Constraints**: Battery capacity, performance thresholds, energy availability
 
-- “miss rate”: It’s possible that the battery might not have enough energy to run the stronger models necessary to meet the accuracy + latency thresholds given. A “small miss” is when the camera model output failed to meet the thresholds given. A “large miss” is when the camera battery was fully dead and couldn’t output anything. We will document both separately.
+#### 3. Benchmark Controller
+- **Algorithm**: Performance-at-all-costs approach
+- **Strategy**: Always use largest available model (YOLOv10-X)
+- **Charging**: Only when battery below threshold (30%)
+- **Energy**: Ignores clean energy considerations
 
-- “total energy used” and “total clean energy used”: This is the amount of energy used (and amount of clean energy used) as a numeric amount. We can then calculate percentages, and/or weighted sums (if we use more energy, but the energy is clean, is that better/worse than less energy consumed but less clean? That extra clean energy could have gone to a hospital which then could have burned 1 less coal etc. This is something to consider but might be out of scope)
-  With this approach, we believe that the benchmarks will be thorough enough to show if our controller actually works or not. If you have any feedback, please let us know. I will also think on this over the weekend and if there are any updates I will also let you know.
+### Performance Metrics
+
+Two primary evaluation metrics:
+
+#### Miss Rate Analysis
+- **Small Miss**: Model output fails to meet accuracy/latency thresholds
+- **Large Miss**: Battery completely dead, no output possible
+- **Tracking**: Separate documentation of both miss types
+
+#### Energy Consumption Analysis
+- **Total Energy Used**: Sum of all energy consumption during simulation
+- **Clean Energy Used**: Energy consumed during high clean energy periods
+- **Clean Energy Percentage**: Ratio of clean energy to total energy
+- **Trade-offs**: Analysis of energy quantity vs. cleanliness trade-offs
+
+### Configuration Parameters
+
+The `config.jsonc` file includes:
+
+```jsonc
+{
+  "accuracy_threshold": 0.9,           // User accuracy requirement (0.0-1.0)
+  "latency_threshold_ms": 10.0,       // User latency requirement (milliseconds)
+  
+  "simulation": {
+    "date": "2024-01-05",            // Simulation date
+    "image_quality": "good",           // Image quality: "good" or "bad"
+    "output_interval_seconds": 10,       // Processing interval
+    "controller_type": "custom"         // Controller: "custom", "oracle", "benchmark"
+  },
+  
+  "battery": {
+    "initial_capacity": 100.0,          // Starting battery level (0-100%)
+    "charging_rate": 0.0035,           // Charging rate (%/second)
+    "low_battery_threshold": 20.0       // Forced charging threshold
+  },
+  
+  "model_energy_consumption": {           // Energy cost per inference (%)
+    "YOLOv10-N": 0.004,             // ~12 hours battery life
+    "YOLOv10-S": 0.007,             // ~7 hours battery life
+    "YOLOv10-M": 0.011,             // ~4.5 hours battery life
+    "YOLOv10-B": 0.015,             // ~3.2 hours battery life
+    "YOLOv10-L": 0.019,             // ~2.5 hours battery life
+    "YOLOv10-X": 0.023              // ~2 hours battery life
+  }
+}
+```
+
+## Usage
+
+### Running Simulations
+
+```bash
+# Run single simulation with default config
+python src/main_simulation.py
+
+# Run with custom configuration
+python src/main_simulation.py --config custom_config.jsonc --output results.csv
+
+# Run tests
+./scripts/tests.sh
+```
+
+### Output Format
+
+Results are exported to CSV with following structure:
+```csv
+timestamp,battery_level,energy_cleanliness,model_selected,accuracy,latency,miss_type,energy_consumed,clean_energy_consumed
+```
+
+## Testing
+
+Comprehensive test suite includes:
+- **Unit Tests**: Controller logic, sensor functionality, metrics calculation
+- **Integration Tests**: End-to-end simulation execution
+- **Scenario Tests**: All seasonal days, image qualities, controller types, and threshold combinations
+
+This framework provides thorough evaluation of controller effectiveness across diverse scenarios and configurations.
