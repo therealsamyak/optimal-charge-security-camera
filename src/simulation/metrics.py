@@ -53,10 +53,13 @@ class MetricsTracker:
         if total == 0:
             return {
                 "total_inferences": 0,
+                "small_misses": 0,
+                "large_misses": 0,
                 "small_miss_rate": 0.0,
                 "large_miss_rate": 0.0,
                 "charging_rate": 0.0,
-                "total_energy_consumed": 0.0,
+                "total_energy_used": 0.0,
+                "clean_energy_used": 0.0,
                 "clean_energy_percentage": 0.0,
                 "model_usage_distribution": {},
             }
@@ -80,11 +83,13 @@ class MetricsTracker:
 
         return {
             "total_inferences": total,
+            "small_misses": self.metrics["small_misses"],
+            "large_misses": self.metrics["large_misses"],
             "small_miss_rate": small_miss_rate,
             "large_miss_rate": large_miss_rate,
             "charging_rate": charging_rate,
-            "total_energy_consumed": self.metrics["total_energy_consumed"],
-            "clean_energy_consumed": self.metrics["clean_energy_consumed"],
+            "total_energy_used": self.metrics["total_energy_consumed"],
+            "clean_energy_used": self.metrics["clean_energy_consumed"],
             "clean_energy_percentage": clean_energy_percentage,
             "model_usage_distribution": model_usage_dist,
         }
