@@ -5,7 +5,7 @@ An intelligent security camera simulation framework that dynamically selects YOL
 ## Prerequisites
 
 - **uv** - Python package manager: [https://docs.astral.sh/uv/](https://docs.astral.sh/uv/)
-- **Python 3.8+** with required packages:
+- **Python 3.12+** with required packages:
   - pandas (data processing)
   - loguru (logging)
   - pytest (testing)
@@ -43,18 +43,18 @@ The simulation is configured through `config.jsonc`:
 
 ```jsonc
 {
-  "accuracy_threshold": 0.9,
-  "latency_threshold_ms": 10.0,
+  "accuracy_threshold": 0.4,
+  "latency_threshold_ms": 15.0,
   "simulation": {
     "date": "2024-01-05",
     "image_quality": "good",
     "output_interval_seconds": 10,
-    "controller_type": "custom",
+    "controller_type": "custom"
   },
   "battery": {
     "initial_capacity": 100.0,
     "charging_rate": 0.0035,
-    "low_battery_threshold": 20.0,
+    "low_battery_threshold": 20.0
   },
   "model_energy_consumption": {
     "YOLOv10-N": 0.004,
@@ -62,8 +62,8 @@ The simulation is configured through `config.jsonc`:
     "YOLOv10-M": 0.011,
     "YOLOv10-B": 0.015,
     "YOLOv10-L": 0.019,
-    "YOLOv10-X": 0.023,
-  },
+    "YOLOv10-X": 0.023
+  }
 }
 ```
 

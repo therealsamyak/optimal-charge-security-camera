@@ -1,7 +1,7 @@
 {
   // User performance requirements
-  "accuracy_threshold": 0.4,  // Unit: decimal (0.0-1.0). Example: 0.4 means 40% accuracy requirement (realistic for YOLOv10 models)
-  "latency_threshold_ms": 15.0,  // Unit: milliseconds. Example: 15.0 means max 15ms latency per inference
+  "accuracy_threshold": 0.4,  // Unit: decimal (0.0-1.0). Accuracy is binary: 1.0 if model correctly detects 1 human, 0.0 otherwise. If accuracy > threshold = success, if accuracy < threshold = failure. Example: 0.4 means accuracy must be >= 0.4 to pass (1.0 passes, 0.0 fails)
+  "latency_threshold_ms": 15.0,  // Unit: milliseconds. If latency > threshold = failure. Example: 15.0 means max 15ms latency per inference
   
   // Simulation parameters
   "simulation": {

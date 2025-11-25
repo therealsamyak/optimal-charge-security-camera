@@ -2,12 +2,14 @@
 
 import csv
 from datetime import datetime, timedelta
+from pathlib import Path
 from typing import Dict, Any, List
 from loguru import logger
 
 from src.data.energy_loader import EnergyLoader
 from src.data.model_data import ModelDataLoader
 from src.sensors.simulation_sensors import SimulationSensors
+from src.sensors.model_inference import run_yolo_inference
 from src.simulation.controllers import (
     CustomController,
     OracleController,
@@ -48,6 +50,24 @@ class SimulationRunner:
         self.sim_date = datetime.strptime(self.sim_config["date"], "%Y-%m-%d")
         self.output_interval = self.sim_config["output_interval_seconds"]
         self.image_quality = self.sim_config["image_quality"]
+
+        # Determine image path based on quality
+        if self.image_quality == "good":
+            self.image_path = "image1.png"
+        elif self.image_quality == "bad":
+            self.image_path = "image2.jpeg"
+        else:
+            logger.warning(
+                f"Unknown image quality {self.image_quality}, defaulting to image1.png"
+            )
+            self.image_path = "image1.png"
+
+        # Verify image exists
+        if not Path(self.image_path).exists():
+            logger.error(f"Image file not found: {self.image_path}")
+            raise FileNotFoundError(f"Image file not found: {self.image_path}")
+
+        logger.info(f"Using image: {self.image_path} for quality: {self.image_quality}")
 
         # Get model data
         self.model_data = self.model_loader.get_model_data()
@@ -177,24 +197,47 @@ class SimulationRunner:
                         f"(battery: {battery_level:.2f}%, energy: {energy_cleanliness:.3f})"
                     )
                 else:
-                    # Get model performance
+                    # Run actual YOLO inference on the image
+                    # Expected answer: 1 human in both images
+                    expected_humans = 1
+                    accuracy, latency = run_yolo_inference(
+                        model_selected, self.image_path, expected_humans
+                    )
+
+                    # Get energy consumption from model data
                     model_info = self.model_data[model_selected]
-                    accuracy = model_info["accuracy"]
-                    latency = model_info["latency_ms"]
                     energy_consumed = model_info["energy_consumption"]
 
-                    # Apply image quality modifier
-                    if self.image_quality == "bad":
-                        accuracy *= 0.9  # Reduce accuracy by 10% for bad quality
+                    # Note: accuracy is now 1.0 if model correctly identifies 1 human, 0.0 otherwise
+                    # This is binary: correct (1.0) or wrong (0.0)
+                    # If accuracy is 0.0, the model failed to correctly identify 1 human - this counts against accuracy
 
-                    # Check if model meets thresholds
-                    if (
-                        accuracy < self.config["accuracy_threshold"]
-                        or latency > self.config["latency_threshold_ms"]
-                    ):
+                    # Check if model meets thresholds (configured in config.jsonc)
+                    # Accuracy threshold: if accuracy > threshold = success, if accuracy < threshold = failure
+                    # Latency threshold: if latency > threshold = failure
+                    accuracy_threshold = self.config["accuracy_threshold"]
+                    latency_threshold = self.config["latency_threshold_ms"]
+
+                    if accuracy < accuracy_threshold or latency > latency_threshold:
                         miss_type = "small_miss"
+                        if accuracy < accuracy_threshold:
+                            logger.debug(
+                                f"Model {model_selected} failed accuracy check: "
+                                f"accuracy {accuracy:.1f} < threshold {accuracy_threshold} "
+                                f"(detected wrong number of humans)"
+                            )
+                        if latency > latency_threshold:
+                            logger.debug(
+                                f"Model {model_selected} failed latency check: "
+                                f"{latency:.2f}ms > threshold {latency_threshold}ms"
+                            )
                     else:
                         miss_type = "none"
+                        logger.debug(
+                            f"Model {model_selected} passed thresholds: "
+                            f"accuracy {accuracy:.1f} >= {accuracy_threshold}, "
+                            f"latency {latency:.2f}ms <= {latency_threshold}ms"
+                        )
 
                     # Consume energy
                     if self.sensors.consume_energy(energy_consumed):
@@ -219,6 +262,8 @@ class SimulationRunner:
                 "battery_level": battery_level,
                 "energy_cleanliness": energy_cleanliness,
                 "model_selected": model_selected or "",
+                "model_ran": model_selected
+                or "",  # Model that was actually run during inference
                 "accuracy": accuracy,
                 "latency": latency,
                 "miss_type": miss_type,
@@ -268,16 +313,26 @@ class SimulationRunner:
     def save_results(
         self, results: List[Dict[str, Any]], filename: str = "simulation_results.csv"
     ) -> None:
-        """Save simulation results to CSV."""
+        """Save simulation results to CSV in outputs/ folder."""
         if not results:
             logger.warning("No results to save")
             return
+
+        # Ensure outputs directory exists
+        outputs_dir = Path("outputs")
+        outputs_dir.mkdir(exist_ok=True)
+
+        # If filename doesn't include outputs/, add it
+        output_path = Path(filename)
+        if not str(output_path).startswith("outputs/"):
+            output_path = outputs_dir / output_path.name
 
         fieldnames = [
             "timestamp",
             "battery_level",
             "energy_cleanliness",
             "model_selected",
+            "model_ran",
             "accuracy",
             "latency",
             "miss_type",
@@ -285,12 +340,12 @@ class SimulationRunner:
             "clean_energy_consumed",
         ]
 
-        with open(filename, "w", newline="") as csvfile:
+        with open(output_path, "w", newline="") as csvfile:
             writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
             writer.writeheader()
             writer.writerows(results)
 
-        logger.info(f"Results saved to {filename}")
+        logger.info(f"Results saved to {output_path}")
 
     def get_metrics_summary(self) -> Dict[str, Any]:
         """Get summary of simulation metrics."""

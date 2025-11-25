@@ -7,9 +7,10 @@ name = "optimal-charge-security-camera"
 version = "0.0.1"
 requires-python = ">=3.12"
 dependencies = [
-  "pandas>=2.0.0",
-  "loguru",
-  "pulp>=2.8.0",
+    "pandas>=2.0.0",
+    "loguru",
+    "pulp>=2.8.0",
+    "ultralytics>=8.0.0",
 ]
 
 

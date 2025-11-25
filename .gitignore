@@ -273,8 +273,8 @@ coverage/
 .venv
 .venv
 # Model files (auto-downloaded by ultralytics)
-# Keep models in src/data/models/ but ignore the actual .pt files
-src/data/models/*.pt
+# Models are stored in models/ folder
+models/*.pt
 *.pt
 
 # Training data and models (can be large)
@@ -294,6 +294,11 @@ test_*.csv
 
 # Simulation results directory
 results/
+outputs/
 
 # Cache directory
 .cache/
+
+# YOLO model files (auto-downloaded by ultralytics)
+*.pt
+yolov10*.pt
