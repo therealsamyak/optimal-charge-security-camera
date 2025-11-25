@@ -108,7 +108,7 @@ src/
 - Represents performance-at-all-costs approach
 
 ## Phase 4: Data Integration
-[ ] Implement LDWP Energy Data:
+[X] Implement LDWP Energy Data:
 - Load 5-minute granularity carbon intensity data for 2024
 - Extract data for 4 seasonal simulation days:
   - January 5 (winter)
@@ -117,25 +117,25 @@ src/
   - October 20 (fall)
 - Convert carbon intensity to clean energy percentage
 
-[ ] Implement YOLO Model Data:
+[X] Implement YOLO Model Data:
 - Load benchmark data from model-data.csv
 - Map model versions to energy consumption rates from config
 - Use accuracy (mAP) and latency data for threshold validation
 
-[ ] Implement Image Processing:
+[X] Implement Image Processing:
 - Static image processing (no webcam)
 - image1.png for "good" quality scenarios
 - image2.jpeg for "bad" quality scenarios
 - Consistent processing interval throughout simulation
 
 ## Phase 5: Simulation Execution
-[ ] Implement Main Simulation Loop:
+[X] Implement Main Simulation Loop:
 - 24-hour simulation period
 - Process image every 10 seconds (configurable)
 - Output results to CSV every 10 seconds
 - Track battery level, energy usage, model selection, performance metrics
 
-[ ] Implement Single Simulation Mode:
+[X] Implement Single Simulation Mode:
 - Program runs one simulation using config.jsonc parameters
 - Easy to modify config for different test scenarios
 - Separate benchmark script for running multiple simulations
@@ -171,7 +171,13 @@ timestamp,battery_level,energy_cleanliness,model_selected,accuracy,latency,miss_
 - All 3 controller types
 - Various accuracy/latency threshold combinations
 
-## Phase 8: Documentation Updates
+## Phase 8: Cleanup of Existing Files
+[ ] Remove all unused codefiles that are not used in this plan.
+[ ] Keep only the core simulation and data loading components.
+- All files in this codebase leftover should be core to the plan, and not from whatever some random agent did earlier.
+
+
+## Phase 9: Documentation Updates
 [ ] Update PLAN.md:
 - Reflect simplified architecture
 - Document configuration parameters
