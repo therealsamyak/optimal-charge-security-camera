@@ -5,7 +5,7 @@ Do not worry about backwards compatibility for the existing codebase. This is a 
 When a phase / task of a plan is complete, mark the corresponding [ ] with an X to signify its done. Before working on a phase or task of the plan, verify the current plan status and update this first, then once it's up-to-date crack on with your task.
 
 ## Phase 1: Configuration System
-[ ] Update config.jsonc with comprehensive parameters:
+[X] Update config.jsonc with comprehensive parameters:
 ```jsonc
 {
   // User performance requirements
