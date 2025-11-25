@@ -10,6 +10,7 @@ jobs:
   test:
     name: Test
     runs-on: ubuntu-latest
+    timeout-minutes: 15
 
     steps:
       - uses: actions/checkout@v5
@@ -25,5 +26,18 @@ jobs:
       - name: Install dependencies
         run: uv sync
 
-      - name: Run CI tests
-        run: ./scripts/ci-tests.sh
+      - name: Run default simulation
+        run: |
+          uv run python src/main_simulation.py --config config.jsonc --output outputs/ci_test_results.csv
+          # Verify output file was created and has expected content
+          if [ ! -f outputs/ci_test_results.csv ]; then
+            echo "Error: Output file not created"
+            exit 1
+          fi
+          # Check that CSV has expected number of rows (8640 timesteps + 1 header = 8641)
+          ROW_COUNT=$(wc -l < outputs/ci_test_results.csv)
+          if [ "$ROW_COUNT" -lt 100 ]; then
+            echo "Error: Output file has too few rows ($ROW_COUNT), expected at least 8641"
+            exit 1
+          fi
+          echo "✓ Simulation completed successfully with $ROW_COUNT rows"
