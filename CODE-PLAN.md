@@ -141,14 +141,14 @@ src/
 - Separate benchmark script for running multiple simulations
 
 ## Phase 6: Metrics & Output
-[ ] Implement Performance Metrics:
+[X] Implement Performance Metrics:
 - **Small Miss**: Model output fails to meet accuracy/latency thresholds
 - **Large Miss**: Battery completely dead, no output possible
 - **Total Energy Used**: Sum of all energy consumption
 - **Clean Energy Used**: Energy consumed during high clean energy periods
 - **Clean Energy Percentage**: Clean energy / total energy
 
-[ ] Implement CSV Output Format:
+[X] Implement CSV Output Format:
 ```csv
 timestamp,battery_level,energy_cleanliness,model_selected,accuracy,latency,miss_type,energy_consumed,clean_energy_consumed
 ```
