@@ -4,8 +4,11 @@
 # - 4 seasonal days
 # - 3 controller types
 # - Multiple accuracy/latency threshold combinations
+# - 2 image qualities
+# - Consistent 10-second intervals for 24 hours
 
-set -e
+# Don't exit on error - continue with remaining simulations
+set +e
 
 # Colors for output
 GREEN='\033[0;32m'
@@ -92,14 +95,17 @@ log_success() {
 # Counter
 TOTAL=0
 COMPLETED=0
+FAILED=0
+START_TIME=$(date +%s)
 
 # Calculate total combinations
 TOTAL_COMBOS=$((${#DATES[@]} * ${#CONTROLLERS[@]} * ${#THRESHOLDS[@]} * ${#QUALITIES[@]}))
 log "Step 3: Configuration setup"
-log "  Seasonal dates: ${#DATES[@]}"
-log "  Controller types: ${#CONTROLLERS[@]}"
+log "  Seasonal dates: ${#DATES[@]} (${DATES[*]})"
+log "  Controller types: ${#CONTROLLERS[@]} (${CONTROLLERS[*]})"
 log "  Threshold combinations: ${#THRESHOLDS[@]}"
-log "  Image qualities: ${#QUALITIES[@]}"
+log "  Image qualities: ${#QUALITIES[@]} (${QUALITIES[*]})"
+log "  Output interval: 10 seconds (8640 timesteps per simulation)"
 log "  Total combinations: $TOTAL_COMBOS"
 
 # Create temporary config file
@@ -167,22 +173,68 @@ for date in "${DATES[@]}"; do
 }
 EOF
                 
-                # Run simulation
+                # Run simulation with timing
                 log "  Running simulation command..."
-                if uv run python src/main_simulation.py --config "$TEMP_CONFIG" --output "$output_file" 2>&1; then
+                SIM_START=$(date +%s)
+                if uv run python src/main_simulation.py --config "$TEMP_CONFIG" --output "$output_file" > /tmp/sim_output_${TOTAL}.log 2>&1; then
+                    SIM_END=$(date +%s)
+                    SIM_DURATION=$((SIM_END - SIM_START))
                     COMPLETED=$((COMPLETED + 1))
-                    log_success "[$TOTAL/$TOTAL_COMBOS] Completed: $output_file"
+                    
+                    # Calculate progress and ETA
+                    ELAPSED=$((SIM_END - START_TIME))
+                    AVG_TIME=$((ELAPSED / TOTAL))
+                    REMAINING=$((TOTAL_COMBOS - TOTAL))
+                    ETA=$((REMAINING * AVG_TIME))
+                    ETA_MIN=$((ETA / 60))
+                    PROGRESS_PCT=$((TOTAL * 100 / TOTAL_COMBOS))
+                    
+                    log_success "[$TOTAL/$TOTAL_COMBOS] ($PROGRESS_PCT%) Completed in ${SIM_DURATION}s: $output_file"
+                    log "  ETA: ~${ETA_MIN} minutes remaining"
                 else
-                    log_error "[$TOTAL/$TOTAL_COMBOS] Failed: $output_file"
+                    SIM_END=$(date +%s)
+                    SIM_DURATION=$((SIM_END - SIM_START))
+                    FAILED=$((FAILED + 1))
+                    log_error "[$TOTAL/$TOTAL_COMBOS] Failed after ${SIM_DURATION}s: $output_file"
+                    log_error "  Check /tmp/sim_output_${TOTAL}.log for details"
                 fi
-                log "  Simulation step completed, moving to next..."
+                log "  Moving to next simulation..."
             done
         done
     done
 done
 
+END_TIME=$(date +%s)
+TOTAL_DURATION=$((END_TIME - START_TIME))
+TOTAL_HOURS=$((TOTAL_DURATION / 3600))
+TOTAL_MINUTES=$(((TOTAL_DURATION % 3600) / 60))
+TOTAL_SECONDS=$((TOTAL_DURATION % 60))
+
 log "=" | tr '=' '='
-log "Batch simulation complete: $COMPLETED/$TOTAL_COMBOS successful"
+log "Batch Simulation Summary"
+log "=" | tr '=' '='
+log "Total combinations: $TOTAL_COMBOS"
+log "Completed: $COMPLETED"
+log "Failed: $FAILED"
+log "Success rate: $((COMPLETED * 100 / TOTAL_COMBOS))%"
+log "Total duration: ${TOTAL_HOURS}h ${TOTAL_MINUTES}m ${TOTAL_SECONDS}s"
+if [ $COMPLETED -gt 0 ]; then
+    AVG_TIME=$((TOTAL_DURATION / COMPLETED))
+    log "Average time per simulation: ${AVG_TIME}s"
+fi
 log "Results saved in: $RESULTS_DIR"
+
+# Log cache statistics if cache utility is available
+if command -v python &> /dev/null; then
+    log "Cache statistics:"
+    python3 -c "
+from src.utils.cache import get_cache_stats
+stats = get_cache_stats()
+print(f'  Energy cache files: {stats[\"energy_cache_files\"]}')
+print(f'  Oracle cache files: {stats[\"oracle_cache_files\"]}')
+print(f'  Total cache size: {stats[\"total_cache_size_mb\"]:.2f} MB')
+" 2>/dev/null || log "  (Cache stats unavailable)"
+fi
+
 log "=" | tr '=' '='
 

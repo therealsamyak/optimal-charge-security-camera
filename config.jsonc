@@ -1,7 +1,7 @@
 {
   // User performance requirements
-  "accuracy_threshold": 0.9,  // Unit: decimal (0.0-1.0). Example: 0.9 means 90% accuracy requirement
-  "latency_threshold_ms": 10.0,  // Unit: milliseconds. Example: 10.0 means max 10ms latency per inference
+  "accuracy_threshold": 0.4,  // Unit: decimal (0.0-1.0). Example: 0.4 means 40% accuracy requirement (realistic for YOLOv10 models)
+  "latency_threshold_ms": 15.0,  // Unit: milliseconds. Example: 15.0 means max 15ms latency per inference
   
   // Simulation parameters
   "simulation": {

@@ -104,6 +104,8 @@ class TestSimulationIntegration:
             runner.metrics.add_result.return_value = None
 
             # Run short simulation (3 iterations)
+            from datetime import timedelta
+
             results = []
             current_time = runner.sim_date
             for i in range(3):
@@ -119,7 +121,7 @@ class TestSimulationIntegration:
                     "clean_energy_consumed": 0.0049,
                 }
                 results.append(result)
-                current_time = current_time.replace(second=current_time.second + 60)
+                current_time = current_time + timedelta(seconds=60)
 
         # Verify results structure
         assert len(results) == 3
@@ -239,8 +241,16 @@ class TestSimulationIntegration:
         assert summary["total_inferences"] == 3  # Only actual inferences
         assert summary["small_misses"] == 1
         assert summary["large_misses"] == 1
-        assert summary["small_miss_rate"] == 33.33  # 1/3 * 100
-        assert summary["large_miss_rate"] == 33.33  # 1/3 * 100
-        assert summary["total_energy_used"] == 0.018  # 0.007 + 0.007 + 0.004
-        assert summary["clean_energy_used"] == 0.013  # 0.005 + 0.006 + 0.002
+        assert (
+            abs(summary["small_miss_rate"] - 33.33) < 0.1
+        )  # 1/3 * 100 (allow floating point precision)
+        assert (
+            abs(summary["large_miss_rate"] - 33.33) < 0.1
+        )  # 1/3 * 100 (allow floating point precision)
+        assert (
+            abs(summary["total_energy_used"] - 0.018) < 0.0001
+        )  # 0.007 + 0.007 + 0.004 (allow floating point precision)
+        assert (
+            abs(summary["clean_energy_used"] - 0.013) < 0.0001
+        )  # 0.005 + 0.006 + 0.002 (allow floating point precision)
         assert abs(summary["clean_energy_percentage"] - (0.013 / 0.018) * 100) < 0.01
