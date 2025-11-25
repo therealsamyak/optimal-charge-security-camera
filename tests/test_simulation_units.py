@@ -60,6 +60,12 @@ class TestControllers:
         config = {
             "accuracy_threshold": 0.9,
             "latency_threshold_ms": 10.0,
+            "battery": {
+                "initial_capacity": 100.0,
+                "max_capacity": 100.0,
+                "charging_rate": 0.0035,
+                "low_battery_threshold": 20.0,
+            },
             "oracle_controller": {
                 "optimization_horizon_hours": 24,
                 "time_step_minutes": 5,

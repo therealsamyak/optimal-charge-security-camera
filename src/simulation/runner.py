@@ -23,8 +23,23 @@ class SimulationRunner:
         self.config = config
         self.sim_config = config["simulation"]
 
+        logger.info("=" * 60)
+        logger.info("Initializing Simulation Runner")
+        logger.info("=" * 60)
+        logger.info("Configuration:")
+        logger.info(f"  Date: {self.sim_config['date']}")
+        logger.info(f"  Controller: {self.sim_config['controller_type']}")
+        logger.info(f"  Image Quality: {self.sim_config['image_quality']}")
+        logger.info(f"  Output Interval: {self.sim_config['output_interval_seconds']}s")
+        logger.info(f"  Accuracy Threshold: {config['accuracy_threshold']}")
+        logger.info(f"  Latency Threshold: {config['latency_threshold_ms']}ms")
+        logger.info(f"  Initial Battery: {config['battery']['initial_capacity']}%")
+        logger.info(f"  Max Battery: {config['battery']['max_capacity']}%")
+
         # Initialize components
+        logger.info("Loading energy data...")
         self.energy_loader = EnergyLoader()
+        logger.info("Loading model data...")
         self.model_loader = ModelDataLoader(config=config)
         self.sensors = SimulationSensors(config)
         self.metrics = MetricsTracker()
@@ -36,11 +51,16 @@ class SimulationRunner:
 
         # Get model data
         self.model_data = self.model_loader.get_model_data()
+        logger.info(
+            f"Loaded {len(self.model_data)} models: {list(self.model_data.keys())}"
+        )
 
         # Initialize controller
         controller_type = self.sim_config["controller_type"]
+        logger.info(f"Initializing {controller_type} controller...")
         if controller_type == "custom":
             self.controller = CustomController(config)
+            logger.info("Custom controller initialized")
         elif controller_type == "oracle":
             self.controller = OracleController(config)
             # Initialize Oracle with full day data
@@ -53,18 +73,45 @@ class SimulationRunner:
             )
         elif controller_type == "benchmark":
             self.controller = BenchmarkController(config)
+            logger.info("Benchmark controller initialized")
         else:
             raise ValueError(f"Unknown controller type: {controller_type}")
 
+        logger.info("=" * 60)
+
     def run_simulation(self) -> List[Dict[str, Any]]:
         """Run 24-hour simulation."""
+        import time
+
+        logger.info("=" * 60)
+        logger.info("Starting 24-Hour Simulation")
+        logger.info("=" * 60)
         logger.info(
-            f"Starting simulation for {self.sim_config['date']} with {self.sim_config['controller_type']} controller"
+            f"Date: {self.sim_config['date']}, "
+            f"Controller: {self.sim_config['controller_type']}, "
+            f"Interval: {self.output_interval}s"
         )
 
+        start_time = time.time()
         results = []
         current_time = self.sim_date
         end_time = current_time + timedelta(hours=24)
+
+        # Calculate total timesteps for progress tracking
+        total_seconds = 24 * 3600
+        total_timesteps = total_seconds // self.output_interval
+        logger.info(
+            f"Total timesteps: {total_timesteps} (24 hours / {self.output_interval}s interval)"
+        )
+
+        # Progress tracking
+        last_log_time = current_time
+        timestep_count = 0
+        last_battery_level = self.sensors.get_battery_level()
+        last_energy_cleanliness = 0.5
+
+        logger.info("Simulation loop starting...")
+        logger.info("-" * 60)
 
         while current_time < end_time:
             # Update energy cleanliness based on time
@@ -73,8 +120,24 @@ class SimulationRunner:
             )
             self.sensors.update_energy_cleanliness(energy_cleanliness)
 
+            # Log energy cleanliness changes
+            if abs(energy_cleanliness - last_energy_cleanliness) > 0.1:
+                logger.debug(
+                    f"[{current_time.strftime('%H:%M:%S')}] Energy cleanliness changed: "
+                    f"{last_energy_cleanliness:.3f} -> {energy_cleanliness:.3f}"
+                )
+                last_energy_cleanliness = energy_cleanliness
+
             # Get current battery level
             battery_level = self.sensors.get_battery_level()
+
+            # Log significant battery level changes
+            if abs(battery_level - last_battery_level) > 5.0:
+                logger.debug(
+                    f"[{current_time.strftime('%H:%M:%S')}] Battery level changed: "
+                    f"{last_battery_level:.2f}% -> {battery_level:.2f}%"
+                )
+                last_battery_level = battery_level
 
             # Check if charging is forced
             if self.sensors.is_charging():
@@ -86,7 +149,13 @@ class SimulationRunner:
                 clean_energy_consumed = 0.0
 
                 # Charge battery
+                old_battery = battery_level
                 self.sensors.charge_battery(self.output_interval)
+                new_battery = self.sensors.get_battery_level()
+                logger.debug(
+                    f"[{current_time.strftime('%H:%M:%S')}] Charging: "
+                    f"battery {old_battery:.2f}% -> {new_battery:.2f}%"
+                )
             else:
                 # Select model (Oracle uses get_decision_for_time, others use select_model)
                 if isinstance(self.controller, OracleController):
@@ -103,6 +172,10 @@ class SimulationRunner:
                     miss_type = "no_model"
                     energy_consumed = 0.0
                     clean_energy_consumed = 0.0
+                    logger.debug(
+                        f"[{current_time.strftime('%H:%M:%S')}] No model selected "
+                        f"(battery: {battery_level:.2f}%, energy: {energy_cleanliness:.3f})"
+                    )
                 else:
                     # Get model performance
                     model_info = self.model_data[model_selected]
@@ -126,10 +199,19 @@ class SimulationRunner:
                     # Consume energy
                     if self.sensors.consume_energy(energy_consumed):
                         clean_energy_consumed = energy_consumed * energy_cleanliness
+                        logger.debug(
+                            f"[{current_time.strftime('%H:%M:%S')}] Model {model_selected} selected: "
+                            f"accuracy={accuracy:.3f}, latency={latency:.2f}ms, "
+                            f"energy={energy_consumed:.4f}%, miss={miss_type}"
+                        )
                     else:
                         # Battery dead
                         miss_type = "large_miss"
                         clean_energy_consumed = 0.0
+                        logger.warning(
+                            f"[{current_time.strftime('%H:%M:%S')}] Battery insufficient for {model_selected}: "
+                            f"required {energy_consumed:.4f}%, available {battery_level:.2f}%"
+                        )
 
             # Record results
             result = {
@@ -149,8 +231,38 @@ class SimulationRunner:
 
             # Advance time
             current_time += timedelta(seconds=self.output_interval)
+            timestep_count += 1
 
-        logger.info(f"Simulation completed. Total results: {len(results)}")
+            # Progress logging (every hour or every 1000 timesteps)
+            if (
+                current_time - last_log_time
+            ).total_seconds() >= 3600 or timestep_count % 1000 == 0:
+                progress_pct = (timestep_count / total_timesteps) * 100
+                elapsed_time = time.time() - start_time
+                avg_time_per_step = (
+                    elapsed_time / timestep_count if timestep_count > 0 else 0
+                )
+                remaining_steps = total_timesteps - timestep_count
+                eta_seconds = remaining_steps * avg_time_per_step
+                eta_minutes = eta_seconds / 60
+
+                logger.info(
+                    f"Progress: {timestep_count}/{total_timesteps} timesteps ({progress_pct:.1f}%) | "
+                    f"Time: {current_time.strftime('%H:%M:%S')} | "
+                    f"Battery: {battery_level:.2f}% | "
+                    f"Elapsed: {elapsed_time:.1f}s | "
+                    f"ETA: {eta_minutes:.1f}min"
+                )
+                last_log_time = current_time
+
+        total_time = time.time() - start_time
+        logger.info("-" * 60)
+        logger.info(f"Simulation completed in {total_time:.2f}s")
+        logger.info(f"Total results: {len(results)} timesteps")
+        logger.info(
+            f"Average time per timestep: {total_time / len(results) * 1000:.2f}ms"
+        )
+        logger.info("=" * 60)
         return results
 
     def save_results(

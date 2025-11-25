@@ -286,3 +286,14 @@ src/data/training/*.csv
 src/data/output/*.csv
 src/data/output/runs/
 src/data/logs/*.log
+
+# Test output files
+test_*.csv
+*_output.csv
+*_results.csv
+
+# Simulation results directory
+results/
+
+# Cache directory
+.cache/

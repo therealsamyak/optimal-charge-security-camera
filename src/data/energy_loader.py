@@ -5,6 +5,12 @@ from typing import Dict
 from datetime import datetime, timedelta
 from loguru import logger
 
+from src.utils.cache import (
+    get_energy_cache_path,
+    load_energy_cache,
+    save_energy_cache,
+)
+
 
 class EnergyLoader:
     """Loads and processes LDWP carbon intensity data."""
@@ -17,10 +23,17 @@ class EnergyLoader:
     def load_data(self) -> None:
         """Load LDWP data from CSV."""
         try:
-            self.data = pd.read_csv(self.csv_path)
-            logger.info(f"Loaded {len(self.data)} records from {self.csv_path}")
+            import time
+
+            start_time = time.time()
+            self.data = pd.read_csv(self.csv_path, low_memory=False)
+            load_time = time.time() - start_time
+            logger.info(
+                f"Loaded {len(self.data)} records from {self.csv_path} "
+                f"in {load_time:.2f}s"
+            )
         except Exception as e:
-            logger.error(f"Failed to load energy data: {e}")
+            logger.error(f"Failed to load energy data from {self.csv_path}: {e}")
             raise
 
     def get_clean_energy_percentage(self, timestamp: datetime) -> float:
@@ -54,7 +67,23 @@ class EnergyLoader:
         return clean_percentage
 
     def get_seasonal_day_data(self, date: str) -> Dict[datetime, float]:
-        """Get full day energy data for seasonal simulation."""
+        """Get full day energy data for seasonal simulation.
+
+        Uses caching to avoid reloading the same day's data multiple times.
+        """
+        import time
+
+        # Check cache first
+        cache_path = get_energy_cache_path(date)
+        cached_data = load_energy_cache(cache_path)
+        if cached_data is not None:
+            logger.debug(f"Using cached energy data for {date}")
+            return cached_data
+
+        # Cache miss - load from CSV
+        logger.info(f"Loading energy data for {date} from CSV (cache miss)")
+        start_time = time.time()
+
         target_date = datetime.strptime(date, "%Y-%m-%d").date()
 
         # Filter data for the target date
@@ -65,5 +94,13 @@ class EnergyLoader:
                 carbon_intensity = row["Carbon intensity gCO₂eq/kWh (direct)"]
                 clean_percentage = max(0.0, min(1.0, 1.0 - (carbon_intensity / 1000.0)))
                 daily_data[timestamp] = clean_percentage
+
+        load_time = time.time() - start_time
+        logger.info(
+            f"Processed {len(daily_data)} energy records for {date} in {load_time:.2f}s"
+        )
+
+        # Save to cache
+        save_energy_cache(cache_path, daily_data)
 
         return daily_data
