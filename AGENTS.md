@@ -13,8 +13,8 @@
 - Run all tests: `./scripts/tests.sh`
 - Run single test: `uv run pytest tests/test_file.py -v`
 - Run CI tests: `./scripts/ci-tests.sh`
-- Run main: `./scripts/start.sh`
-- Run with options: `./scripts/start.sh --controller hybrid --verbose --no-display`
+- Run simulation: `python src/main_simulation.py`
+- Run with options: `python src/main_simulation.py --config custom.jsonc --output results.csv`
 
 ## Code Style Guidelines
 
@@ -25,7 +25,7 @@
 - Logging: Use loguru logger, include context in messages
 - Types: Use typing module for all function signatures
 - Comments: Docstrings for all classes and public functions
-- Structure: Follow existing patterns in controller/, models/, sensors/, utils/
+- Structure: Follow existing patterns in simulation/, data/, sensors/, utils/
 
 ## Documentation
 
