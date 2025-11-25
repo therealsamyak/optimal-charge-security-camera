@@ -169,14 +169,14 @@ uv run python src/main_simulation.py --config my_config.jsonc --output my_result
                 </tr>
                 <tr>
                   <td><code>YOLOv10-L</code></td>
-                  <td>-</td>
-                  <td>-</td>
+                  <td>53.3%</td>
+                  <td>8.33</td>
                   <td>0.019</td>
                 </tr>
                 <tr>
                   <td><code>YOLOv10-X</code></td>
-                  <td>-</td>
-                  <td>-</td>
+                  <td>54.4%</td>
+                  <td>12.20</td>
                   <td>0.023</td>
                 </tr>
               </tbody>
@@ -234,6 +234,12 @@ uv run python src/main_simulation.py --config my_config.jsonc --output my_result
                 <strong>Configuration</strong>
                 (<code>src/utils/config.py</code>): JSONC configuration
                 management
+              </li>
+              <li>
+                <strong>Cache Management</strong>
+                (<code>src/utils/cache.py</code>): Caching infrastructure for
+                expensive computations (energy data, model data, Oracle MILP
+                optimization)
               </li>
             </ul>
 

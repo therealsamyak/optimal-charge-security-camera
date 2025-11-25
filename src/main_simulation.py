@@ -24,7 +24,9 @@ def main():
         "--config", default="config.jsonc", help="Configuration file path"
     )
     parser.add_argument(
-        "--output", default="simulation_results.csv", help="Output CSV file"
+        "--output",
+        default="outputs/simulation_results.csv",
+        help="Output CSV file (saved in outputs/ folder)",
     )
 
     args = parser.parse_args()
