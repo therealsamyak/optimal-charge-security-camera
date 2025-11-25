@@ -29,17 +29,6 @@ class SimulationRunner:
         self.sensors = SimulationSensors(config)
         self.metrics = MetricsTracker()
 
-        # Initialize controller
-        controller_type = self.sim_config["controller_type"]
-        if controller_type == "custom":
-            self.controller = CustomController(config)
-        elif controller_type == "oracle":
-            self.controller = OracleController(config)
-        elif controller_type == "benchmark":
-            self.controller = BenchmarkController(config)
-        else:
-            raise ValueError(f"Unknown controller type: {controller_type}")
-
         # Simulation parameters
         self.sim_date = datetime.strptime(self.sim_config["date"], "%Y-%m-%d")
         self.output_interval = self.sim_config["output_interval_seconds"]
@@ -47,6 +36,25 @@ class SimulationRunner:
 
         # Get model data
         self.model_data = self.model_loader.get_model_data()
+
+        # Initialize controller
+        controller_type = self.sim_config["controller_type"]
+        if controller_type == "custom":
+            self.controller = CustomController(config)
+        elif controller_type == "oracle":
+            self.controller = OracleController(config)
+            # Initialize Oracle with full day data
+            energy_data = self.energy_loader.get_seasonal_day_data(
+                self.sim_config["date"]
+            )
+            initial_battery = config["battery"]["initial_capacity"]
+            self.controller.initialize(
+                self.sim_date, energy_data, self.model_data, initial_battery
+            )
+        elif controller_type == "benchmark":
+            self.controller = BenchmarkController(config)
+        else:
+            raise ValueError(f"Unknown controller type: {controller_type}")
 
     def run_simulation(self) -> List[Dict[str, Any]]:
         """Run 24-hour simulation."""
@@ -80,13 +88,16 @@ class SimulationRunner:
                 # Charge battery
                 self.sensors.charge_battery(self.output_interval)
             else:
-                # Select model
-                model_selected = self.controller.select_model(
-                    battery_level, energy_cleanliness, self.model_data
-                )
+                # Select model (Oracle uses get_decision_for_time, others use select_model)
+                if isinstance(self.controller, OracleController):
+                    model_selected = self.controller.get_decision_for_time(current_time)
+                else:
+                    model_selected = self.controller.select_model(
+                        battery_level, energy_cleanliness, self.model_data
+                    )
 
                 if model_selected is None:
-                    # No suitable model found
+                    # No suitable model found or charging decision
                     accuracy = 0.0
                     latency = 0.0
                     miss_type = "no_model"
@@ -98,6 +109,10 @@ class SimulationRunner:
                     accuracy = model_info["accuracy"]
                     latency = model_info["latency_ms"]
                     energy_consumed = model_info["energy_consumption"]
+
+                    # Apply image quality modifier
+                    if self.image_quality == "bad":
+                        accuracy *= 0.9  # Reduce accuracy by 10% for bad quality
 
                     # Check if model meets thresholds
                     if (

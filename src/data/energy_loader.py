@@ -38,7 +38,7 @@ class EnergyLoader:
 
         # Filter data for matching timestamp
         matching_data = self.data[
-            (pd.to_datetime(self.data["timestamp"]) == timestamp_rounded)
+            (pd.to_datetime(self.data["Datetime (UTC)"]) == timestamp_rounded)
         ]
 
         if matching_data.empty:
@@ -46,7 +46,7 @@ class EnergyLoader:
 
         # Convert carbon intensity to clean energy percentage
         # Lower carbon intensity = higher clean energy percentage
-        carbon_intensity = matching_data["carbon_intensity"].iloc[0]
+        carbon_intensity = matching_data["Carbon intensity gCO₂eq/kWh (direct)"].iloc[0]
 
         # Simple conversion: 0 gCO2/kWh = 100% clean, 1000 gCO2/kWh = 0% clean
         clean_percentage = max(0.0, min(1.0, 1.0 - (carbon_intensity / 1000.0)))
@@ -60,9 +60,9 @@ class EnergyLoader:
         # Filter data for the target date
         daily_data = {}
         for _, row in self.data.iterrows():
-            timestamp = pd.to_datetime(row["timestamp"])
+            timestamp = pd.to_datetime(row["Datetime (UTC)"])
             if timestamp.date() == target_date:
-                carbon_intensity = row["carbon_intensity"]
+                carbon_intensity = row["Carbon intensity gCO₂eq/kWh (direct)"]
                 clean_percentage = max(0.0, min(1.0, 1.0 - (carbon_intensity / 1000.0)))
                 daily_data[timestamp] = clean_percentage
 

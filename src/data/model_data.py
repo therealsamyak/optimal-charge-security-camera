@@ -34,36 +34,27 @@ class ModelDataLoader:
         energy_rates = self.config.get("model_energy_consumption", {})
 
         for _, row in self.model_data.iterrows():
-            model_name = row["model"]
+            # Combine model and version to create model name (e.g., "YOLOv10" + "N" -> "YOLOv10-N")
+            model_base = str(row["model"]).strip('"')
+            version = str(row["version"]).strip('"')
+            model_name = f"{model_base}-{version}"
 
             # Get energy consumption rate from config
             energy_rate = energy_rates.get(model_name, 0.01)  # Default fallback
 
+            # Convert COCO mAP 50-95 from percentage to 0-1 scale (e.g., 39.5 -> 0.395)
+            coco_map = float(str(row["COCO mAP 50-95"]).strip('"'))
+            accuracy = coco_map / 100.0
+
+            # Get latency in milliseconds
+            latency_ms = float(
+                str(row["Latency T4 TensorRT10 FP16(ms/img)"]).strip('"')
+            )
+
             result[model_name] = {
-                "accuracy": float(row["accuracy"]),
-                "latency_ms": float(row["latency_ms"]),
+                "accuracy": accuracy,
+                "latency_ms": latency_ms,
                 "energy_consumption": energy_rate,
             }
 
         return result
-
-    def get_model_by_name(self, model_name: str) -> Dict[str, float]:
-        """Get specific model data."""
-        all_models = self.get_model_data()
-        return all_models.get(model_name, {})
-
-    def get_models_meeting_thresholds(
-        self, accuracy_threshold: float, latency_threshold: float
-    ) -> Dict[str, Dict[str, float]]:
-        """Get models that meet performance thresholds."""
-        all_models = self.get_model_data()
-        valid_models = {}
-
-        for model_name, data in all_models.items():
-            if (
-                data["accuracy"] >= accuracy_threshold
-                and data["latency_ms"] <= latency_threshold
-            ):
-                valid_models[model_name] = data
-
-        return valid_models

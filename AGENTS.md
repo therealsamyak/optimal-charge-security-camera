@@ -13,8 +13,8 @@
 - Run all tests: `./scripts/tests.sh`
 - Run single test: `uv run pytest tests/test_file.py -v`
 - Run CI tests: `./scripts/ci-tests.sh`
-- Run simulation: `python src/main_simulation.py`
-- Run with options: `python src/main_simulation.py --config custom.jsonc --output results.csv`
+- Run simulation: `uv run python src/main_simulation.py`
+- Run with options: `uv run python src/main_simulation.py --config custom.jsonc --output results.csv`
 
 ## Code Style Guidelines
 

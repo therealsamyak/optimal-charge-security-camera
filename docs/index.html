@@ -53,23 +53,27 @@
             <p>Get running in 30 seconds</p>
 
             <div class="quick-start-box">
-              <code>./scripts/start.sh</code>
-              <p>Default webcam processing with intelligent controller</p>
+              <code>uv run python src/main_simulation.py</code>
+              <p>Run 24-hour simulation with default config</p>
             </div>
 
             <div class="quick-start-box">
-              <code>./scripts/start.sh --controller hybrid --verbose</code>
-              <p>Hybrid controller with detailed logging</p>
+              <code
+                >uv run python src/main_simulation.py --config config.jsonc
+                --output results.csv</code
+              >
+              <p>Run with custom configuration</p>
             </div>
 
             <div class="quick-start-box">
-              <code>./scripts/tests.sh</code>
-              <p>Run comprehensive test suite</p>
+              <code>./scripts/batch_simulations.sh</code>
+              <p>
+                Run all seasonal days, controllers, and threshold combinations
+              </p>
             </div>
 
             <p>
-              <strong>Requirements:</strong> Python 3.8+, UV package manager,
-              webcam access
+              <strong>Requirements:</strong> Python 3.12+, UV package manager
             </p>
           </section>
 
@@ -78,12 +82,20 @@
             <h2>Goals</h2>
             <ul>
               <li>
-                Create a battery-powered security camera that runs local image
-                recognition
+                Simulate a battery-powered security camera that switches YOLO
+                models based on battery level and clean energy input
               </li>
-              <li>Optimize energy usage based on clean energy availability</li>
-              <li>Balance model accuracy with power consumption</li>
-              <li>Make intelligent decisions about charging vs processing</li>
+              <li>
+                Balance accuracy, efficiency, and clean energy usage in
+                real-time
+              </li>
+              <li>
+                Compare three controller approaches: Custom, Oracle (MILP), and
+                Benchmark
+              </li>
+              <li>
+                Evaluate controller effectiveness across seasonal variations
+              </li>
             </ul>
           </section>
 
@@ -91,14 +103,26 @@
           <section id="specific-aims" class="section">
             <h2>Specific Aims</h2>
             <ul>
-              <li>Implement context-aware battery management system</li>
-              <li>Integrate clean energy API for real-time grid information</li>
               <li>
-                Develop controller that switches between YOLOv10 models based on
-                conditions
+                Run 24-hour simulations using historical clean energy data (LDWP
+                dataset)
               </li>
-              <li>Create simulation environment using Jetson hardware</li>
-              <li>Build software battery simulation for testing</li>
+              <li>
+                Compare three controller types: Custom (weighted scoring),
+                Oracle (MILP optimization), Benchmark (performance-at-all-costs)
+              </li>
+              <li>
+                Evaluate across 4 seasonal days with different accuracy/latency
+                thresholds
+              </li>
+              <li>
+                Track miss rates (small/large) and clean energy consumption
+                metrics
+              </li>
+              <li>
+                Build comprehensive simulation framework for controller
+                evaluation
+              </li>
             </ul>
           </section>
 
@@ -106,29 +130,41 @@
           <section id="approach" class="section">
             <h2>Approach</h2>
             <p>
-              We're building a system that considers multiple factors to
-              optimize security camera performance:
+              We're building a simulation framework that evaluates controller
+              effectiveness:
             </p>
             <ul>
               <li>
-                <strong>Hardware:</strong> Jetson device simulating security
-                camera
+                <strong>Simulation:</strong> 24-hour software simulation with
+                configurable parameters
               </li>
               <li>
-                <strong>Models:</strong> YOLOv10n (lightweight) and YOLOv10s
-                (more accurate)
+                <strong>Models:</strong> YOLOv10-N through YOLOv10-X with
+                varying accuracy/latency/energy trade-offs
               </li>
               <li>
-                <strong>Controller:</strong> Decision engine that evaluates:
+                <strong>Controllers:</strong> Three distinct approaches:
                 <ul>
-                  <li>Current battery percentage</li>
-                  <li>Clean energy availability from external API</li>
-                  <li>User-defined metrics (accuracy, latency, frequency)</li>
+                  <li>
+                    Custom: Weighted scoring balancing accuracy, latency, clean
+                    energy, battery
+                  </li>
+                  <li>
+                    Oracle: MILP optimization maximizing clean energy
+                    consumption
+                  </li>
+                  <li>
+                    Benchmark: Always use largest model, ignore clean energy
+                  </li>
                 </ul>
               </li>
               <li>
-                <strong>Battery Simulation:</strong> Software model where tasks
-                consume energy and charging can be toggled
+                <strong>Data:</strong> LDWP 5-minute granularity carbon
+                intensity data for 2024
+              </li>
+              <li>
+                <strong>Metrics:</strong> Miss rates, total energy, clean energy
+                percentage
               </li>
             </ul>
           </section>
@@ -137,25 +173,32 @@
           <section id="deliverables" class="section">
             <h2>Deliverables</h2>
             <ul>
-              <li>Functional controller system for model selection</li>
-              <li>Battery simulation software</li>
-              <li>Clean energy API integration</li>
-              <li>Jetson-based camera simulation</li>
-              <li>Performance metrics and optimization results</li>
+              <li>
+                Simulation framework with three controller implementations
+              </li>
+              <li>24-hour simulation runner with CSV output</li>
+              <li>LDWP energy data integration</li>
+              <li>YOLOv10 model data integration</li>
+              <li>
+                Comprehensive metrics tracking (miss rates, energy consumption)
+              </li>
+              <li>Batch simulation script for all combinations</li>
               <li>Documentation and code repository</li>
             </ul>
           </section>
 
           <!-- Timeline Section -->
           <section id="timeline" class="section">
-            <h2>Timeline</h2>
-            <p><strong>Each step: ~1 week</strong></p>
+            <h2>Evaluation Methodology</h2>
+            <p><strong>Simulation Framework</strong></p>
             <ul>
-              <li>Set up Jetson environment and basic camera simulation</li>
-              <li>Implement battery simulation and YOLOv10 models</li>
-              <li>Integrate clean energy API and develop controller logic</li>
-              <li>Test and optimize decision-making algorithms</li>
-              <li>Final testing, documentation, and performance analysis</li>
+              <li>Run 24-hour simulations for 4 seasonal days</li>
+              <li>
+                Test with multiple accuracy/latency threshold combinations
+              </li>
+              <li>Compare three controller types across all scenarios</li>
+              <li>Analyze miss rates and clean energy consumption</li>
+              <li>Generate comprehensive CSV outputs for analysis</li>
             </ul>
           </section>
         </div>
