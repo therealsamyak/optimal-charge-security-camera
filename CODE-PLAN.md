@@ -172,8 +172,8 @@ timestamp,battery_level,energy_cleanliness,model_selected,accuracy,latency,miss_
 - Various accuracy/latency threshold combinations
 
 ## Phase 8: Cleanup of Existing Files
-[ ] Remove all unused codefiles that are not used in this plan.
-[ ] Keep only the core simulation and data loading components.
+[X] Remove all unused codefiles that are not used in this plan.
+[X] Keep only the core simulation and data loading components.
 - All files in this codebase leftover should be core to the plan, and not from whatever some random agent did earlier.
 
 
