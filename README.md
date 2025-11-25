@@ -21,10 +21,10 @@ cd optimal-charge-security-camera
 uv sync
 
 # Run simulation with default config
-python src/main_simulation.py
+uv run python src/main_simulation.py
 
 # Run with custom configuration
-python src/main_simulation.py --config custom_config.jsonc --output results.csv
+uv run python src/main_simulation.py --config custom_config.jsonc --output results.csv
 ```
 
 ## Features
@@ -47,14 +47,14 @@ The simulation is configured through `config.jsonc`:
   "latency_threshold_ms": 10.0,
   "simulation": {
     "date": "2024-01-05",
-    "image_quality": "good", 
+    "image_quality": "good",
     "output_interval_seconds": 10,
-    "controller_type": "custom"
+    "controller_type": "custom",
   },
   "battery": {
     "initial_capacity": 100.0,
     "charging_rate": 0.0035,
-    "low_battery_threshold": 20.0
+    "low_battery_threshold": 20.0,
   },
   "model_energy_consumption": {
     "YOLOv10-N": 0.004,
@@ -62,42 +62,48 @@ The simulation is configured through `config.jsonc`:
     "YOLOv10-M": 0.011,
     "YOLOv10-B": 0.015,
     "YOLOv10-L": 0.019,
-    "YOLOv10-X": 0.023
-  }
+    "YOLOv10-X": 0.023,
+  },
 }
 ```
 
 ## Usage Examples
 
+### Single Simulation
+
+```bash
+# Run with default config
+uv run python src/main_simulation.py
+
+# Run with custom configuration
+uv run python src/main_simulation.py --config custom_config.jsonc --output results.csv
+```
+
 ### Different Controllers
+
+Update `config.jsonc` to set `controller_type` to one of:
+
+- `"custom"` - Weighted scoring controller
+- `"oracle"` - MILP optimization controller
+- `"benchmark"` - Performance-at-all-costs controller
+
+### Batch Simulations
+
+Run all combinations of seasonal days, controllers, and thresholds:
+
 ```bash
-# Custom controller (weighted scoring)
-python src/main_simulation.py --config config.jsonc --controller custom
-
-# Oracle controller (MILP optimization)
-python src/main_simulation.py --config config.jsonc --controller oracle
-
-# Benchmark controller (performance-at-all-costs)
-python src/main_simulation.py --config config.jsonc --controller benchmark
+./scripts/batch_simulations.sh
 ```
 
-### Seasonal Scenarios
-```bash
-# Winter simulation
-python src/main_simulation.py --date "2024-01-05"
+This script runs:
 
-# Summer simulation  
-python src/main_simulation.py --date "2024-07-04"
-```
+- 4 seasonal days (Jan 5, Apr 15, Jul 4, Oct 20)
+- 3 controller types (custom, oracle, benchmark)
+- 4 threshold combinations (high/medium/low performance)
+- 2 image qualities (good, bad)
 
-### Performance Requirements
-```bash
-# High performance requirements
-python src/main_simulation.py --accuracy 0.95 --latency 5.0
-
-# Moderate requirements
-python src/main_simulation.py --accuracy 0.85 --latency 20.0
-```
+Results are saved in `results/` directory with format:
+`{date}_{controller}_{accuracy}_{latency}_{quality}.csv`
 
 ## Output
 
@@ -110,7 +116,9 @@ timestamp,battery_level,energy_cleanliness,model_selected,accuracy,latency,miss_
 ```
 
 ### Performance Summary
+
 The simulation outputs a comprehensive summary including:
+
 - Total inferences and miss rates
 - Energy consumption and clean energy percentage
 - Model usage distribution
@@ -161,6 +169,7 @@ src/
 ## Research & Evaluation
 
 This framework enables comprehensive evaluation of:
+
 - Controller effectiveness across seasonal variations
 - Trade-offs between accuracy, latency, and energy efficiency
 - Clean energy optimization strategies

@@ -2,6 +2,9 @@
 
 from abc import ABC, abstractmethod
 from typing import Dict, Any, Optional
+from datetime import datetime, timedelta
+from pulp import LpMaximize, LpProblem, LpVariable, lpSum, LpBinary, LpContinuous, value
+from loguru import logger
 
 
 class BaseController(ABC):
@@ -76,6 +79,188 @@ class OracleController(BaseController):
         self.clean_energy_bonus = config["oracle_controller"][
             "clean_energy_bonus_factor"
         ]
+        self.battery_config = config["battery"]
+        self.charging_rate = self.battery_config["charging_rate"]
+        self.max_capacity = self.battery_config["max_capacity"]
+
+        # Pre-computed decisions (will be set by initialize method)
+        self.decisions: Dict[datetime, Optional[str]] = {}
+        self.initialized = False
+
+    def initialize(
+        self,
+        start_date: datetime,
+        energy_data: Dict[datetime, float],
+        model_data: Dict[str, Dict[str, float]],
+        initial_battery: float,
+    ) -> None:
+        """Pre-compute all decisions using MILP optimization."""
+        logger.info("Initializing Oracle controller with MILP optimization...")
+
+        # Filter valid models that meet thresholds
+        valid_models = []
+        model_names = []
+        for model_name, data in model_data.items():
+            if (
+                data["accuracy"] >= self.accuracy_threshold
+                and data["latency_ms"] <= self.latency_threshold
+            ):
+                valid_models.append(model_name)
+                model_names.append(model_name)
+
+        if not valid_models:
+            logger.warning("No valid models meet thresholds for Oracle controller")
+            self.initialized = True
+            return
+
+        # Create time steps (5-minute intervals for 24 hours = 288 steps)
+        time_steps = []
+        current_time = start_date
+        end_time = start_date + timedelta(hours=self.horizon_hours)
+
+        while current_time < end_time:
+            time_steps.append(current_time)
+            current_time += timedelta(minutes=self.time_step_minutes)
+
+        num_steps = len(time_steps)
+
+        # Create MILP problem
+        prob = LpProblem("Oracle_Optimization", LpMaximize)
+
+        # Decision variables
+        # x[t][m] = 1 if model m is selected at time t, 0 otherwise
+        x = {}
+        for t in range(num_steps):
+            x[t] = {}
+            for m in model_names:
+                x[t][m] = LpVariable(f"model_{t}_{m}", cat=LpBinary)
+
+        # c[t] = 1 if charging at time t, 0 otherwise
+        c = [LpVariable(f"charge_{t}", cat=LpBinary) for t in range(num_steps)]
+
+        # b[t] = battery level at time t (continuous)
+        b = [
+            LpVariable(
+                f"battery_{t}", lowBound=0, upBound=self.max_capacity, cat=LpContinuous
+            )
+            for t in range(num_steps)
+        ]
+
+        # Objective: maximize total clean energy consumed
+        objective_terms = []
+        for t in range(num_steps):
+            time_key = time_steps[t]
+            energy_cleanliness = energy_data.get(time_key, 0.5)
+
+            for m in model_names:
+                energy_consumed = model_data[m]["energy_consumption"]
+                # Weight by clean energy percentage and bonus factor
+                objective_terms.append(
+                    x[t][m]
+                    * energy_consumed
+                    * energy_cleanliness
+                    * self.clean_energy_bonus
+                )
+
+        prob += lpSum(objective_terms)
+
+        # Constraints
+
+        # Initial battery level
+        prob += b[0] == initial_battery
+
+        # Battery balance constraints
+        for t in range(num_steps):
+            if t == 0:
+                prev_battery = initial_battery
+            else:
+                prev_battery = b[t - 1]
+
+            # Energy consumed from models
+            energy_consumed = lpSum(
+                [x[t][m] * model_data[m]["energy_consumption"] for m in model_names]
+            )
+
+            # Energy charged
+            time_seconds = self.time_step_minutes * 60
+            energy_charged = c[t] * self.charging_rate * time_seconds
+
+            # Battery level constraint
+            prob += b[t] == prev_battery - energy_consumed + energy_charged
+
+        # Only one model can be selected per timestep (or none if charging)
+        for t in range(num_steps):
+            prob += lpSum([x[t][m] for m in model_names]) + c[t] <= 1
+
+        # Battery cannot go below 0
+        for t in range(num_steps):
+            prob += b[t] >= 0
+
+        # Battery cannot exceed max capacity
+        for t in range(num_steps):
+            prob += b[t] <= self.max_capacity
+
+        # Solve the problem
+        try:
+            prob.solve()
+            logger.info(f"MILP optimization status: {prob.status}")
+
+            # Extract decisions
+            for t in range(num_steps):
+                time_key = time_steps[t]
+
+                # Check if charging
+                if value(c[t]) > 0.5:
+                    self.decisions[time_key] = None  # Charging
+                else:
+                    # Find which model was selected
+                    selected_model = None
+                    for m in model_names:
+                        if value(x[t][m]) > 0.5:
+                            selected_model = m
+                            break
+                    self.decisions[time_key] = selected_model
+
+            self.initialized = True
+            logger.info(
+                f"Oracle controller initialized with {len(self.decisions)} decisions"
+            )
+
+        except Exception as e:
+            logger.error(f"MILP optimization failed: {e}")
+            # Fallback: use greedy approach
+            for t in range(num_steps):
+                time_key = time_steps[t]
+                energy_cleanliness = energy_data.get(time_key, 0.5)
+                # Select most efficient model that meets thresholds
+                best_model = None
+                best_score = -float("inf")
+                for m in model_names:
+                    score = (
+                        energy_cleanliness
+                        * self.clean_energy_bonus
+                        / model_data[m]["energy_consumption"]
+                    )
+                    if score > best_score:
+                        best_score = score
+                        best_model = m
+                self.decisions[time_key] = best_model
+            self.initialized = True
+
+    def get_decision_for_time(self, timestamp: datetime) -> Optional[str]:
+        """Get pre-computed decision for a specific timestamp."""
+        if not self.initialized:
+            return None
+
+        # Round to nearest 5-minute interval
+        timestamp_rounded = timestamp.replace(second=0, microsecond=0)
+        minute_mod = timestamp_rounded.minute % self.time_step_minutes
+        if minute_mod >= self.time_step_minutes / 2:
+            timestamp_rounded += timedelta(minutes=self.time_step_minutes - minute_mod)
+        else:
+            timestamp_rounded -= timedelta(minutes=minute_mod)
+
+        return self.decisions.get(timestamp_rounded)
 
     def select_model(
         self,
@@ -83,23 +268,25 @@ class OracleController(BaseController):
         energy_cleanliness: float,
         model_data: Dict[str, Dict[str, float]],
     ) -> Optional[str]:
-        """Select model using MILP optimization (simplified version)."""
-        # For now, return the most efficient model that meets thresholds
-        # Full MILP implementation will be in simulation runner
-        valid_models = []
+        """Select model using pre-computed MILP decisions."""
+        # This method signature is kept for compatibility, but Oracle uses get_decision_for_time
+        # The runner will need to call get_decision_for_time instead
+        if not self.initialized:
+            # Fallback to greedy if not initialized
+            valid_models = []
+            for model_name, data in model_data.items():
+                if (
+                    data["accuracy"] >= self.accuracy_threshold
+                    and data["latency_ms"] <= self.latency_threshold
+                ):
+                    valid_models.append((model_name, data["energy_consumption"]))
 
-        for model_name, data in model_data.items():
-            if (
-                data["accuracy"] >= self.accuracy_threshold
-                and data["latency_ms"] <= self.latency_threshold
-            ):
-                valid_models.append((model_name, data["energy_consumption"]))
+            if not valid_models:
+                return None
+            return min(valid_models, key=lambda x: x[1])[0]
 
-        if not valid_models:
-            return None
-
-        # Select model with lowest energy consumption
-        return min(valid_models, key=lambda x: x[1])[0]
+        # Return None - runner should use get_decision_for_time instead
+        return None
 
 
 class BenchmarkController(BaseController):

@@ -7,19 +7,11 @@ name = "optimal-charge-security-camera"
 version = "0.0.1"
 requires-python = ">=3.12"
 dependencies = [
-  "numpy",
-  "pillow",
+  "pandas>=2.0.0",
   "loguru",
-  "torch==2.3.1",
-  "torchvision==0.18.1",
-  "opencv-python>=4.11.0.86",
-  "codecarbon>=3.0.7",
-  "ultralytics",
-  "pyyaml",
+  "pulp>=2.8.0",
 ]
 
-[project.scripts]
-ocs-run = "ocs_cam.main:main"
 
 [tool.setuptools]
 package-dir = {"" = "src"}

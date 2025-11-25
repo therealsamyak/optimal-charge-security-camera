@@ -1,11 +1,9 @@
 """
 Sensors package for battery and energy monitoring.
 
-This package provides interfaces for monitoring battery status and energy cleanliness.
-Colleague should implement the actual hardware integration in the respective modules.
+This package provides simulation sensors for battery and energy monitoring.
 """
 
-from .battery import BatterySensor
-from .energy import EnergySensor
+from .simulation_sensors import SimulationSensors
 
-__all__ = ["BatterySensor", "EnergySensor"]
+__all__ = ["SimulationSensors"]

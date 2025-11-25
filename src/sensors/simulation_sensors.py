@@ -44,12 +44,3 @@ class SimulationSensors:
     def update_energy_cleanliness(self, cleanliness: float) -> None:
         """Update current energy cleanliness percentage."""
         self.current_cleanliness = max(0.0, min(1.0, cleanliness))
-
-    def get_energy_cleanliness(self) -> float:
-        """Get current energy cleanliness percentage."""
-        return self.current_cleanliness
-
-    def reset(self) -> None:
-        """Reset sensors to initial state."""
-        self.current_capacity = self.battery_config["initial_capacity"]
-        self.current_cleanliness = 0.5
