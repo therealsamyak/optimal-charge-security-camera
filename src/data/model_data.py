@@ -13,7 +13,9 @@ class ModelDataLoader:
     """Loads and processes YOLO model performance data."""
 
     def __init__(
-        self, csv_path: str = "model-data.csv", config: Optional[Dict[str, Any]] = None
+        self,
+        csv_path: str = "datasets/model-data.csv",
+        config: Optional[Dict[str, Any]] = None,
     ):
         self.csv_path = csv_path
         self.config = config or {}

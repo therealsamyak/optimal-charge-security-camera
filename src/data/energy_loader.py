@@ -15,7 +15,7 @@ from src.utils.cache import (
 class EnergyLoader:
     """Loads and processes LDWP carbon intensity data."""
 
-    def __init__(self, csv_path: str = "US-CAL-LDWP_2024_5_minute.csv"):
+    def __init__(self, csv_path: str = "datasets/US-CAL-LDWP_2024_5_minute.csv"):
         self.csv_path = csv_path
         self.data = None
         self.load_data()

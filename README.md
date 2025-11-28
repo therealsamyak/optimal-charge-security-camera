@@ -176,3 +176,13 @@ This framework enables comprehensive evaluation of:
 - Battery management approaches
 
 The simulation supports rigorous comparative analysis between different control strategies under realistic conditions.
+
+## Citations
+
+Electricity Maps. "United States California LDWP 2024 5 minute Carbon Intensity Data". Electricity Maps, ver. July 2, 2025, https://www.electricitymaps.com.
+
+Electricity Maps. "United States Florida FPL 2024 5 minute Carbon Intensity Data". Electricity Maps, ver. July 2, 2025, https://www.electricitymaps.com.
+
+Electricity Maps. "United States Northwest PSEI 2024 5 minute Carbon Intensity Data". Electricity Maps, ver. July 2, 2025, https://www.electricitymaps.com.
+
+Electricity Maps. "United States New York NYIS 2024 5 minute Carbon Intensity Data". Electricity Maps, ver. July 2, 2025, https://www.electricitymaps.com.
