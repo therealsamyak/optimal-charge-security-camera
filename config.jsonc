@@ -2,7 +2,16 @@
   // User performance requirements
   "accuracy_threshold": 0.4,  // Unit: decimal (0.0-1.0). Accuracy is binary: 1.0 if model correctly detects 1 human, 0.0 otherwise. If accuracy > threshold = success, if accuracy < threshold = failure. Example: 0.4 means accuracy must be >= 0.4 to pass (1.0 passes, 0.0 fails)
   "latency_threshold_ms": 15.0,  // Unit: milliseconds. If latency > threshold = failure. Example: 15.0 means max 15ms latency per inference
-  
+
+  // Device power for physical energy calculation
+  // LEGACY: Use device.power_watts instead (see device section below)
+  "device_power_watts": 5.0,  // Average power draw of the device while running YOLO inference
+
+  // Device configuration (canonical source for device power)
+  "device": {
+    "power_watts": 5.0  // Average power draw of the device while running YOLO inference
+  },
+
   // Simulation parameters
   "simulation": {
     "date": "2024-01-05",  // Unit: YYYY-MM-DD string. Example: "2024-01-05" for winter simulation
@@ -12,21 +21,41 @@
   },
   
   // Battery simulation parameters
+  // CANONICAL: The battery section below is the primary source of truth for battery configuration.
+  // LEGACY: The keys below (initial_capacity, max_capacity, charging_rate, low_battery_threshold) are kept for backward compatibility but should be migrated to the new structure.
   "battery": {
-    "initial_capacity": 100.0,  // Unit: percentage (0-100). Example: 100.0 means full battery at start
-    "max_capacity": 100.0,     // Unit: percentage (0-100). Example: 100.0 means max battery is 100%
-    "charging_rate": 0.0035,     // Unit: % per second. Full charge in 8 hours (28,800 seconds)
-    "low_battery_threshold": 20.0  // Unit: percentage (0-100). Example: 20.0 means forced charging below 20%
+    // Physical capacity of the battery (canonical)
+    "capacity_wh": 4.0,
+    
+    // Initial charge expressed as percent (0-100) (canonical)
+    "initial_capacity_pct": 100.0,
+    
+    // Charging power in Watts. For a 4 Wh battery, 0.5 W gives roughly an 8 hour full charge (canonical)
+    "charging_rate_watts": 0.5,
+    
+    // Low battery threshold for behavior changes, in percent (0-100) (canonical)
+    "low_battery_threshold_pct": 20.0,
+    
+    // Optional: future room for modeling tapering. For now keep it equal to charging_rate_watts (canonical)
+    "low_battery_charging_rate_watts": 0.5,
+    
+    // LEGACY KEYS (kept for backward compatibility, will be deprecated):
+    "initial_capacity": 100.0,  // LEGACY: Use initial_capacity_pct instead. Unit: percentage (0-100)
+    "max_capacity": 100.0,      // LEGACY: Not used (max is always 100%). Unit: percentage (0-100)
+    "charging_rate": 0.0035,    // LEGACY: Use charging_rate_watts instead. Unit: % per second. Derived from charging_rate_watts / capacity_wh * 100 / 3600
+    "low_battery_threshold": 20.0  // LEGACY: Use low_battery_threshold_pct instead. Unit: percentage (0-100)
   },
   
-  // YOLO model energy consumption rates (% per inference)
+  // YOLO model energy consumption rates (% per inference).
+  // Leave empty for physics based values from latency and device power.
+  // You can override individual models here if needed.
   "model_energy_consumption": {
-    "YOLOv10-N": 0.004,   // Unit: % per inference. ~12 hours battery life
-    "YOLOv10-S": 0.007,   // Unit: % per inference. ~7 hours battery life  
-    "YOLOv10-M": 0.011,   // Unit: % per inference. ~4.5 hours battery life
-    "YOLOv10-B": 0.015,   // Unit: % per inference. ~3.2 hours battery life
-    "YOLOv10-L": 0.019,   // Unit: % per inference. ~2.5 hours battery life
-    "YOLOv10-X": 0.023    // Unit: % per inference. ~2 hours battery life
+    "YOLOv10-N": 0.0255,  // Percent of battery per inference, based on 1.01937 mWh with 4 Wh capacity
+    "YOLOv10-S": 0.0498,  // Percent of battery per inference, based on 1.993935 mWh with 4 Wh capacity
+    "YOLOv10-M": 0.0739,  // Percent of battery per inference, based on 2.95403 mWh with 4 Wh capacity
+    "YOLOv10-B": 0.0972,  // Percent of battery per inference, based on 3.888097 mWh with 4 Wh capacity
+    "YOLOv10-L": 0.1172,  // Percent of battery per inference, based on 4.686592 mWh with 4 Wh capacity
+    "YOLOv10-X": 0.1514   // Percent of battery per inference, based on 6.055225 mWh with 4 Wh capacity
   },
   
   // Custom controller weighting parameters (must sum to 1.0)

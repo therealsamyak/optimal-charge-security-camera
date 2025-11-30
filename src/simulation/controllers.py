@@ -13,6 +13,7 @@ from src.utils.cache import (
     load_oracle_cache,
     save_oracle_cache,
 )
+from src.sensors.model_inference import get_cached_latency
 
 
 class BaseController(ABC):
@@ -29,8 +30,16 @@ class BaseController(ABC):
         battery_level: float,
         energy_cleanliness: float,
         model_data: Dict[str, Dict[str, float]],
+        image_path: Optional[str] = None,
     ) -> Optional[str]:
-        """Select YOLO model based on current conditions."""
+        """Select YOLO model based on current conditions.
+        
+        Args:
+            battery_level: Current battery level as percentage (0-100)
+            energy_cleanliness: Current energy cleanliness (0-1)
+            model_data: Dictionary of model data
+            image_path: Optional path to image file for looking up cached actual latencies
+        """
         pass
 
 
@@ -55,15 +64,31 @@ class CustomController(BaseController):
         battery_level: float,
         energy_cleanliness: float,
         model_data: Dict[str, Dict[str, float]],
+        image_path: Optional[str] = None,
     ) -> Optional[str]:
-        """Select model using weighted scoring algorithm."""
+        """Select model using weighted scoring algorithm.
+        
+        Filters models by latency SLA before scoring, then scores using normalized features.
+        Uses actual measured latencies from inference cache when available, otherwise falls back
+        to metadata latencies from model_data.
+        
+        Args:
+            battery_level: Current battery level as percentage (0-100)
+            energy_cleanliness: Current energy cleanliness (0-1)
+            model_data: Dictionary of model data with metadata latencies
+            image_path: Optional path to image file for looking up cached actual latencies
+        """
         best_model = None
         best_score = -float("inf")
         valid_models = []
         rejected_models = []
 
+        # First pass: filter out models that violate latency SLA
+        # This is a hard constraint - models exceeding latency threshold are not considered
+        # Use actual measured latencies when available (from inference cache), otherwise use metadata
+        candidate_models = {}
         for model_name, data in model_data.items():
-            # Skip if model doesn't meet performance thresholds
+            # Skip if model doesn't meet accuracy threshold
             if data["accuracy"] < self.accuracy_threshold:
                 rejected_models.append(
                     (
@@ -72,22 +97,120 @@ class CustomController(BaseController):
                     )
                 )
                 continue
-            if data["latency_ms"] > self.latency_threshold:
+            
+            # Get latency for SLA check: prefer actual measured latency, fall back to metadata
+            metadata_latency_ms = data["latency_ms"]
+            actual_latency_ms = None
+            
+            if image_path:
+                actual_latency_ms = get_cached_latency(model_name, image_path)
+            
+            # Use actual latency if available, otherwise use metadata latency
+            # Note: metadata latency may be optimistic (e.g., TensorRT optimized),
+            # while actual latency reflects real runtime conditions
+            latency_for_sla = actual_latency_ms if actual_latency_ms is not None else metadata_latency_ms
+            latency_source = "measured" if actual_latency_ms is not None else "metadata"
+            
+            # Hard filter: models exceeding latency threshold are rejected
+            if latency_for_sla > self.latency_threshold:
+                logger.debug(
+                    f"CustomController: Filtered {model_name} by latency SLA: "
+                    f"{latency_for_sla:.2f}ms ({latency_source}) > {self.latency_threshold}ms"
+                )
                 rejected_models.append(
                     (
                         model_name,
-                        f"latency {data['latency_ms']:.2f}ms > {self.latency_threshold}ms",
+                        f"latency {latency_for_sla:.2f}ms ({latency_source}) > {self.latency_threshold}ms",
                     )
                 )
                 continue
 
+            # Model passes both thresholds
+            # Store the latency used for filtering (for scoring later)
+            candidate_data = data.copy()
+            candidate_data["latency_ms_for_sla"] = latency_for_sla
+            candidate_data["latency_source"] = latency_source
+            candidate_models[model_name] = candidate_data
             valid_models.append(model_name)
 
+        # If no models pass the latency filter, fall back to lowest latency model
+        if not candidate_models:
+            logger.warning(
+                f"CustomController: No models meet latency SLA ({self.latency_threshold}ms). "
+                f"Rejected {len(rejected_models)} models. Falling back to lowest latency model."
+            )
+            # Find the model with lowest latency that meets accuracy threshold
+            # Use actual latencies when available for fallback selection too
+            fallback_candidates = []
+            for name, data in model_data.items():
+                if data["accuracy"] >= self.accuracy_threshold:
+                    # Get actual latency if available, otherwise use metadata
+                    fallback_latency = data["latency_ms"]
+                    if image_path:
+                        actual = get_cached_latency(name, image_path)
+                        if actual is not None:
+                            fallback_latency = actual
+                    fallback_candidates.append((name, data, fallback_latency))
+            
+            if fallback_candidates:
+                fallback_model = min(fallback_candidates, key=lambda x: x[2])
+                logger.warning(
+                    f"CustomController: Using fallback {fallback_model[0]} "
+                    f"(latency: {fallback_model[2]:.2f}ms, "
+                    f"accuracy: {fallback_model[1]['accuracy']:.3f})"
+                )
+                return fallback_model[0]
+            else:
+                logger.warning(
+                    f"CustomController: No valid models found. "
+                    f"Rejected {len(rejected_models)} models."
+                )
+                return None
+        
+        # Log how many models passed the SLA filter
+        logger.debug(
+            f"CustomController: {len(candidate_models)} model(s) passed SLA filter "
+            f"(from {len(model_data)} total, {len(rejected_models)} rejected)"
+        )
+
+        # Second pass: score candidate models using normalized features
+        # Use the latency that was used for SLA filtering (actual if available, metadata otherwise)
+        # Find max latency among candidates for normalization
+        max_latency_ms = max(
+            data.get("latency_ms_for_sla", data["latency_ms"]) 
+            for data in candidate_models.values()
+        )
+        # Use a reasonable upper bound for latency normalization (300ms or max observed)
+        max_latency_for_norm = max(300.0, max_latency_ms)
+
+        for model_name, data in candidate_models.items():
+            # Normalize all features to [0, 1] range
+            
+            # Accuracy: already in [0, 1] range
+            accuracy_norm = data["accuracy"]
+            
+            # Latency: normalize to [0, 1] where lower is better
+            # Use the latency that passed SLA check (actual if available, metadata otherwise)
+            latency_for_scoring = data.get("latency_ms_for_sla", data["latency_ms"])
+            # Use inverse normalization: (max - current) / max, clamped to [0, 1]
+            latency_norm = max(0.0, min(1.0, (max_latency_for_norm - latency_for_scoring) / max_latency_for_norm))
+            
+            # Energy cleanliness: already in [0, 1] range
+            energy_norm = energy_cleanliness
+            
+            # Battery: normalize from [0, 100] to [0, 1]
+            # Option: higher score when battery is low (prioritize energy saving)
+            # This means we prefer smaller models when battery is low
+            battery_norm = max(0.0, min(1.0, 1.0 - (battery_level / 100.0)))
+            # Alternative (if you want higher score when battery is high):
+            # battery_norm = max(0.0, min(1.0, battery_level / 100.0))
+
             # Calculate weighted score
-            accuracy_score = data["accuracy"] * self.accuracy_weight
-            latency_score = (1.0 / data["latency_ms"]) * self.latency_weight
-            energy_score = energy_cleanliness * self.energy_weight
-            battery_score = battery_level * self.battery_weight
+            # All terms are now normalized to [0, 1], so scores are comparable
+            accuracy_score = accuracy_norm * self.accuracy_weight
+            latency_score = latency_norm * self.latency_weight
+            energy_score = energy_norm * self.energy_weight
+            battery_score = battery_norm * self.battery_weight
 
             total_score = accuracy_score + latency_score + energy_score + battery_score
 
@@ -95,7 +218,9 @@ class CustomController(BaseController):
                 f"CustomController scoring {model_name}: "
                 f"acc={accuracy_score:.4f}, lat={latency_score:.4f}, "
                 f"energy={energy_score:.4f}, bat={battery_score:.4f}, "
-                f"total={total_score:.4f}"
+                f"total={total_score:.4f} "
+                f"(norms: acc={accuracy_norm:.3f}, lat={latency_norm:.3f}, "
+                f"energy={energy_norm:.3f}, bat={battery_norm:.3f})"
             )
 
             if total_score > best_score:
@@ -109,9 +234,13 @@ class CustomController(BaseController):
                 f"Thresholds: accuracy>={self.accuracy_threshold}, latency<={self.latency_threshold}ms"
             )
         else:
+            selected_data = candidate_models[best_model]
+            latency_used = selected_data.get("latency_ms_for_sla", selected_data["latency_ms"])
+            latency_source = selected_data.get("latency_source", "metadata")
             logger.debug(
                 f"CustomController selected {best_model} with score {best_score:.4f} "
-                f"(from {len(valid_models)} valid models)"
+                f"(from {len(valid_models)} valid models, "
+                f"latency: {latency_used:.2f}ms {latency_source})"
             )
 
         return best_model
@@ -127,9 +256,31 @@ class OracleController(BaseController):
         self.clean_energy_bonus = config["oracle_controller"][
             "clean_energy_bonus_factor"
         ]
-        self.battery_config = config["battery"]
-        self.charging_rate = self.battery_config["charging_rate"]
-        self.max_capacity = self.battery_config["max_capacity"]
+        self.battery_config = config.get("battery", {})
+        
+        # Get battery capacity in Wh (canonical source: battery.capacity_wh)
+        # Default: 4.0 Wh (aligned with config.jsonc default)
+        capacity_wh = float(self.battery_config.get("capacity_wh", 4.0))
+        
+        # Get charging rate in Watts (canonical source: battery.charging_rate_watts)
+        # Default: 0.5 W (for 4 Wh battery, gives ~8 hour full charge)
+        charging_rate_watts = float(self.battery_config.get("charging_rate_watts", 0.5))
+        
+        # Derive charging_rate (percent per second) from physical charging power
+        # Formula: charging_rate (%/s) = (charging_rate_watts / capacity_wh) * 100 / 3600
+        # This converts Watts -> Wh/s -> %/s
+        if capacity_wh > 0:
+            charging_rate_pct_per_sec = (charging_rate_watts / capacity_wh) * 100.0 / 3600.0
+        else:
+            charging_rate_pct_per_sec = 0.0035  # Legacy default fallback
+        
+        # Fallback to legacy charging_rate if new config not available
+        legacy_charging_rate = self.battery_config.get("charging_rate")
+        if legacy_charging_rate is not None:
+            charging_rate_pct_per_sec = float(legacy_charging_rate)
+        
+        self.charging_rate = charging_rate_pct_per_sec
+        self.max_capacity = 100.0  # Always 100% (max is defined by capacity_wh)
 
         # Pre-computed decisions (will be set by initialize method)
         self.decisions: Dict[datetime, Optional[str]] = {}
@@ -424,10 +575,12 @@ class OracleController(BaseController):
         battery_level: float,
         energy_cleanliness: float,
         model_data: Dict[str, Dict[str, float]],
+        image_path: Optional[str] = None,
     ) -> Optional[str]:
         """Select model using pre-computed MILP decisions."""
         # This method signature is kept for compatibility, but Oracle uses get_decision_for_time
         # The runner will need to call get_decision_for_time instead
+        # image_path parameter is ignored for OracleController
         if not self.initialized:
             # Fallback to greedy if not initialized
             valid_models = []
@@ -463,8 +616,10 @@ class BenchmarkController(BaseController):
         battery_level: float,
         energy_cleanliness: float,
         model_data: Dict[str, Dict[str, float]],
+        image_path: Optional[str] = None,
     ) -> Optional[str]:
         """Always select largest model or charge if battery low."""
+        # image_path parameter is ignored for BenchmarkController
         if battery_level < self.charge_threshold:
             logger.debug(
                 f"BenchmarkController: Battery {battery_level:.2f}% < threshold {self.charge_threshold}%, "

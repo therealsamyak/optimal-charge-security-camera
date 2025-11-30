@@ -1,7 +1,7 @@
 """YOLO model inference for actual image processing."""
 
 from pathlib import Path
-from typing import Dict, Tuple
+from typing import Dict, Tuple, Optional
 from loguru import logger
 import time
 
@@ -131,6 +131,24 @@ def run_yolo_inference(
         logger.error(f"YOLO inference failed for {model_name} on {image_path}: {e}")
         logger.warning(f"Falling back to static accuracy for {model_name}")
         return 0.5, 10.0  # Default fallback
+
+
+def get_cached_latency(model_name: str, image_path: str) -> Optional[float]:
+    """Get cached latency for a model and image if available.
+    
+    Args:
+        model_name: YOLO model name (e.g., "YOLOv10-N", "YOLOv10-S")
+        image_path: Path to image file
+        
+    Returns:
+        Cached latency in milliseconds, or None if not cached
+    """
+    global _inference_cache
+    cache_key = (model_name, image_path)
+    if cache_key in _inference_cache:
+        _, latency_ms = _inference_cache[cache_key]
+        return latency_ms
+    return None
 
 
 def clear_inference_cache() -> None:

@@ -35,8 +35,13 @@ class SimulationRunner:
         logger.info(f"  Output Interval: {self.sim_config['output_interval_seconds']}s")
         logger.info(f"  Accuracy Threshold: {config['accuracy_threshold']}")
         logger.info(f"  Latency Threshold: {config['latency_threshold_ms']}ms")
-        logger.info(f"  Initial Battery: {config['battery']['initial_capacity']}%")
-        logger.info(f"  Max Battery: {config['battery']['max_capacity']}%")
+        battery_cfg = config.get("battery", {})
+        initial_battery_pct = battery_cfg.get(
+            "initial_capacity_pct", 
+            battery_cfg.get("initial_capacity", 100.0)
+        )
+        logger.info(f"  Initial Battery: {initial_battery_pct}%")
+        logger.info(f"  Max Battery: 100.0%")
 
         # Initialize components
         logger.info("Loading energy data...")
@@ -87,7 +92,11 @@ class SimulationRunner:
             energy_data = self.energy_loader.get_seasonal_day_data(
                 self.sim_config["date"]
             )
-            initial_battery = config["battery"]["initial_capacity"]
+            battery_cfg = config.get("battery", {})
+            initial_battery = battery_cfg.get(
+                "initial_capacity_pct",
+                battery_cfg.get("initial_capacity", 100.0)
+            )
             self.controller.initialize(
                 self.sim_date, energy_data, self.model_data, initial_battery
             )
@@ -182,7 +191,7 @@ class SimulationRunner:
                     model_selected = self.controller.get_decision_for_time(current_time)
                 else:
                     model_selected = self.controller.select_model(
-                        battery_level, energy_cleanliness, self.model_data
+                        battery_level, energy_cleanliness, self.model_data, self.image_path
                     )
 
                 if model_selected is None:
