@@ -1,27 +1,30 @@
-[build-system]
-requires = ["setuptools>=68", "wheel"]
-build-backend = "setuptools.build_meta"
-
 [project]
-name = "optimal-charge-security-camera"
-version = "0.0.1"
-requires-python = ">=3.12"
+name = "oc-security-camera-new"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.13"
 dependencies = [
-    "pandas>=2.0.0",
-    "loguru",
-    "pulp>=2.8.0",
-    "ultralytics>=8.0.0",
+    "lefthook>=2.0.4",
+    "numpy>=2.3.5",
+    "pandas>=2.3.3",
+    "pulp>=3.3.0",
+    "pytest>=9.0.1",
+    "ultralytics>=8.3.233",
+    "python-dotenv>=1.0.0",
 ]
 
 
-[tool.setuptools]
-package-dir = {"" = "src"}
 
-[tool.setuptools.packages.find]
-where = ["src"]
-
-[dependency-groups]
-dev = [
-    "lefthook>=2.0.2",
-    "pytest>=8.4.2",
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["*.test.py", "test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+addopts = [
+    "--tb=long",
+    "-W error",
+    "--strict-markers",
+    "--strict-config"
 ]
+pythonpath = ["."]

@@ -1,81 +1,47 @@
 {
-  // User performance requirements
-  "accuracy_threshold": 0.4,  // Unit: decimal (0.0-1.0). Accuracy is binary: 1.0 if model correctly detects 1 human, 0.0 otherwise. If accuracy > threshold = success, if accuracy < threshold = failure. Example: 0.4 means accuracy must be >= 0.4 to pass (1.0 passes, 0.0 fails)
-  "latency_threshold_ms": 15.0,  // Unit: milliseconds. If latency > threshold = failure. Example: 15.0 means max 15ms latency per inference
-
-  // Device power for physical energy calculation
-  // LEGACY: Use device.power_watts instead (see device section below)
-  "device_power_watts": 5.0,  // Average power draw of the device while running YOLO inference
-
-  // Device configuration (canonical source for device power)
-  "device": {
-    "power_watts": 5.0  // Average power draw of the device while running YOLO inference
-  },
-
   // Simulation parameters
   "simulation": {
-    "date": "2024-01-05",  // Unit: YYYY-MM-DD string. Example: "2024-01-05" for winter simulation
-    "image_quality": "good",  // Unit: string. Options: "good" (image1.png) or "bad" (image2.jpeg)
-    "output_interval_seconds": 10,  // Unit: seconds. Example: 10 means output CSV every 10 seconds
-    "controller_type": "custom"  // Unit: string. Options: "custom", "oracle", "benchmark"
+    // Total simulation duration in days
+    "duration_days": 1,
+    // Time between simulation tasks in seconds
+    "task_interval_seconds": 5,
+    // Time acceleration factor (1 = real-time)
+    // Time acceleration factor: 1 = real-time, 2 = 2x faster, 10 = 10x faster
+    // Controls how fast simulated time passes compared to real time
+    // Higher values make simulations run faster but may affect timing accuracy
+    "time_acceleration": 1,
+    // Minimum accuracy requirement percentage for user tasks
+    "user_accuracy_requirement": 45.0,
+    // Maximum latency requirement in seconds for user tasks
+    "user_latency_requirement": 8.0
   },
-  
-  // Battery simulation parameters
-  // CANONICAL: The battery section below is the primary source of truth for battery configuration.
-  // LEGACY: The keys below (initial_capacity, max_capacity, charging_rate, low_battery_threshold) are kept for backward compatibility but should be migrated to the new structure.
+  // Battery configuration
   "battery": {
-    // Physical capacity of the battery (canonical)
-    "capacity_wh": 4.0,
-    
-    // Initial charge expressed as percent (0-100) (canonical)
-    "initial_capacity_pct": 100.0,
-    
-    // Charging power in Watts. For a 4 Wh battery, 0.5 W gives roughly an 8 hour full charge (canonical)
-    "charging_rate_watts": 0.5,
-    
-    // Low battery threshold for behavior changes, in percent (0-100) (canonical)
-    "low_battery_threshold_pct": 20.0,
-    
-    // Optional: future room for modeling tapering. For now keep it equal to charging_rate_watts (canonical)
-    "low_battery_charging_rate_watts": 0.5,
-    
-    // LEGACY KEYS (kept for backward compatibility, will be deprecated):
-    "initial_capacity": 100.0,  // LEGACY: Use initial_capacity_pct instead. Unit: percentage (0-100)
-    "max_capacity": 100.0,      // LEGACY: Not used (max is always 100%). Unit: percentage (0-100)
-    "charging_rate": 0.0035,    // LEGACY: Use charging_rate_watts instead. Unit: % per second. Derived from charging_rate_watts / capacity_wh * 100 / 3600
-    "low_battery_threshold": 20.0  // LEGACY: Use low_battery_threshold_pct instead. Unit: percentage (0-100)
+    // Total battery capacity in watt-hours
+    "capacity_wh": 5.0,
+    // Maximum charging rate in watts
+    "charge_rate_watts": 100
   },
-  
-  // YOLO model energy consumption rates (% per inference).
-  // Leave empty for physics based values from latency and device power.
-  // You can override individual models here if needed.
-  "model_energy_consumption": {
-    "YOLOv10-N": 0.0255,  // Percent of battery per inference, based on 1.01937 mWh with 4 Wh capacity
-    "YOLOv10-S": 0.0498,  // Percent of battery per inference, based on 1.993935 mWh with 4 Wh capacity
-    "YOLOv10-M": 0.0739,  // Percent of battery per inference, based on 2.95403 mWh with 4 Wh capacity
-    "YOLOv10-B": 0.0972,  // Percent of battery per inference, based on 3.888097 mWh with 4 Wh capacity
-    "YOLOv10-L": 0.1172,  // Percent of battery per inference, based on 4.686592 mWh with 4 Wh capacity
-    "YOLOv10-X": 0.1514   // Percent of battery per inference, based on 6.055225 mWh with 4 Wh capacity
-  },
-  
-  // Custom controller weighting parameters (must sum to 1.0)
-  "custom_controller_weights": {
-    "accuracy_weight": 0.4,      // Unit: decimal (0.0-1.0). Example: 0.4 means 40% importance for accuracy
-    "latency_weight": 0.3,       // Unit: decimal (0.0-1.0). Example: 0.3 means 30% importance for latency
-    "energy_cleanliness_weight": 0.2,  // Unit: decimal (0.0-1.0). Example: 0.2 means 20% importance for clean energy
-    "battery_conservation_weight": 0.1   // Unit: decimal (0.0-1.0). Example: 0.1 means 10% importance for battery
-  },
-  
-  // Oracle controller (MILP) parameters
-  "oracle_controller": {
-    "optimization_horizon_hours": 24,  // Unit: hours. Example: 24 means optimize for full 24-hour day
-    "time_step_minutes": 5,            // Unit: minutes. Example: 5 means 5-minute timesteps (matches LDWP data)
-    "clean_energy_bonus_factor": 1.5   // Unit: multiplier. Example: 1.5 means clean energy gets 50% bonus in optimization
-  },
-  
-  // Benchmark controller parameters
-  "benchmark_controller": {
-    "prefer_largest_model": true,       // Unit: boolean. Example: true means always use YOLOv10-X model
-    "charge_when_below": 30.0           // Unit: percentage (0-100). Example: 30.0 means charge only when battery below 30%
+  // Geographic locations for energy data
+  "locations": ["CA", "FL", "NW", "NY"],
+  // Seasons to simulate
+  "seasons": ["winter", "spring", "summer", "fall"],
+  // Controller types to test
+  "controllers": ["naive_weak", "naive_strong", "oracle", "custom"],
+  // Directory for simulation results
+  "output_dir": "results/",
+  // Batch simulation configuration
+  "batch_run": {
+    // Number of parameter variations to generate
+    "num_variations": 4,
+    // Random seed for reproducibility (null for random)
+    "random_seed": null,
+    // Output detailed CSV with all variations
+    "output_detailed_csv": true,
+    // Parameter ranges for batch simulation
+    "accuracy_range": {"min": 30, "max": 80},
+    "latency_range": {"min": 2, "max": 15},
+    "battery_capacity_range": {"min": 2, "max": 15},
+    "charge_rate_range": {"min": 50, "max": 200}
   }
 }
