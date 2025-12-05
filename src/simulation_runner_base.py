@@ -154,6 +154,7 @@ class SimulationRunnerBase:
             self.logger.info(
                 f"[{simulation_id}] Simulation completed in {execution_time:.2f} seconds"
             )
+            print(f"✓ [{simulation_id}] Completed in {execution_time:.2f}s")
             self.logger.debug(
                 f"[{simulation_id}] Metrics: {metrics.get('total_tasks', 0)} tasks, "
                 f"{metrics.get('completed_tasks', 0)} completed, "
@@ -245,6 +246,7 @@ class SimulationRunnerBase:
                         simulations.append(sim_params)
 
         self.logger.info(f"Generated {len(simulations)} simulations to run")
+        print(f"📋 Generated {len(simulations)} simulations to run")
         return simulations
 
     def generate_parameter_variations(

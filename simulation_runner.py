@@ -162,6 +162,7 @@ def main():
         print("✓ Configuration loaded successfully")
 
         print("🔄 Running simulations sequentially...")
+        print(f"Total simulations to run: {len(runner.simulation_configs)}")
         # Run simulations sequentially
         success = runner.run_basic_simulations(parallel=False)
 

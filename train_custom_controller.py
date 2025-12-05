@@ -241,7 +241,9 @@ class CustomController:
         print(f"Training CustomController for {epochs} epochs...")
 
         # Split data
+        print("Splitting data into train/validation/test sets...")
         train_data, val_data, test_data = self.split_data(training_data)
+        print(f"Data split: Train={len(train_data)}, Val={len(val_data)}, Test={len(test_data)}")
 
         best_val_loss = float("inf")
         patience = 50
@@ -249,8 +251,13 @@ class CustomController:
         best_weights = None
         final_epoch = 0
 
+        print("Starting epoch training loop...")
         for epoch in range(epochs):
             final_epoch = epoch
+            
+            # Progress logging every 100 epochs
+            if (epoch + 1) % 100 == 0 or epoch == 0:
+                print(f"Epoch {epoch + 1}/{epochs} - Training...")
             # Training phase
             total_loss = 0.0
             # Shuffle training data using indices
@@ -292,6 +299,7 @@ class CustomController:
                 print(
                     f"  Val Acc: Model={val_metrics['model_accuracy']:.3f}, Charge={val_metrics['charge_accuracy']:.3f}"
                 )
+                print(f"  Patience counter: {patience_counter}/50")
 
             # Early stopping
             if patience_counter >= patience:
@@ -402,6 +410,11 @@ def main():
 
     print("Starting training...")
     try:
+        print(f"Training parameters: epochs=10000, learning_rate=0.01")
+        print(f"Training data size: {len(training_data)} samples")
+        print(f"Available models: {list(available_models.keys())}")
+        print("Beginning training epochs...")
+        
         evaluation_stats = controller.train(
             training_data, available_models, epochs=10000, learning_rate=0.01
         )

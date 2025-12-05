@@ -175,6 +175,8 @@ class BatchSimulationRunner(SimulationRunnerBase):
                 }
 
                 completed_count = 0
+                error_count = 0
+                print(f"[Variation {variation['variation_id']}] Processing {len(base_simulations)} simulations...")
                 # Collect results as they complete
                 for future in concurrent.futures.as_completed(future_to_sim):
                     sim = future_to_sim[future]
@@ -185,9 +187,12 @@ class BatchSimulationRunner(SimulationRunnerBase):
                             # Add variation metadata
                             result["variation_id"] = variation["variation_id"]
                             successful_results.append(result)
+                        else:
+                            error_count += 1
 
                         if completed_count % 10 == 0:  # Log every 10 completions
                             progress = (completed_count / len(base_simulations)) * 100
+                            print(f"[Variation {variation['variation_id']}] Progress: {completed_count}/{len(base_simulations)} ({progress:.1f}%) - Errors: {error_count}")
                             self.logger.info(
                                 f"[Variation {variation['variation_id']}] Progress: {progress:.1f}% ({completed_count}/{len(base_simulations)})"
                             )

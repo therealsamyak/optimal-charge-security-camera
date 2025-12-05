@@ -90,7 +90,19 @@ def load_power_profiles() -> Dict[str, Dict[str, float]]:
     from src.power_profiler import PowerProfiler
     profiler = PowerProfiler()
     profiler.load_profiles()  # Load profiles from file
-    return profiler.get_all_models_data()
+    
+    # Transform profiles to match expected field names
+    raw_profiles = profiler.get_all_models_data()
+    transformed_profiles = {}
+    
+    for name, profile in raw_profiles.items():
+        transformed_profiles[name] = {
+            "accuracy": profile["accuracy"],
+            "latency": profile["avg_inference_time_seconds"] * 1000,  # Convert to ms
+            "power_cost": profile["model_power_mw"],  # Power in mW
+        }
+    
+    return transformed_profiles
 
 
 def solve_mips_scenario(
@@ -182,7 +194,10 @@ def generate_training_scenarios(
     scenarios = []
     
     # Generate 100,000 scenarios with real energy data
-    for _ in range(100000):
+    print("Generating 100,000 training scenarios...")
+    for i in range(100000):
+        if i % 20000 == 0:
+            print(f"Scenario generation progress: {i}/100000 ({i/1000:.0f}%)")
         # Random location for maximal coverage
         location = random.choice(locations)
         
@@ -195,6 +210,10 @@ def generate_training_scenarios(
         
         # Get real clean energy percentage
         clean_energy = get_clean_energy_percentage(energy_data, location, random_timestamp)
+        
+        # Debug progress every 1000 scenarios
+        if i % 1000 == 0 and i > 0:
+            print(f"Scenario generation progress: {i}/100000 ({i/1000:.0f}%)")
         
         # Random other parameters
         battery = np.random.uniform(1, 100)
@@ -233,6 +252,55 @@ def main():
         print(f"✓ Generated {len(scenarios)} training scenarios")
     except Exception as e:
         print(f"✗ Error generating scenarios: {e}")
+        return
+
+    print(f"Solving MIPS for {len(scenarios)} scenarios in parallel...")
+    training_data = []
+    # Use ProcessPoolExecutor for parallel execution
+    max_workers = 20
+    print(f"Starting parallel processing with {max_workers} workers...")
+    print(f"Submitting {len(scenarios)} scenarios to worker pool...")
+    
+    try:
+        with concurrent.futures.ProcessPoolExecutor(max_workers=max_workers) as executor:
+            # Submit all scenarios for processing
+            future_to_scenario = {
+                executor.submit(solve_scenario_wrapper, scenario): i
+                for i, scenario in enumerate(scenarios)
+            }
+            print(f"✓ All {len(scenarios)} scenarios submitted to workers")
+
+            completed_count = 0
+            error_count = 0
+            # Collect results as they complete
+            print("Waiting for scenarios to complete...")
+            for future in concurrent.futures.as_completed(future_to_scenario):
+                scenario_index = future_to_scenario[future]
+                completed_count += 1
+                
+                # Progress updates more frequently for better visibility
+                if completed_count % 100 == 0:
+                    progress_pct = (completed_count / len(scenarios)) * 100
+                    print(f"Progress: {completed_count}/{len(scenarios)} ({progress_pct:.1f}%) - Errors: {error_count}")
+                elif completed_count % 25 == 0:
+                    progress_pct = (completed_count / len(scenarios)) * 100
+                    print(f"Progress: {completed_count}/{len(scenarios)} ({progress_pct:.1f}%)")
+                
+                try:
+                    result = future.result()
+                    if result:
+                        training_data.append(result)
+                    else:
+                        error_count += 1
+                except Exception as e:
+                    error_count += 1
+                    if error_count <= 5:  # Show first 5 errors to avoid spam
+                        print(f"Error processing scenario {scenario_index}: {e}")
+                    continue
+                    
+        print(f"✓ Parallel processing completed - {len(training_data)} successful, {error_count} failed")
+    except Exception as e:
+        print(f"✗ Error in parallel processing: {e}")
         return
 
     print(f"Solving MIPS for {len(scenarios)} scenarios in parallel...")
