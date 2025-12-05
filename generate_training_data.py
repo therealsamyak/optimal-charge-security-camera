@@ -1,52 +1,95 @@
 #!/usr/bin/env python3
 """
 MIPS solver to generate training data for CustomController.
-Generates optimal decisions for diverse scenarios and caches to JSON.
+Generates optimal decisions using real energy data from all 4 locations.
 """
 
 import json
+import random
+from datetime import datetime, timedelta
+from pathlib import Path
 from typing import Dict, List, Optional, Tuple
 
 import numpy as np
+import pandas as pd
 import pulp
 import concurrent.futures
 
+# Add src directory to path
+import sys
+sys.path.insert(0, str(Path(__file__).parent / "src"))
+
+from src.power_profiler import PowerProfiler
+
+
+def load_energy_data() -> Dict[str, pd.DataFrame]:
+    """Load energy data from all 4 locations."""
+    energy_dir = Path("energy-data")
+    energy_data = {}
+    
+    # Find all CSV files in energy-data directory
+    csv_files = list(energy_dir.glob("*.csv"))
+    
+    for csv_file in csv_files:
+        try:
+            df = pd.read_csv(csv_file, dtype=str, low_memory=False)
+            df["Datetime (UTC)"] = pd.to_datetime(df["Datetime (UTC)"])
+            # Use filename without extension as location key
+            location = csv_file.stem
+            energy_data[location] = df
+            print(f"Loaded {len(df)} records for {location}")
+        except Exception as e:
+            print(f"Failed to load {csv_file}: {e}")
+            
+    return energy_data
+
+
+def get_clean_energy_percentage(energy_data: Dict[str, pd.DataFrame], 
+                              location: str, timestamp: datetime) -> float:
+    """Get clean energy percentage for specific location and timestamp."""
+    if location not in energy_data:
+        return 50.0  # Default fallback
+    
+    df = energy_data[location]
+    
+    # Find closest data point
+    past_data = df[df["Datetime (UTC)"] <= timestamp]
+    if past_data.empty:
+        return 50.0
+    
+    latest_row = past_data.iloc[-1]
+    cfe_col = "Carbon-free energy percentage (CFE%)"
+    
+    if cfe_col in latest_row:
+        try:
+            return float(latest_row[cfe_col])
+        except (ValueError, TypeError):
+            pass
+    
+    # Handle missing data by averaging between before/after
+    future_data = df[df["Datetime (UTC)"] > timestamp]
+    if not future_data.empty:
+        next_row = future_data.iloc[0]
+        if cfe_col in next_row:
+            try:
+                before_val = float(latest_row.get(cfe_col, 50))
+                after_val = float(next_row[cfe_col])
+                return (before_val + after_val) / 2.0
+            except (ValueError, TypeError):
+                pass
+    
+    return 50.0  # Default fallback
+
 
 def load_power_profiles() -> Dict[str, Dict[str, float]]:
-    """Load power profiles from results and model data from CSV."""
-    with open("results/power_profiles.json", "r") as f:
-        profiles = json.load(f)
-
-    # Load real model data
-    model_data = {}
-    with open("model-data/model-data.csv", "r") as f:
-        lines = f.readlines()
-        for line in lines[1:]:  # Skip header
-            parts = line.strip().split(",")
-            model = parts[0].strip('"')
-            version = parts[1].strip('"')
-            latency = float(parts[2].strip('"'))
-            accuracy = float(parts[3].strip('"'))
-            model_data[f"{model}_{version}"] = {
-                "accuracy": accuracy,
-                "latency": latency,
-            }
-
-    models = {}
-    for model_name, data in profiles.items():
-        # Use real accuracy and latency from model-data.csv
-        real_data = model_data.get(model_name, {})
-        models[model_name] = {
-            "accuracy": real_data.get("accuracy", 85.0),  # Fallback to 85% if not found
-            "latency": real_data.get(
-                "latency", data["avg_inference_time_seconds"] * 1000
-            ),  # Use real latency, fallback to power profile
-            "power_cost": data[
-                "model_power_mw"
-            ],  # Keep power data from power profiling
-        }
-
-    return models
+    """Load power profiles using PowerProfiler."""
+    from pathlib import Path
+    import sys
+    sys.path.insert(0, str(Path(__file__).parent / "src"))
+    
+    from src.power_profiler import PowerProfiler
+    profiler = PowerProfiler()
+    return profiler.get_all_models_data()
 
 
 def solve_mips_scenario(
@@ -58,6 +101,7 @@ def solve_mips_scenario(
 ) -> Tuple[str, bool]:
     """
     Solve MIPS for a single scenario to get optimal model and charging decision.
+    Objective: Maximize clean energy usage.
     """
     prob = pulp.LpProblem("Training_Scenario", pulp.LpMaximize)
 
@@ -67,80 +111,22 @@ def solve_mips_scenario(
     }
     charge_var = pulp.LpVariable("charge", cat="Binary")
 
-    # Normalize all objectives to 0-1 range for equal weighting
-    max_accuracy = max(specs["accuracy"] for specs in available_models.values())
-    min_accuracy = min(specs["accuracy"] for specs in available_models.values())
-    max_latency = max(specs["latency"] for specs in available_models.values())
-    min_latency = min(specs["latency"] for specs in available_models.values())
-    
-    # Smart charging logic in objective function
-    # Add bonus for charging when battery is low
-    battery_urgency_bonus = max(0, (50 - battery_level) / 50.0)  # 0-1 range
-    
-    # Add bonus for charging during high clean energy
-    clean_energy_bonus = clean_energy_percentage / 100.0  # 0-1 range
-    
-    # Penalty for charging when battery is already high
-    battery_waste_penalty = max(0, (battery_level - 80) / 20.0) if battery_level > 80 else 0  # 0-1 range
-    
-    prob += (
-        # Normalized accuracy (0-1 range, higher is better)
-        pulp.lpSum(
-            [
-                ((available_models[name]["accuracy"] - min_accuracy) / (max_accuracy - min_accuracy)) * model_vars[name]
-                for name in available_models.keys()
-            ]
-        )
-        # Normalized latency (0-1 range, lower is better, so subtract)
-        - pulp.lpSum(
-            [
-                ((available_models[name]["latency"] - min_latency) / (max_latency - min_latency)) * model_vars[name]
-                for name in available_models.keys()
-            ]
-        )
-        # Smart charging decision (combines urgency, opportunity, and waste avoidance)
-        + (battery_urgency_bonus * 0.4 + clean_energy_bonus * 0.4 - battery_waste_penalty * 0.2) * charge_var
-    )
+    # Objective: Maximize clean energy usage
+    # Focus on charging when clean energy is high
+    prob += clean_energy_percentage * charge_var
 
+    # Constraint: Select exactly one model
     prob += pulp.lpSum(model_vars.values()) == 1
 
-    # Filter models based on requirements with edge cases
-    min_accuracy_model = min(available_models.keys(), key=lambda x: available_models[x]["accuracy"])
-    max_accuracy_model = max(available_models.keys(), key=lambda x: available_models[x]["accuracy"])
-    min_accuracy = available_models[min_accuracy_model]["accuracy"]
-    max_accuracy = available_models[max_accuracy_model]["accuracy"]
-    
-    # If requirement is higher than highest model, force use of highest model
-    if accuracy_requirement > max_accuracy:
-        for name in available_models.keys():
-            if name != max_accuracy_model:
-                prob += model_vars[name] == 0
-    # If requirement is lower than lowest model, allow any model (no filtering)
-    elif accuracy_requirement < min_accuracy:
-        pass  # No accuracy filtering, all models eligible
-    else:
-        # Normal filtering based on accuracy requirement
-        for name, specs in available_models.items():
-            if specs["accuracy"] < accuracy_requirement:
-                prob += model_vars[name] == 0
-    
-    # Apply latency filtering to all cases
+    # Filter models based on requirements
     for name, specs in available_models.items():
+        if specs["accuracy"] < accuracy_requirement:
+            prob += model_vars[name] == 0
         if specs["latency"] > latency_requirement:
             prob += model_vars[name] == 0
 
     # Battery capacity constraint
     prob += battery_level + charge_var * 15 <= 100
-    
-    # Smart charging logic in objective function
-    # Add bonus for charging when battery is low
-    battery_urgency_bonus = max(0, (50 - battery_level) / 50.0)  # 0-1 range
-    
-    # Add bonus for charging during high clean energy
-    clean_energy_bonus = clean_energy_percentage / 100.0  # 0-1 range
-    
-    # Penalty for charging when battery is already high
-    battery_waste_penalty = max(0, (battery_level - 80) / 20.0) if battery_level > 80 else 0  # 0-1 range
 
     prob.solve(pulp.PULP_CBC_CMD(msg=False))
 
@@ -155,11 +141,11 @@ def solve_mips_scenario(
     return selected_model, should_charge
 
 
-def solve_scenario_wrapper(scenario_data: Tuple[int, int, float, int]) -> Optional[Dict]:
+def solve_scenario_wrapper(scenario_data: Tuple[int, int, float, int, str, datetime]) -> Optional[Dict]:
     """Wrapper function for parallel execution of scenario solving."""
-    battery, clean_energy, acc_req, lat_req = scenario_data
+    battery, clean_energy, acc_req, lat_req, location, timestamp = scenario_data
     
-    # Load models inside the worker process to avoid serialization issues
+    # Load data inside worker process
     models = load_power_profiles()
     
     try:
@@ -172,6 +158,8 @@ def solve_scenario_wrapper(scenario_data: Tuple[int, int, float, int]) -> Option
             "clean_energy_percentage": int(clean_energy),
             "accuracy_requirement": float(acc_req),
             "latency_requirement": int(lat_req),
+            "location": location,
+            "timestamp": timestamp.isoformat(),
             "optimal_model": selected_model,
             "should_charge": bool(should_charge),
         }
@@ -181,37 +169,58 @@ def solve_scenario_wrapper(scenario_data: Tuple[int, int, float, int]) -> Option
 
 
 def generate_training_scenarios(
+    energy_data: Dict[str, pd.DataFrame],
     seed: Optional[int] = None,
-) -> List[Tuple[int, int, float, int]]:
-    """Generate purely random training scenarios with optional seed."""
+) -> List[Tuple[int, int, float, int, str, datetime]]:
+    """Generate realistic training scenarios using real energy data."""
     if seed is not None:
+        random.seed(seed)
         np.random.seed(seed)
 
-    # Generate 100,000 purely random scenarios
+    locations = list(energy_data.keys())
     scenarios = []
+    
+    # Generate 100,000 scenarios with real energy data
     for _ in range(100000):
+        # Random location for maximal coverage
+        location = random.choice(locations)
+        
+        # Random timestamp throughout the year
+        start_date = datetime(2024, 1, 1)
+        end_date = datetime(2024, 12, 31)
+        random_timestamp = start_date + timedelta(
+            seconds=random.randint(0, int((end_date - start_date).total_seconds()))
+        )
+        
+        # Get real clean energy percentage
+        clean_energy = get_clean_energy_percentage(energy_data, location, random_timestamp)
+        
+        # Random other parameters
         battery = np.random.uniform(1, 100)
-        clean_energy = np.random.uniform(0, 100)
         acc_req = np.random.uniform(0.3, 1.0)
         lat_req = np.random.choice([1, 2, 3, 5, 8, 10, 15, 20, 25, 30])
-        scenarios.append((battery, clean_energy, acc_req, lat_req))
+        
+        scenarios.append((battery, clean_energy, acc_req, lat_req, location, random_timestamp))
 
     return scenarios
 
 
 def main():
     """Generate training data and save to JSON."""
+    print("Loading energy data...")
+    energy_data = load_energy_data()
+    
     print("Loading power profiles...")
     models = load_power_profiles()
 
-    print("Generating training scenarios...")
-    scenarios = generate_training_scenarios()
+    print("Generating training scenarios with real energy data...")
+    scenarios = generate_training_scenarios(energy_data)
 
     print(f"Solving MIPS for {len(scenarios)} scenarios in parallel...")
     training_data = []
 
     # Use ProcessPoolExecutor for parallel execution
-    max_workers = 20  # Adjust based on your CPU cores
+    max_workers = 20
     with concurrent.futures.ProcessPoolExecutor(max_workers=max_workers) as executor:
         # Submit all scenarios for processing
         future_to_scenario = {

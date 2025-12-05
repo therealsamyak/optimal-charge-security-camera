@@ -355,40 +355,14 @@ class CustomController:
 
 
 def load_power_profiles() -> Dict[str, Dict[str, float]]:
-    """Load power profiles from results and real model data."""
-    with open("results/power_profiles.json", "r") as f:
-        profiles = json.load(f)
-
-    # Load real model data
-    model_data = {}
-    with open("model-data/model-data.csv", "r") as f:
-        lines = f.readlines()
-        for line in lines[1:]:  # Skip header
-            parts = line.strip().split(",")
-            model = parts[0].strip('"')
-            version = parts[1].strip('"')
-            latency = float(parts[2].strip('"'))
-            accuracy = float(parts[3].strip('"'))
-            model_data[f"{model}_{version}"] = {
-                "accuracy": accuracy,
-                "latency": latency,
-            }
-
-    models = {}
-    for model_name, data in profiles.items():
-        # Use real accuracy and latency from model-data.csv
-        real_data = model_data.get(model_name, {})
-        models[model_name] = {
-            "accuracy": real_data.get("accuracy", 85.0),  # Fallback to 85% if not found
-            "latency": real_data.get(
-                "latency", data["avg_inference_time_seconds"] * 1000
-            ),  # Use real latency, fallback to power profile
-            "power_cost": data[
-                "model_power_mw"
-            ],  # Keep power data from power profiling
-        }
-
-    return models
+    """Load power profiles using PowerProfiler."""
+    from pathlib import Path
+    import sys
+    sys.path.insert(0, str(Path(__file__).parent / "src"))
+    
+    from src.power_profiler import PowerProfiler
+    profiler = PowerProfiler()
+    return profiler.get_all_models_data()
 
 
 def main():

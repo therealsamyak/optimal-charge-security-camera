@@ -10,15 +10,15 @@ import random
 from datetime import datetime
 from typing import Any, Dict, List, Optional
 
-from config_loader import BatchConfig, ConfigLoader, SimulationConfig
-from controller import (
+from src.config_loader import BatchConfig, ConfigLoader, SimulationConfig
+from src.controller import (
     CustomController,
     NaiveStrongController,
     NaiveWeakController,
     OracleController,
 )
-from energy_data import EnergyData
-from simulation_engine import SimulationEngine
+from src.energy_data import EnergyData
+from src.simulation_engine import SimulationEngine
 
 
 class SimulationRunnerBase:
@@ -44,18 +44,11 @@ class SimulationRunnerBase:
             raise ValueError("Invalid configuration")
 
     def _load_power_profiles(self):
-        """Load power profiles from results file."""
-        import json
+        """Load power profiles using PowerProfiler."""
+        from src.power_profiler import PowerProfiler
 
-        try:
-            with open("results/power_profiles.json", "r") as f:
-                return json.load(f)
-        except FileNotFoundError:
-            self.logger.error("Power profiles file not found")
-            raise
-        except json.JSONDecodeError as e:
-            self.logger.error(f"Invalid power profiles JSON: {e}")
-            raise
+        profiler = PowerProfiler()
+        return profiler.get_all_models_data()
 
     def _create_controller(self, controller_type: str):
         """Create controller instance based on type."""

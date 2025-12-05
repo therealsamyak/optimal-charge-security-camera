@@ -224,8 +224,8 @@ class SimulationEngine:
         for name, profile in self.power_profiles.items():
             models[name] = {
                 "accuracy": profile["accuracy"],
-                "latency": profile["avg_inference_time_seconds"],  # Keep in seconds
-                "power_cost": profile["model_power_mw"],  # Power in mW
+                "latency": profile["latency"],  # Already in ms from PowerProfiler
+                "power_cost": profile["power_cost"],  # Power in mW from PowerProfiler
             }
         return models
 

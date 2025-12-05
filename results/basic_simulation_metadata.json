@@ -1,0 +1,10 @@
+{
+  "total_simulations": 64,
+  "locations": ["NW", "CA", "NY", "FL"],
+  "seasons": ["winter", "fall", "summer", "spring"],
+  "controllers": ["naive_weak", "oracle", "custom", "naive_strong"],
+  "export_timestamp": "Basic Simulation Complete",
+  "config_file": "config.jsonc",
+  "simulation_type": "basic",
+  "weeks_simulated": [1]
+}
