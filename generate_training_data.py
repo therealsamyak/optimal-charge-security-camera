@@ -89,6 +89,7 @@ def load_power_profiles() -> Dict[str, Dict[str, float]]:
     
     from src.power_profiler import PowerProfiler
     profiler = PowerProfiler()
+    profiler.load_profiles()  # Load profiles from file
     return profiler.get_all_models_data()
 
 
@@ -208,50 +209,76 @@ def generate_training_scenarios(
 def main():
     """Generate training data and save to JSON."""
     print("Loading energy data...")
-    energy_data = load_energy_data()
+    try:
+        energy_data = load_energy_data()
+        print(f"✓ Loaded energy data for {len(energy_data)} regions")
+    except Exception as e:
+        print(f"✗ Error loading energy data: {e}")
+        return
     
     print("Loading power profiles...")
-    models = load_power_profiles()
+    try:
+        models = load_power_profiles()
+        print(f"✓ Loaded {len(models)} model profiles")
+        if not models:
+            print("✗ No model profiles found - power_profiles.json may be empty")
+            return
+    except Exception as e:
+        print(f"✗ Error loading power profiles: {e}")
+        return
 
     print("Generating training scenarios with real energy data...")
-    scenarios = generate_training_scenarios(energy_data)
+    try:
+        scenarios = generate_training_scenarios(energy_data)
+        print(f"✓ Generated {len(scenarios)} training scenarios")
+    except Exception as e:
+        print(f"✗ Error generating scenarios: {e}")
+        return
 
     print(f"Solving MIPS for {len(scenarios)} scenarios in parallel...")
     training_data = []
 
     # Use ProcessPoolExecutor for parallel execution
     max_workers = 20
-    with concurrent.futures.ProcessPoolExecutor(max_workers=max_workers) as executor:
-        # Submit all scenarios for processing
-        future_to_scenario = {
-            executor.submit(solve_scenario_wrapper, scenario): i
-            for i, scenario in enumerate(scenarios)
-        }
+    print(f"Starting parallel processing with {max_workers} workers...")
+    try:
+        with concurrent.futures.ProcessPoolExecutor(max_workers=max_workers) as executor:
+            # Submit all scenarios for processing
+            future_to_scenario = {
+                executor.submit(solve_scenario_wrapper, scenario): i
+                for i, scenario in enumerate(scenarios)
+            }
 
-        completed_count = 0
-        # Collect results as they complete
-        for future in concurrent.futures.as_completed(future_to_scenario):
-            scenario_index = future_to_scenario[future]
-            completed_count += 1
-            
-            if completed_count % 1000 == 0:
-                print(f"Progress: {completed_count}/{len(scenarios)}")
-            
-            try:
-                result = future.result()
-                if result:
-                    training_data.append(result)
-            except Exception as e:
-                print(f"Error processing scenario {scenario_index}: {e}")
-                continue
+            completed_count = 0
+            # Collect results as they complete
+            for future in concurrent.futures.as_completed(future_to_scenario):
+                scenario_index = future_to_scenario[future]
+                completed_count += 1
+                
+                if completed_count % 1000 == 0:
+                    print(f"Progress: {completed_count}/{len(scenarios)}")
+                
+                try:
+                    result = future.result()
+                    if result:
+                        training_data.append(result)
+                except Exception as e:
+                    print(f"Error processing scenario {scenario_index}: {e}")
+                    continue
+    except Exception as e:
+        print(f"✗ Error in parallel processing: {e}")
+        return
 
-    print(f"Generated {len(training_data)} training samples")
+    print(f"✓ Generated {len(training_data)} training samples")
 
     # Save to JSON
-    with open("results/training_data.json", "w") as f:
-        json.dump(training_data, f, indent=2)
-
-    print("Training data saved to results/training_data.json")
+    try:
+        with open("results/training_data.json", "w") as f:
+            json.dump(training_data, f, indent=2)
+        print("✓ Training data saved to results/training_data.json")
+    except Exception as e:
+        print(f"✗ Error saving training data: {e}")
+        return
 
 
 if __name__ == "__main__":

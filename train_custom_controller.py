@@ -362,6 +362,7 @@ def load_power_profiles() -> Dict[str, Dict[str, float]]:
     
     from src.power_profiler import PowerProfiler
     profiler = PowerProfiler()
+    profiler.load_profiles()  # Load profiles from file
     return profiler.get_all_models_data()
 
 
@@ -372,26 +373,52 @@ def main():
         training_data = CustomController().load_training_data(
             "results/training_data.json"
         )
-        print(f"Loaded {len(training_data)} training samples")
+        print(f"✓ Loaded {len(training_data)} training samples")
     except FileNotFoundError:
-        print("Training data not found. Please run generate_training_data.py first.")
+        print("✗ Training data not found. Please run generate_training_data.py first.")
+        return
+    except Exception as e:
+        print(f"✗ Error loading training data: {e}")
         return
 
     print("Loading power profiles...")
-    available_models = load_power_profiles()
+    try:
+        available_models = load_power_profiles()
+        print(f"✓ Loaded {len(available_models)} model profiles")
+        if not available_models:
+            print("✗ No model profiles found")
+            return
+    except Exception as e:
+        print(f"✗ Error loading power profiles: {e}")
+        return
 
     print("Initializing CustomController...")
-    controller = CustomController()
+    try:
+        controller = CustomController()
+        print("✓ CustomController initialized")
+    except Exception as e:
+        print(f"✗ Error initializing controller: {e}")
+        return
 
     print("Starting training...")
-    evaluation_stats = controller.train(
-        training_data, available_models, epochs=10000, learning_rate=0.01
-    )
+    try:
+        evaluation_stats = controller.train(
+            training_data, available_models, epochs=10000, learning_rate=0.01
+        )
+        print("✓ Training complete!")
+    except Exception as e:
+        print(f"✗ Error during training: {e}")
+        return
 
     print("Saving trained weights...")
-    controller.save_weights("results/custom_controller_weights.json", evaluation_stats)
+    try:
+        controller.save_weights("results/custom_controller_weights.json", evaluation_stats)
+        print("✓ Controller weights saved to results/custom_controller_weights.json")
+    except Exception as e:
+        print(f"✗ Error saving weights: {e}")
+        return
 
-    print("Training complete!")
+    print("✓ Training pipeline completed successfully!")
 
 
 if __name__ == "__main__":

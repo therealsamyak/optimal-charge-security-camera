@@ -286,51 +286,56 @@ def main():
     setup_logging()
     logger = logging.getLogger(__name__)
 
+    print("🚀 Starting Batch Simulation Runner...")
+    
     try:
+        print("📋 Loading configuration and setting up batch runner...")
         # Create batch simulation runner
         runner = BatchSimulationRunner(
             config_path="config.jsonc",
             max_workers=100,  # Parallel execution with 8 workers
         )
+        print("✓ Batch simulation runner initialized")
 
+        print("🔄 Running batch simulations in parallel...")
         # Run batch simulations in parallel
         success = runner.run_batch_simulations(parallel=True)
 
         if success:
+            print("✓ Batch simulations completed successfully")
             # Print summary statistics
             stats = runner.get_summary_stats()
-            logger.info("=== Batch Simulation Summary ===")
-            logger.info(f"Total simulations: {stats['total_simulations']}")
-            logger.info(
+            print("📊 === Batch Simulation Summary ===")
+            print(f"Total simulations: {stats['total_simulations']}")
+            print(
                 f"Overall completion rate: {stats['overall_completion_rate']:.2f}%"
             )
-            logger.info(
+            print(
                 f"Overall clean energy usage: {stats['overall_clean_energy_percentage']:.2f}%"
             )
-            logger.info(f"Total energy consumed: {stats['total_energy_wh']:.2f} Wh")
+            print(f"Total energy consumed: {stats['total_energy_wh']:.2f} Wh")
 
-            logger.info("\n=== Controller Performance ===")
+            print("\n🎯 === Controller Performance ===")
             for controller, perf in stats["controller_performance"].items():
-                logger.info(f"{controller}:")
-                logger.info(f"  Simulations: {perf['count']}")
-                logger.info(
+                print(f"{controller}:")
+                print(f"  Simulations: {perf['count']}")
+                print(
                     f"  Avg completion rate: {perf['avg_completion_rate']:.2f}%"
                 )
-                logger.info(f"  Avg clean energy: {perf['avg_clean_energy_pct']:.2f}%")
-                logger.info(f"  Total energy: {perf['total_energy']:.2f} Wh")
+                print(f"  Avg clean energy: {perf['avg_clean_energy_pct']:.2f}%")
+                print(f"  Total energy: {perf['total_energy']:.2f} Wh")
 
-            logger.info("\nAll batch simulations completed successfully!")
-            logger.info(f"Results exported to: {runner.exporter.output_dir}")
+            print("\n✅ All batch simulations completed successfully!")
+            print(f"📁 Results exported to: {runner.exporter.output_dir}")
             return 0
         else:
-            logger.error("Batch simulation failed. Check logs for details.")
+            print("✗ Some batch simulations failed. Check logs for details.")
             return 1
 
     except Exception as e:
-        logger.error(f"Batch simulation runner failed: {e}")
+        print(f"✗ Batch simulation runner failed: {e}")
         import traceback
-
-        logger.error(traceback.format_exc())
+        print(f"Full error: {traceback.format_exc()}")
         return 1
 
 

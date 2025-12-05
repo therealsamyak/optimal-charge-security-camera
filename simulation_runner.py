@@ -150,51 +150,56 @@ def main():
     setup_logging()
     logger = logging.getLogger(__name__)
 
+    print("🚀 Starting Basic Simulation Runner...")
+    
     try:
+        print("📋 Loading configuration...")
         # Create basic simulation runner
         runner = BasicSimulationRunner(
             config_path="config.jsonc",
             max_workers=1,  # Sequential execution only
         )
+        print("✓ Configuration loaded successfully")
 
+        print("🔄 Running simulations sequentially...")
         # Run simulations sequentially
         success = runner.run_basic_simulations(parallel=False)
 
         if success:
+            print("✓ Simulations completed successfully")
             # Print summary statistics
             stats = runner.get_summary_stats()
-            logger.info("=== Basic Simulation Summary ===")
-            logger.info(f"Total simulations: {stats['total_simulations']}")
-            logger.info(
+            print("📊 === Basic Simulation Summary ===")
+            print(f"Total simulations: {stats['total_simulations']}")
+            print(
                 f"Overall completion rate: {stats['overall_completion_rate']:.2f}%"
             )
-            logger.info(
+            print(
                 f"Overall clean energy usage: {stats['overall_clean_energy_percentage']:.2f}%"
             )
-            logger.info(f"Total energy consumed: {stats['total_energy_wh']:.2f} Wh")
+            print(f"Total energy consumed: {stats['total_energy_wh']:.2f} Wh")
 
-            logger.info("\n=== Controller Performance ===")
+            print("\n🎯 === Controller Performance ===")
             for controller, perf in stats["controller_performance"].items():
-                logger.info(f"{controller}:")
-                logger.info(f"  Simulations: {perf['count']}")
-                logger.info(
+                print(f"{controller}:")
+                print(f"  Simulations: {perf['count']}")
+                print(
                     f"  Avg completion rate: {perf['avg_completion_rate']:.2f}%"
                 )
-                logger.info(f"  Avg clean energy: {perf['avg_clean_energy_pct']:.2f}%")
-                logger.info(f"  Total energy: {perf['total_energy']:.2f} Wh")
+                print(f"  Avg clean energy: {perf['avg_clean_energy_pct']:.2f}%")
+                print(f"  Total energy: {perf['total_energy']:.2f} Wh")
 
-            logger.info("\nAll basic simulations completed successfully!")
-            logger.info(f"Results exported to: {runner.exporter.output_dir}")
+            print("\n✅ All basic simulations completed successfully!")
+            print(f"📁 Results exported to: {runner.exporter.output_dir}")
             return 0
         else:
-            logger.error("Some simulations failed. Check logs for details.")
+            print("✗ Some simulations failed. Check logs for details.")
             return 1
 
     except Exception as e:
-        logger.error(f"Basic simulation runner failed: {e}")
+        print(f"✗ Basic simulation runner failed: {e}")
         import traceback
-
-        logger.error(traceback.format_exc())
+        print(f"Full error: {traceback.format_exc()}")
         return 1
 
 

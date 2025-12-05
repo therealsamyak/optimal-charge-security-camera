@@ -48,6 +48,7 @@ class SimulationRunnerBase:
         from src.power_profiler import PowerProfiler
 
         profiler = PowerProfiler()
+        profiler.load_profiles()  # Load profiles from file
         return profiler.get_all_models_data()
 
     def _create_controller(self, controller_type: str):
