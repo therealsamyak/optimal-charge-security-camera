@@ -7,7 +7,9 @@ import sys
 from pathlib import Path
 
 # Add src directory to path
-sys.path.insert(0, str(Path(__file__).parent / "src"))
+project_root = Path(__file__).parent.parent
+sys.path.insert(0, str(project_root / "src"))
+sys.path.insert(0, str(project_root))
 
 
 def test_basic_runner_initialization():
@@ -41,6 +43,8 @@ def test_basic_runner_initialization():
     print(f"  - Locations: {locations}")
     print(f"  - Seasons: {seasons}")
     print(f"  - Controllers: {controllers}")
+
+    return True
 
 
 def test_batch_runner_initialization():
@@ -91,24 +95,33 @@ def test_batch_runner_initialization():
         print(f"    Battery: {var['battery_capacity_wh']:.1f}Wh")
         print(f"    Charge Rate: {var['charge_rate_watts']:.0f}W")
 
+    return True
+
 
 def main():
     """Run integration tests."""
     print("=== Simulation Runner Integration Tests ===\n")
 
-    basic_success = test_basic_runner_initialization()
-    print()
-    batch_success = test_batch_runner_initialization()
-    print()
+    try:
+        basic_success = test_basic_runner_initialization()
+        print()
+        batch_success = test_batch_runner_initialization()
+        print()
 
-    if basic_success and batch_success:
-        print("✓ All integration tests passed!")
-        print("\nBoth simulation runners are ready to use:")
-        print("  - python simulation_runner.py  # Runs 64 basic simulations")
-        print("  - python batch_simulation.py  # Runs 1920+ batch simulations")
-        return 0
-    else:
-        print("✗ Some integration tests failed!")
+        if basic_success and batch_success:
+            print("✓ All integration tests passed!")
+            print("\nBoth simulation runners are ready to use:")
+            print("  - python simulation_runner.py  # Runs 64 basic simulations")
+            print("  - python batch_simulation.py  # Runs 1920+ batch simulations")
+            return 0
+        else:
+            print("✗ Some integration tests failed!")
+            return 1
+    except Exception as e:
+        print(f"✗ Integration test error: {e}")
+        import traceback
+
+        traceback.print_exc()
         return 1
 
 
