@@ -437,3 +437,7 @@ class PowerProfiler:
         raise RuntimeError(
             f"No power profile found for {profile_key}. Run benchmark_power.py first."
         )
+
+    def get_all_models_data(self) -> Dict[str, Dict]:
+        """Get all loaded models data."""
+        return self.power_profiles
