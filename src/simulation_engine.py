@@ -89,9 +89,17 @@ class SimulationEngine:
             "large_model_misses": 0,
             "total_energy_wh": 0.0,
             "clean_energy_mwh": 0.0,
+            "dirty_energy_mwh": 0.0,
             "battery_levels": [],
             "clean_energy_wh": 0.0,
             "model_selections": {model: 0 for model in power_profiles.keys()},
+            # New comprehensive metrics
+            "peak_power_mw": 0.0,
+            "charging_events_count": 0,
+            "model_energy_breakdown": {model: 0.0 for model in power_profiles.keys()},
+            "time_below_20_percent": 0,
+            "time_above_80_percent": 0,
+            "total_simulation_time": 0.0,
         }
 
         # Load energy data for location and season
@@ -224,8 +232,7 @@ class SimulationEngine:
         for name, profile in self.power_profiles.items():
             models[name] = {
                 "accuracy": profile["accuracy"],
-                "latency": profile["avg_inference_time_seconds"]
-                * 1000,  # Convert to ms
+                "latency": profile["avg_inference_time_seconds"],  # Keep in seconds
                 "power_cost": profile[
                     "model_power_mw"
                 ],  # Power in mW from PowerProfiler
@@ -314,6 +321,23 @@ class SimulationEngine:
         self.metrics["clean_energy_wh"] += (
             task.clean_energy_used_mwh / 1000
         )  # Convert mWh to Wh
+        self.metrics["clean_energy_mwh"] += (
+            task.clean_energy_used_mwh
+        )  # Fix: Add missing MWh tracking
+
+        # Track dirty energy (non-clean energy)
+        dirty_energy_mwh = task.energy_used_mwh - task.clean_energy_used_mwh
+        self.metrics["dirty_energy_mwh"] += dirty_energy_mwh
+
+        # Track peak power usage
+        if power_mw > self.metrics["peak_power_mw"]:
+            self.metrics["peak_power_mw"] = power_mw
+
+        # Track model-specific energy usage
+        self.metrics["model_energy_breakdown"][choice.model_name] += (
+            task.energy_used_mwh
+        )
+
         self.metrics["model_selections"][choice.model_name] += 1
 
         # Track model usage categories
@@ -329,6 +353,7 @@ class SimulationEngine:
         # Handle charging decision
         if choice.should_charge:
             self.battery.charge(self.config.task_interval_seconds)
+            self.metrics["charging_events_count"] += 1
             self.logger.debug(
                 f"[{sim_id}] Charging battery for {self.config.task_interval_seconds}s"
             )
@@ -382,7 +407,8 @@ class SimulationEngine:
             # Generate task
             task = self.task_generator.generate_task(
                 timestamp,
-                self.config.user_accuracy_requirement,
+                self.config.user_accuracy_requirement
+                / 100.0,  # Convert percentage to decimal
                 self.config.user_latency_requirement,
             )
             if task is not None:
@@ -390,10 +416,21 @@ class SimulationEngine:
                 self.metrics["total_tasks"] += 1
                 self._execute_task(task)
 
-            # Track battery level
-            self.metrics["battery_levels"].append(
-                {"timestamp": timestamp, "level": self.battery.get_percentage()}
-            )
+                # Track battery level and time spent at different levels
+                battery_level = self.battery.get_percentage()
+                self.metrics["battery_levels"].append(
+                    {"timestamp": timestamp, "level": battery_level}
+                )
+
+                # Track time spent at different battery levels
+                if battery_level < 20.0:
+                    self.metrics["time_below_20_percent"] += (
+                        self.config.task_interval_seconds
+                    )
+                elif battery_level > 80.0:
+                    self.metrics["time_above_80_percent"] += (
+                        self.config.task_interval_seconds
+                    )
 
             # Apply time acceleration
             if self.config.time_acceleration > 1:
@@ -411,6 +448,9 @@ class SimulationEngine:
 
         # Calculate final metrics
         self._calculate_final_metrics()
+
+        # Validate metrics consistency
+        self._validate_metrics_consistency()
 
         return self.metrics
 
@@ -457,3 +497,152 @@ class SimulationEngine:
         self.metrics["task_completion_rate"] = (
             self.metrics["completed_tasks"] / self.metrics["total_tasks"] * 100
         )
+
+        # Calculate additional comprehensive metrics
+        duration_seconds = self.config.duration_days * 24 * 3600
+        self.metrics["total_simulation_time"] = duration_seconds
+
+        # Energy efficiency metrics
+        if self.metrics["total_tasks"] > 0:
+            self.metrics["energy_per_task_wh"] = (
+                self.metrics["total_energy_wh"] / self.metrics["total_tasks"]
+            )
+        else:
+            self.metrics["energy_per_task_wh"] = 0.0
+
+        if self.metrics["completed_tasks"] > 0:
+            self.metrics["clean_energy_per_task_wh"] = (
+                self.metrics["clean_energy_wh"] / self.metrics["completed_tasks"]
+            )
+        else:
+            self.metrics["clean_energy_per_task_wh"] = 0.0
+
+        # Average power usage
+        if duration_seconds > 0:
+            self.metrics["average_power_mw"] = (
+                self.metrics["total_energy_wh"] * 1000
+            ) / duration_seconds  # Convert Wh back to mW
+        else:
+            self.metrics["average_power_mw"] = 0.0
+
+        # Battery efficiency score (tasks per percent battery depletion)
+        initial_battery = 0.0
+        final_battery = 0.0
+        if self.metrics["battery_levels"]:
+            initial_battery = self.metrics["battery_levels"][0]["level"]
+            final_battery = self.metrics["battery_levels"][-1]["level"]
+            battery_depletion = initial_battery - final_battery
+            if battery_depletion > 0:
+                self.metrics["battery_efficiency_score"] = (
+                    self.metrics["completed_tasks"] / battery_depletion
+                )
+            else:
+                self.metrics["battery_efficiency_score"] = (
+                    float("inf") if self.metrics["completed_tasks"] > 0 else 0.0
+                )
+        else:
+            self.metrics["battery_efficiency_score"] = 0.0
+
+        # Battery depletion rate per hour
+        if self.config.duration_days > 0:
+            self.metrics["battery_depletion_rate_per_hour"] = (
+                initial_battery - final_battery
+            ) / (self.config.duration_days * 24)
+        else:
+            self.metrics["battery_depletion_rate_per_hour"] = 0.0
+
+    def _validate_metrics_consistency(self):
+        """Validate that metrics are logically consistent."""
+        # Energy balance check
+        calculated_total_mwh = self.metrics.get(
+            "clean_energy_mwh", 0.0
+        ) + self.metrics.get("dirty_energy_mwh", 0.0)
+        calculated_total_wh = calculated_total_mwh * 1000
+        if abs(calculated_total_wh - self.metrics.get("total_energy_wh", 0.0)) > 0.001:
+            self.logger.warning(
+                f"Energy balance mismatch: calculated {calculated_total_wh:.3f}Wh vs recorded {self.metrics.get('total_energy_wh', 0.0):.3f}Wh"
+            )
+
+        # Task completion consistency
+        if self.metrics.get("completed_tasks", 0) > self.metrics.get("total_tasks", 0):
+            self.logger.error(
+                f"Task completion inconsistency: completed_tasks ({self.metrics.get('completed_tasks', 0)}) > total_tasks ({self.metrics.get('total_tasks', 0)})"
+            )
+
+        # Model selection consistency
+        total_model_selections = sum(self.metrics.get("model_selections", {}).values())
+        if total_model_selections != self.metrics.get("completed_tasks", 0):
+            self.logger.warning(
+                f"Model selection inconsistency: sum of selections ({total_model_selections}) != completed_tasks ({self.metrics.get('completed_tasks', 0)})"
+            )
+
+        # Battery level sanity checks
+        battery_levels = self.metrics.get("battery_levels", [])
+        if battery_levels and len(battery_levels) > 1:
+            battery_levels[0]["level"]
+            final = battery_levels[-1]["level"]
+            current = self.battery.get_percentage()
+            if abs(final - current) > 1.0:
+                self.logger.warning(
+                    f"Battery level inconsistency: final recorded {final:.1f}% vs current {current:.1f}%"
+                )
+
+        # Clean energy percentage sanity check
+        if self.metrics.get("total_energy_wh", 0) > 0:
+            calculated_clean_pct = (
+                self.metrics.get("clean_energy_wh", 0)
+                / self.metrics.get("total_energy_wh", 1)
+            ) * 100
+            recorded_clean_pct = self.metrics.get("clean_energy_percentage", 0)
+            if abs(calculated_clean_pct - recorded_clean_pct) > 0.1:
+                self.logger.warning(
+                    f"Clean energy percentage inconsistency: calculated {calculated_clean_pct:.2f}% vs recorded {recorded_clean_pct:.2f}%"
+                )
+
+    def _validate_metrics_consistency(self):
+        """Validate that metrics are logically consistent."""
+        # Energy balance check
+        calculated_total_mwh = self.metrics.get(
+            "clean_energy_mwh", 0.0
+        ) + self.metrics.get("dirty_energy_mwh", 0.0)
+        calculated_total_wh = calculated_total_mwh * 1000
+        if abs(calculated_total_wh - self.metrics.get("total_energy_wh", 0.0)) > 0.001:
+            self.logger.warning(
+                f"Energy balance mismatch: calculated {calculated_total_wh:.3f}Wh vs recorded {self.metrics.get('total_energy_wh', 0.0):.3f}Wh"
+            )
+
+        # Task completion consistency
+        if self.metrics.get("completed_tasks", 0) > self.metrics.get("total_tasks", 0):
+            self.logger.error(
+                f"Task completion inconsistency: completed_tasks ({self.metrics.get('completed_tasks', 0)}) > total_tasks ({self.metrics.get('total_tasks', 0)})"
+            )
+
+        # Model selection consistency
+        total_model_selections = sum(self.metrics.get("model_selections", {}).values())
+        if total_model_selections != self.metrics.get("completed_tasks", 0):
+            self.logger.warning(
+                f"Model selection inconsistency: sum of selections ({total_model_selections}) != completed_tasks ({self.metrics.get('completed_tasks', 0)})"
+            )
+
+        # Battery level sanity checks
+        battery_levels = self.metrics.get("battery_levels", [])
+        if battery_levels and len(battery_levels) > 1:
+            battery_levels[0]["level"]
+            final = battery_levels[-1]["level"]
+            current = self.battery.get_percentage()
+            if abs(final - current) > 1.0:
+                self.logger.warning(
+                    f"Battery level inconsistency: final recorded {final:.1f}% vs current {current:.1f}%"
+                )
+
+        # Clean energy percentage sanity check
+        if self.metrics.get("total_energy_wh", 0) > 0:
+            calculated_clean_pct = (
+                self.metrics.get("clean_energy_wh", 0)
+                / self.metrics.get("total_energy_wh", 1)
+            ) * 100
+            recorded_clean_pct = self.metrics.get("clean_energy_percentage", 0)
+            if abs(calculated_clean_pct - recorded_clean_pct) > 0.1:
+                self.logger.warning(
+                    f"Clean energy percentage inconsistency: calculated {calculated_clean_pct:.2f}% vs recorded {recorded_clean_pct:.2f}%"
+                )

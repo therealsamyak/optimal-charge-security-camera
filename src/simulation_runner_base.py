@@ -24,7 +24,7 @@ from src.simulation_engine import SimulationEngine
 class SimulationRunnerBase:
     """Base class for simulation runners with shared functionality."""
 
-    def __init__(self, config_path: str = "config.jsonc", max_workers: int = 4):
+    def __init__(self, config_path: str = "config.jsonc", max_workers: int = 100):
         self.config_loader = ConfigLoader(config_path)
         self.max_workers = max_workers
         self.logger = logging.getLogger(__name__)

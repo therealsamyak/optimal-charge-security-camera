@@ -127,16 +127,9 @@ run_basic_simulation() {
     return 0
 }
 
-# Step 4: Run Batch Simulation (Optional)
+# Step 4: Run Batch Simulation
 run_batch_simulation() {
-    print_status "Step 4: Running Batch Simulation (Optional)..."
-    
-    read -p "Run batch simulation? This takes much longer. (y/N): " -n 1 -r
-    echo
-    if [[ ! $REPLY =~ ^[Yy]$ ]]; then
-        print_warning "Skipping batch simulation."
-        return 0
-    fi
+    print_status "Step 4: Running Batch Simulation..."
     
     print_warning "Batch simulation can take 30+ minutes!"
     

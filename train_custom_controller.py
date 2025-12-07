@@ -63,7 +63,6 @@ class CustomController:
         model_data: Dict[str, Dict[str, float]],
     ) -> Tuple[str, bool]:
         """Predict model selection and charging decision using current weights."""
-        features[2]
 
         # Initialize weights if needed
         if self.charge_weights is None:
@@ -108,7 +107,9 @@ class CustomController:
         total_accuracy = (model_correct + charge_correct) / 2.0
 
         # Latency penalty (mock based on model)
-        latency_penalty = available_models[pred_model]["latency"] / 3000.0
+        latency_penalty = (
+            available_models[pred_model]["avg_inference_time_seconds"] / 0.03
+        )  # Normalize to 30ms max
 
         # Clean energy penalty
         clean_energy_penalty = 0.0
@@ -243,7 +244,9 @@ class CustomController:
         # Split data
         print("Splitting data into train/validation/test sets...")
         train_data, val_data, test_data = self.split_data(training_data)
-        print(f"Data split: Train={len(train_data)}, Val={len(val_data)}, Test={len(test_data)}")
+        print(
+            f"Data split: Train={len(train_data)}, Val={len(val_data)}, Test={len(test_data)}"
+        )
 
         best_val_loss = float("inf")
         patience = 50
@@ -254,7 +257,7 @@ class CustomController:
         print("Starting epoch training loop...")
         for epoch in range(epochs):
             final_epoch = epoch
-            
+
             # Progress logging every 100 epochs
             if (epoch + 1) % 100 == 0 or epoch == 0:
                 print(f"Epoch {epoch + 1}/{epochs} - Training...")
@@ -366,9 +369,11 @@ def load_power_profiles() -> Dict[str, Dict[str, float]]:
     """Load power profiles using PowerProfiler."""
     from pathlib import Path
     import sys
+
     sys.path.insert(0, str(Path(__file__).parent / "src"))
-    
+
     from src.power_profiler import PowerProfiler
+
     profiler = PowerProfiler()
     profiler.load_profiles()  # Load profiles from file
     return profiler.get_all_models_data()
@@ -410,11 +415,11 @@ def main():
 
     print("Starting training...")
     try:
-        print(f"Training parameters: epochs=10000, learning_rate=0.01")
+        print("Training parameters: epochs=10000, learning_rate=0.01")
         print(f"Training data size: {len(training_data)} samples")
         print(f"Available models: {list(available_models.keys())}")
         print("Beginning training epochs...")
-        
+
         evaluation_stats = controller.train(
             training_data, available_models, epochs=10000, learning_rate=0.01
         )
@@ -425,7 +430,9 @@ def main():
 
     print("Saving trained weights...")
     try:
-        controller.save_weights("results/custom_controller_weights.json", evaluation_stats)
+        controller.save_weights(
+            "results/custom_controller_weights.json", evaluation_stats
+        )
         print("✓ Controller weights saved to results/custom_controller_weights.json")
     except Exception as e:
         print(f"✗ Error saving weights: {e}")

@@ -219,6 +219,10 @@ class CustomController(Controller):
         charge_score = sum(f * w for f, w in zip(features, self.charge_weights))
         should_charge = charge_score > 0  # Use 0 as threshold like in training
 
+        # Never charge if battery is already full (>= 99.5%)
+        if battery_level >= 99.5:
+            should_charge = False
+
         return ModelChoice(
             model_name=selected_model,
             should_charge=should_charge,

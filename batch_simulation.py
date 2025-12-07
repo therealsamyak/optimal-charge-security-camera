@@ -28,7 +28,7 @@ from src.simulation_runner_base import SimulationRunnerBase
 class BatchSimulationRunner(SimulationRunnerBase):
     """Orchestrates execution of batch simulations with parameter variations."""
 
-    def __init__(self, config_path: str = "config.jsonc", max_workers: int = 4):
+    def __init__(self, config_path: str = "config.jsonc", max_workers: int = 100):
         super().__init__(config_path, max_workers)
 
         # Get batch configuration
@@ -176,7 +176,9 @@ class BatchSimulationRunner(SimulationRunnerBase):
 
                 completed_count = 0
                 error_count = 0
-                print(f"[Variation {variation['variation_id']}] Processing {len(base_simulations)} simulations...")
+                print(
+                    f"[Variation {variation['variation_id']}] Processing {len(base_simulations)} simulations..."
+                )
                 # Collect results as they complete
                 for future in concurrent.futures.as_completed(future_to_sim):
                     sim = future_to_sim[future]
@@ -192,7 +194,9 @@ class BatchSimulationRunner(SimulationRunnerBase):
 
                         if completed_count % 10 == 0:  # Log every 10 completions
                             progress = (completed_count / len(base_simulations)) * 100
-                            print(f"[Variation {variation['variation_id']}] Progress: {completed_count}/{len(base_simulations)} ({progress:.1f}%) - Errors: {error_count}")
+                            print(
+                                f"[Variation {variation['variation_id']}] Progress: {completed_count}/{len(base_simulations)} ({progress:.1f}%) - Errors: {error_count}"
+                            )
                             self.logger.info(
                                 f"[Variation {variation['variation_id']}] Progress: {progress:.1f}% ({completed_count}/{len(base_simulations)})"
                             )
@@ -289,16 +293,16 @@ def main():
     """Main entry point for batch simulation runner."""
     # Setup logging
     setup_logging()
-    logger = logging.getLogger(__name__)
+    logging.getLogger(__name__)
 
     print("🚀 Starting Batch Simulation Runner...")
-    
+
     try:
         print("📋 Loading configuration and setting up batch runner...")
         # Create batch simulation runner
         runner = BatchSimulationRunner(
             config_path="config.jsonc",
-            max_workers=100,  # Parallel execution with 8 workers
+            max_workers=100,  # Parallel execution with 100 workers
         )
         print("✓ Batch simulation runner initialized")
 
@@ -312,9 +316,7 @@ def main():
             stats = runner.get_summary_stats()
             print("📊 === Batch Simulation Summary ===")
             print(f"Total simulations: {stats['total_simulations']}")
-            print(
-                f"Overall completion rate: {stats['overall_completion_rate']:.2f}%"
-            )
+            print(f"Overall completion rate: {stats['overall_completion_rate']:.2f}%")
             print(
                 f"Overall clean energy usage: {stats['overall_clean_energy_percentage']:.2f}%"
             )
@@ -324,9 +326,7 @@ def main():
             for controller, perf in stats["controller_performance"].items():
                 print(f"{controller}:")
                 print(f"  Simulations: {perf['count']}")
-                print(
-                    f"  Avg completion rate: {perf['avg_completion_rate']:.2f}%"
-                )
+                print(f"  Avg completion rate: {perf['avg_completion_rate']:.2f}%")
                 print(f"  Avg clean energy: {perf['avg_clean_energy_pct']:.2f}%")
                 print(f"  Total energy: {perf['total_energy']:.2f} Wh")
 
@@ -340,6 +340,7 @@ def main():
     except Exception as e:
         print(f"✗ Batch simulation runner failed: {e}")
         import traceback
+
         print(f"Full error: {traceback.format_exc()}")
         return 1
 

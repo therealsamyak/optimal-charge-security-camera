@@ -26,7 +26,7 @@ from src.simulation_runner_base import SimulationRunnerBase
 class BasicSimulationRunner(SimulationRunnerBase):
     """Orchestrates execution of basic simulations (16 total)."""
 
-    def __init__(self, config_path: str = "config.jsonc", max_workers: int = 4):
+    def __init__(self, config_path: str = "config.jsonc", max_workers: int = 100):
         super().__init__(config_path, max_workers)
 
         # Initialize exporter
@@ -148,10 +148,10 @@ def main():
     """Main entry point for basic simulation runner."""
     # Setup logging
     setup_logging()
-    logger = logging.getLogger(__name__)
+    logging.getLogger(__name__)
 
     print("🚀 Starting Basic Simulation Runner...")
-    
+
     try:
         print("📋 Loading configuration...")
         # Create basic simulation runner
@@ -171,9 +171,7 @@ def main():
             stats = runner.get_summary_stats()
             print("📊 === Basic Simulation Summary ===")
             print(f"Total simulations: {stats['total_simulations']}")
-            print(
-                f"Overall completion rate: {stats['overall_completion_rate']:.2f}%"
-            )
+            print(f"Overall completion rate: {stats['overall_completion_rate']:.2f}%")
             print(
                 f"Overall clean energy usage: {stats['overall_clean_energy_percentage']:.2f}%"
             )
@@ -183,9 +181,7 @@ def main():
             for controller, perf in stats["controller_performance"].items():
                 print(f"{controller}:")
                 print(f"  Simulations: {perf['count']}")
-                print(
-                    f"  Avg completion rate: {perf['avg_completion_rate']:.2f}%"
-                )
+                print(f"  Avg completion rate: {perf['avg_completion_rate']:.2f}%")
                 print(f"  Avg clean energy: {perf['avg_clean_energy_pct']:.2f}%")
                 print(f"  Total energy: {perf['total_energy']:.2f} Wh")
 
@@ -199,6 +195,7 @@ def main():
     except Exception as e:
         print(f"✗ Basic simulation runner failed: {e}")
         import traceback
+
         print(f"Full error: {traceback.format_exc()}")
         return 1
 
