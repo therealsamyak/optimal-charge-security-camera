@@ -16,12 +16,13 @@ import logging
 import sys
 from datetime import datetime
 from pathlib import Path
+from typing import List, Dict, Any
 
 # Add src directory to path
 sys.path.insert(0, str(Path(__file__).parent / "src"))
 
 from src.logging_config import setup_logging
-from src.metrics_collector import CSVExporter
+from src.metrics_collector import JSONExporter
 from src.simulation_runner_base import SimulationRunnerBase
 
 
@@ -36,7 +37,7 @@ class BatchSimulationRunner(SimulationRunnerBase):
 
         # Initialize exporter
         output_dir = self.config_loader.get_output_dir()
-        self.exporter = CSVExporter(output_dir)
+        self.exporter = JSONExporter(output_dir)
 
         # Generate timestamp for filenames
         self.timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
@@ -232,31 +233,105 @@ class BatchSimulationRunner(SimulationRunnerBase):
 
         return successful_results
 
+    def _generate_aggregated_results(
+        self, all_results: List[Dict[str, Any]]
+    ) -> List[Dict[str, Any]]:
+        """Generate aggregated results for JSON export."""
+        if not all_results:
+            return []
+
+        # Group by controller, location, season
+        aggregated = {}
+
+        for result in all_results:
+            key = (
+                result.get("controller", "unknown"),
+                result.get("location", "unknown"),
+                result.get("season", "unknown"),
+            )
+
+            if key not in aggregated:
+                aggregated[key] = {
+                    "controller": key[0],
+                    "location": key[1],
+                    "season": key[2],
+                    "total_simulations": 0,
+                    "successful_simulations": 0,
+                    "total_tasks": 0,
+                    "completed_tasks": 0,
+                    "total_energy_wh": 0.0,
+                    "clean_energy_wh": 0.0,
+                    "missed_deadlines": 0,
+                }
+
+            agg = aggregated[key]
+            agg["total_simulations"] += 1
+
+            if result.get("success", True):
+                agg["successful_simulations"] += 1
+                agg["total_tasks"] += result.get("total_tasks", 0)
+                agg["completed_tasks"] += result.get("completed_tasks", 0)
+                agg["total_energy_wh"] += result.get("total_energy_wh", 0.0)
+                agg["clean_energy_wh"] += result.get("clean_energy_wh", 0.0)
+                agg["missed_deadlines"] += result.get("missed_deadlines", 0)
+
+        # Calculate derived metrics
+        for agg in aggregated.values():
+            agg["success_rate"] = (
+                agg["successful_simulations"] / agg["total_simulations"]
+            ) * 100
+            agg["avg_task_completion_rate"] = (
+                (agg["completed_tasks"] / agg["total_tasks"] * 100)
+                if agg["total_tasks"] > 0
+                else 0
+            )
+            agg["avg_clean_energy_percentage"] = (
+                (agg["clean_energy_wh"] / agg["total_energy_wh"] * 100)
+                if agg["total_energy_wh"] > 0
+                else 0
+            )
+            agg["avg_battery_efficiency"] = agg["avg_task_completion_rate"] * (
+                agg["avg_clean_energy_percentage"] / 100
+            )
+            agg["total_clean_energy_mwh"] = agg["clean_energy_wh"] / 1000
+            agg["total_dirty_energy_mwh"] = (
+                agg["total_energy_wh"] - agg["clean_energy_wh"]
+            ) / 1000
+            agg["energy_per_task_wh"] = (
+                agg["total_energy_wh"] / agg["completed_tasks"]
+                if agg["completed_tasks"] > 0
+                else 0
+            )
+            agg["clean_energy_per_task_wh"] = (
+                agg["clean_energy_wh"] / agg["completed_tasks"]
+                if agg["completed_tasks"] > 0
+                else 0
+            )
+            agg["timestamp"] = datetime.now().isoformat()
+
+        return list(aggregated.values())
+
     def _export_batch_results(self):
-        """Export batch simulation results to CSV files with timestamps."""
+        """Export batch simulation results to JSON files with timestamps."""
         if not self.all_results:
             self.logger.warning("No results to export")
             return
 
         try:
-            # Export aggregated results with batch prefix
-            aggregated_filename = f"batch-run-{self.timestamp}-aggregated-results.csv"
-            aggregated_file = self.exporter.export_aggregated_results(
-                self.all_results, filename=aggregated_filename
+            # Generate aggregated data for export
+            aggregated_data = self._generate_aggregated_results(self.all_results)
+
+            # Export all results to hierarchical JSON
+            results_filename = f"batch-run-{self.timestamp}-results.json"
+            results_file = self.exporter.export_results(
+                all_simulations=self.all_results,
+                aggregated_data=aggregated_data,
+                filename=results_filename,
             )
-            if aggregated_file:
-                self.logger.info(f"Aggregated results exported to {aggregated_file}")
+            if results_file:
+                self.logger.info(f"Results exported to {results_file}")
 
-            # Export detailed results with all parameters if configured
-            if self.batch_config.output_detailed_csv:
-                detailed_filename = f"batch-run-{self.timestamp}-detailed-results.csv"
-                detailed_file = self.exporter.export_detailed_results(
-                    self.all_results, filename=detailed_filename
-                )
-                if detailed_file:
-                    self.logger.info(f"Detailed results exported to {detailed_file}")
-
-            # Export batch metadata
+            # Export batch metadata separately
             metadata = {
                 "total_simulations": len(self.all_results),
                 "total_variations": len(

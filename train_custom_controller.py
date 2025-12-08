@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-CustomController training using gradient descent.
+CustomController training using PyTorch neural networks.
 Trains model selection and charging decisions using MIPS-generated training data.
 """
 
@@ -9,20 +9,30 @@ import logging
 from typing import Dict, List, Optional, Tuple
 
 import numpy as np
+import torch
+import torch.nn as nn
+import torch.optim as optim
+from pathlib import Path
+
+from src.neural_controller import NeuralController, NeuralLoss
 
 
 class CustomController:
-    """Custom controller with trained weights for model selection and charging."""
+    """Custom controller with neural network for model selection and charging."""
 
     def __init__(self):
-        self.weights = {
-            "accuracy_weight": 0.5,  # α
-            "latency_weight": 0.3,  # β
-            "clean_energy_weight": 0.2,  # γ
-        }
-        self.model_weights = {}
-        self.charge_weights = None  # Learnable weights for charge decision
-        self.charge_threshold = 0.0  # Threshold for charging decision
+        if torch.backends.mps.is_available():
+            self.device = torch.device("mps")
+        elif torch.cuda.is_available():
+            self.device = torch.device("cuda")
+        else:
+            self.device = torch.device("cpu")
+        self.model = NeuralController().to(self.device)
+        self.criterion = NeuralLoss()
+        self.optimizer = None
+        self.scheduler = None
+        self.model_to_idx = {}
+        self.idx_to_model = {}
         self.logger = logging.getLogger(__name__)
 
     def load_training_data(self, filepath: str) -> List[Dict]:
@@ -45,9 +55,9 @@ class CustomController:
 
         return normalized_model_score
 
-    def extract_features(self, scenario: Dict) -> np.ndarray:
+    def extract_features(self, scenario: Dict) -> torch.Tensor:
         """Extract features from training scenario."""
-        return np.array(
+        features = np.array(
             [
                 scenario["battery_level"] / 100.0,
                 scenario["clean_energy_percentage"] / 100.0,
@@ -55,117 +65,79 @@ class CustomController:
                 scenario["latency_requirement"] / 30.0,  # Normalize to 30ms max
             ]
         )
+        return torch.FloatTensor(features).to(self.device)
 
     def predict_model_and_charge(
         self,
-        features: np.ndarray,
+        features: torch.Tensor,
         available_models: List[str],
         model_data: Dict[str, Dict[str, float]],
     ) -> Tuple[str, bool]:
-        """Predict model selection and charging decision using current weights."""
+        """Predict model selection and charging decision using neural network."""
+        self.model.eval()
+        with torch.no_grad():
+            model_probs, charge_prob = self.model(features.unsqueeze(0))
 
-        # Initialize weights if needed
-        if self.charge_weights is None:
-            self.charge_weights = np.random.normal(0, 0.1, 4)  # Xavier initialization
+        # Get model prediction
+        model_idx = int(torch.argmax(model_probs, dim=-1).item())
+        selected_model = self.idx_to_model[model_idx]
 
-        # Simple linear model for model selection
-        model_scores = {}
-        for model in available_models:
-            if model not in self.model_weights:
-                # Xavier initialization for model weights
-                self.model_weights[model] = np.random.normal(0, 0.1, 4)
-
-            # Pure learned model selection - no hardcoded scoring
-            model_scores[model] = np.dot(features, self.model_weights[model])
-
-        selected_model = max(model_scores.keys(), key=lambda x: model_scores[x])
-
-        # Learnable linear model for charging decision
-        charge_score = np.dot(features, self.charge_weights)
-        should_charge = charge_score > 0  # Use 0 as threshold (sigmoid-like)
+        # Get charge decision
+        should_charge = charge_prob.item() > 0.5
 
         return selected_model, should_charge
 
     def compute_loss(
         self,
-        prediction: Tuple[str, bool],
-        target: Tuple[str, bool],
-        features: np.ndarray,
-        available_models: Dict[str, Dict[str, float]],
-    ) -> float:
-        """Compute loss function: α*(1-accuracy) + β*latency + γ*non_clean_energy"""
-        pred_model, pred_charge = prediction
-        target_model, target_charge = target
+        model_probs: torch.Tensor,
+        charge_prob: torch.Tensor,
+        target_model_idx: torch.Tensor,
+        target_charge: torch.Tensor,
+    ) -> torch.Tensor:
+        """Compute neural network loss."""
+        return self.criterion(model_probs, charge_prob, target_model_idx, target_charge)
 
-        # Model selection loss
-        model_correct = 1.0 if pred_model == target_model else 0.0
-
-        # Charging loss
-        charge_correct = 1.0 if pred_charge == target_charge else 0.0
-
-        # Combined accuracy
-        total_accuracy = (model_correct + charge_correct) / 2.0
-
-        # Latency penalty (mock based on model)
-        latency_penalty = (
-            available_models[pred_model]["avg_inference_time_seconds"] / 0.03
-        )  # Normalize to 30ms max
-
-        # Clean energy penalty
-        clean_energy_penalty = 0.0
-        if target_charge and not pred_charge:
-            clean_energy_penalty = 1.0 - features[1]  # Missed clean energy opportunity
-
-        loss = (
-            self.weights["accuracy_weight"] * (1 - total_accuracy)
-            + self.weights["latency_weight"] * latency_penalty
-            + self.weights["clean_energy_weight"] * clean_energy_penalty
-        )
-
-        return loss
+    def setup_model_mapping(self, available_models: List[str]):
+        """Setup model to index mapping for neural network."""
+        self.model_to_idx = {
+            model: int(idx) for idx, model in enumerate(available_models)
+        }
+        self.idx_to_model = {
+            int(idx): model for idx, model in enumerate(available_models)
+        }
 
     def train_step(
         self,
         scenario: Dict,
-        available_models: Dict[str, Dict[str, float]],
-        learning_rate: float = 0.01,
     ) -> float:
-        """Single training step using proper gradient descent."""
+        """Single training step using PyTorch."""
         features = self.extract_features(scenario)
-        target_model = scenario["optimal_model"]
-        target_charge = scenario["should_charge"]
+        target_model_idx = torch.tensor(
+            [self.model_to_idx[scenario["optimal_model"]]], dtype=torch.long
+        ).to(self.device)
+        target_charge = torch.tensor([float(scenario["should_charge"])]).to(self.device)
 
         # Forward pass
-        prediction = self.predict_model_and_charge(
-            features, list(available_models.keys()), available_models
-        )
+        self.model.train()
+        model_probs, charge_prob = self.model(features.unsqueeze(0))
 
         # Compute loss
         loss = self.compute_loss(
-            prediction, (target_model, target_charge), features, available_models
+            model_probs, charge_prob, target_model_idx, target_charge
         )
 
-        # Backward pass - proper gradient computation
-        pred_model, pred_charge = prediction
+        # Backward pass
+        if self.optimizer is None:
+            self.optimizer = optim.Adam(self.model.parameters(), lr=0.001)
+            self.scheduler = optim.lr_scheduler.ReduceLROnPlateau(
+                self.optimizer, patience=10
+            )
 
-        # Model selection gradient (cross-entropy-like)
-        if pred_model != target_model:
-            # Increase weights for correct model, decrease for incorrect model
-            if target_model in self.model_weights:
-                self.model_weights[target_model] += learning_rate * features * 0.1
-            if pred_model in self.model_weights:
-                self.model_weights[pred_model] -= learning_rate * features * 0.1
+        self.optimizer.zero_grad()
+        loss.backward()
+        self.optimizer.step()
 
-        # Charge decision gradient (binary cross-entropy-like)
-        target_charge_val = 1.0 if target_charge else 0.0
-        pred_charge_val = 1.0 if pred_charge else 0.0
-
-        # Gradient for charge weights
-        if self.charge_weights is not None:
-            charge_gradient = (pred_charge_val - target_charge_val) * features
-            self.charge_weights -= learning_rate * charge_gradient * 0.1
-
-        return loss
+        return loss.item()
 
     def split_data(
         self, data: List[Dict], train_ratio: float = 0.7, val_ratio: float = 0.2
@@ -193,35 +165,42 @@ class CustomController:
         return train_data, val_data, test_data
 
     def evaluate(
-        self, data: List[Dict], available_models: Dict[str, Dict[str, float]]
+        self, data: List[Dict], available_models: List[str]
     ) -> Dict[str, float]:
         """Evaluate model on validation/test data."""
         total_loss = 0.0
         model_correct = 0
         charge_correct = 0
 
-        for scenario in data:
-            features = self.extract_features(scenario)
-            target_model = scenario["optimal_model"]
-            target_charge = scenario["should_charge"]
+        self.model.eval()
+        with torch.no_grad():
+            for scenario in data:
+                features = self.extract_features(scenario)
+                target_model_idx = torch.tensor(
+                    [self.model_to_idx[scenario["optimal_model"]]], dtype=torch.long
+                ).to(self.device)
+                target_charge = torch.tensor([float(scenario["should_charge"])]).to(
+                    self.device
+                )
 
-            # Forward pass
-            prediction = self.predict_model_and_charge(
-                features, list(available_models.keys()), available_models
-            )
+                # Forward pass
+                model_probs, charge_prob = self.model(features.unsqueeze(0))
 
-            # Compute loss
-            loss = self.compute_loss(
-                prediction, (target_model, target_charge), features, available_models
-            )
-            total_loss += loss
+                # Compute loss
+                loss = self.compute_loss(
+                    model_probs, charge_prob, target_model_idx, target_charge
+                )
+                total_loss += loss.item()
 
-            # Track accuracy
-            pred_model, pred_charge = prediction
-            if pred_model == target_model:
-                model_correct += 1
-            if pred_charge == target_charge:
-                charge_correct += 1
+                # Track accuracy
+                pred_model_idx = int(torch.argmax(model_probs, dim=-1).item())
+                pred_model = self.idx_to_model[pred_model_idx]
+                pred_charge = charge_prob.item() > 0.5
+
+                if pred_model == scenario["optimal_model"]:
+                    model_correct += 1
+                if pred_charge == scenario["should_charge"]:
+                    charge_correct += 1
 
         n = len(data)
         return {
@@ -235,11 +214,21 @@ class CustomController:
         self,
         training_data: List[Dict],
         available_models: Dict[str, Dict[str, float]],
-        epochs: int = 10000,
-        learning_rate: float = 0.01,
+        epochs: int = 1000,
+        learning_rate: float = 0.001,
     ):
         """Train CustomController with train/validation/test split."""
         print(f"Training CustomController for {epochs} epochs...")
+
+        # Setup model mapping
+        model_list = list(available_models.keys())
+        self.setup_model_mapping(model_list)
+
+        # Initialize optimizer
+        self.optimizer = optim.Adam(self.model.parameters(), lr=learning_rate)
+        self.scheduler = optim.lr_scheduler.ReduceLROnPlateau(
+            self.optimizer, patience=10
+        )
 
         # Split data
         print("Splitting data into train/validation/test sets...")
@@ -251,7 +240,7 @@ class CustomController:
         best_val_loss = float("inf")
         patience = 50
         patience_counter = 0
-        best_weights = None
+        best_state_dict = None
         final_epoch = 0
 
         print("Starting epoch training loop...")
@@ -261,6 +250,7 @@ class CustomController:
             # Progress logging every 100 epochs
             if (epoch + 1) % 100 == 0 or epoch == 0:
                 print(f"Epoch {epoch + 1}/{epochs} - Training...")
+
             # Training phase
             total_loss = 0.0
             # Shuffle training data using indices
@@ -269,29 +259,22 @@ class CustomController:
             shuffled_train_data = [train_data[i] for i in train_indices]
 
             for scenario in shuffled_train_data:
-                loss = self.train_step(scenario, available_models, learning_rate)
+                loss = self.train_step(scenario)
                 total_loss += loss
 
             train_loss = total_loss / len(train_data)
 
             # Validation phase
-            val_metrics = self.evaluate(val_data, available_models)
+            val_metrics = self.evaluate(val_data, model_list)
+
+            # Learning rate scheduling
+            self.scheduler.step(val_metrics["loss"])
 
             # Early stopping
             if val_metrics["loss"] < best_val_loss:
                 best_val_loss = val_metrics["loss"]
                 patience_counter = 0
-                # Save best weights
-                best_weights = {
-                    "model_weights": {
-                        k: v.copy() for k, v in self.model_weights.items()
-                    },
-                    "charge_weights": (
-                        self.charge_weights.copy()
-                        if self.charge_weights is not None
-                        else None
-                    ),
-                }
+                best_state_dict = self.model.state_dict().copy()
             else:
                 patience_counter += 1
 
@@ -310,13 +293,12 @@ class CustomController:
                 break
 
         # Restore best weights
-        if best_weights:
-            self.model_weights = best_weights["model_weights"]
-            self.charge_weights = best_weights["charge_weights"]
+        if best_state_dict:
+            self.model.load_state_dict(best_state_dict)
 
         # Final evaluation on test set
         print("\n📊 Final Evaluation:")
-        test_metrics = self.evaluate(test_data, available_models)
+        test_metrics = self.evaluate(test_data, model_list)
         print(f"Test Loss: {test_metrics['loss']:.4f}")
         print(f"Test Model Accuracy: {test_metrics['model_accuracy']:.3f}")
         print(f"Test Charge Accuracy: {test_metrics['charge_accuracy']:.3f}")
@@ -331,16 +313,13 @@ class CustomController:
     def save_weights(
         self, filepath: str, evaluation_stats: Optional[Dict[str, float]] = None
     ):
-        """Save trained weights to JSON file."""
+        """Save trained neural network to JSON file."""
         weights_data = {
-            "weights": self.weights,
-            "model_weights": {k: v.tolist() for k, v in self.model_weights.items()},
-            "charge_weights": (
-                self.charge_weights.tolist()
-                if self.charge_weights is not None
-                else None
-            ),
-            "charge_threshold": self.charge_threshold,
+            "model_state_dict": {
+                k: v.tolist() for k, v in self.model.state_dict().items()
+            },
+            "model_to_idx": self.model_to_idx,
+            "idx_to_model": self.idx_to_model,
         }
 
         if evaluation_stats:
@@ -349,20 +328,24 @@ class CustomController:
         with open(filepath, "w") as f:
             json.dump(weights_data, f, indent=2)
 
-        print(f"Trained weights saved to {filepath}")
+        print(f"Trained neural network saved to {filepath}")
 
     def load_weights(self, filepath: str):
-        """Load trained weights from JSON file."""
+        """Load trained neural network from JSON file."""
         with open(filepath, "r") as f:
             weights_data = json.load(f)
 
-        self.weights = weights_data["weights"]
-        self.model_weights = {
-            k: np.array(v) for k, v in weights_data["model_weights"].items()
+        # Load state dict
+        state_dict = {
+            k: torch.tensor(v) for k, v in weights_data["model_state_dict"].items()
         }
-        self.charge_threshold = weights_data["charge_threshold"]
+        self.model.load_state_dict(state_dict)
 
-        print(f"Trained weights loaded from {filepath}")
+        # Load mappings
+        self.model_to_idx = weights_data["model_to_idx"]
+        self.idx_to_model = {int(k): v for k, v in weights_data["idx_to_model"].items()}
+
+        print(f"Trained neural network loaded from {filepath}")
 
 
 def load_power_profiles() -> Dict[str, Dict[str, float]]:

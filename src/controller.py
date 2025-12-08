@@ -3,6 +3,7 @@ from dataclasses import dataclass
 from typing import Dict
 
 import pulp
+import torch
 
 
 @dataclass
@@ -150,39 +151,48 @@ class OracleController(Controller):
 
 
 class CustomController(Controller):
-    """Custom controller using trained weights for model selection and charging."""
+    """Custom controller using neural network for model selection and charging."""
 
     def __init__(self, weights_file: str = "results/custom_controller_weights.json"):
-        self.weights = {
-            "accuracy_weight": 0.5,
-            "latency_weight": 0.3,
-            "clean_energy_weight": 0.2,
-        }
-        self.model_weights = {}
-        self.charge_weights = None
-        self.charge_threshold = 0.0
+        # Setup device (Apple Silicon optimization)
+        if torch.backends.mps.is_available():
+            self.device = torch.device("mps")
+        elif torch.cuda.is_available():
+            self.device = torch.device("cuda")
+        else:
+            self.device = torch.device("cpu")
+
+        # Import neural network
+        from .neural_controller import NeuralController
+
+        self.model = NeuralController().to(self.device)
+        self.model_to_idx = {}
+        self.idx_to_model = {}
         self.load_weights(weights_file)
 
     def load_weights(self, filepath: str):
-        """Load trained weights from JSON file."""
+        """Load trained neural network from JSON file."""
         import json
 
         with open(filepath, "r") as f:
             weights_data = json.load(f)
 
-        if "weights" not in weights_data:
-            raise ValueError(f"Missing 'weights' in {filepath}")
-        if "model_weights" not in weights_data:
-            raise ValueError(f"Missing 'model_weights' in {filepath}")
-        if "charge_threshold" not in weights_data:
-            raise ValueError(f"Missing 'charge_threshold' in {filepath}")
+        if "model_state_dict" not in weights_data:
+            raise ValueError(f"Missing 'model_state_dict' in {filepath}")
+        if "model_to_idx" not in weights_data:
+            raise ValueError(f"Missing 'model_to_idx' in {filepath}")
+        if "idx_to_model" not in weights_data:
+            raise ValueError(f"Missing 'idx_to_model' in {filepath}")
 
-        self.weights = weights_data["weights"]
-        self.model_weights = {
-            k: list(v) for k, v in weights_data["model_weights"].items()
+        # Load neural network state dict
+        state_dict = {
+            k: torch.tensor(v) for k, v in weights_data["model_state_dict"].items()
         }
-        self.charge_weights = weights_data.get("charge_weights")
-        self.charge_threshold = weights_data["charge_threshold"]
+        self.model.load_state_dict(state_dict)
+
+        # Load model mappings
+        self.model_to_idx = weights_data["model_to_idx"]
+        self.idx_to_model = {int(k): v for k, v in weights_data["idx_to_model"].items()}
 
     def select_model(
         self,
@@ -192,32 +202,36 @@ class CustomController(Controller):
         user_latency_requirement: float,
         available_models: Dict[str, Dict[str, float]],
     ) -> ModelChoice:
-        # Normalize features
-        features = [
-            battery_level / 100.0,
-            clean_energy_percentage / 100.0,
-            user_accuracy_requirement,
-            user_latency_requirement / 3000.0,
-        ]
+        # Normalize features (same as training)
+        features = torch.tensor(
+            [
+                battery_level / 100.0,
+                clean_energy_percentage / 100.0,
+                user_accuracy_requirement,  # Already 0-1 range
+                user_latency_requirement / 30.0,  # Normalize to 30ms max
+            ],
+            dtype=torch.float32,
+        ).to(self.device)
 
-        # Calculate model scores using trained weights
-        model_scores = {}
-        for model in available_models.keys():
-            if model not in self.model_weights:
-                raise ValueError(f"No trained weights found for model: {model}")
+        # Neural network forward pass
+        self.model.eval()
+        with torch.no_grad():
+            model_probs, charge_prob = self.model(features.unsqueeze(0))
 
-            # Use trained model weights for scoring
-            score = sum(f * w for f, w in zip(features, self.model_weights[model]))
-            model_scores[model] = score
+            # Get model prediction
+            model_idx = int(torch.argmax(model_probs, dim=-1).item())
+            selected_model = self.idx_to_model[model_idx]
 
-        selected_model = max(model_scores.keys(), key=lambda x: model_scores[x])
+            # Get charge decision
+            should_charge = charge_prob.item() > 0.5
 
-        # Charging decision using trained weights
-        if self.charge_weights is None:
-            raise ValueError("No charge_weights found in trained model")
-
-        charge_score = sum(f * w for f, w in zip(features, self.charge_weights))
-        should_charge = charge_score > 0  # Use 0 as threshold like in training
+        # Validate selected model is available
+        if selected_model not in available_models:
+            # Fallback to first available model if prediction is invalid
+            selected_model = list(available_models.keys())[0]
+            reasoning = "Neural network prediction invalid, using fallback model"
+        else:
+            reasoning = "Neural network model selection"
 
         # Never charge if battery is already full (>= 99.5%)
         if battery_level >= 99.5:
@@ -226,5 +240,5 @@ class CustomController(Controller):
         return ModelChoice(
             model_name=selected_model,
             should_charge=should_charge,
-            reasoning="Custom controller with trained weights",
+            reasoning=reasoning,
         )

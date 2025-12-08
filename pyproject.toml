@@ -12,6 +12,9 @@ dependencies = [
     "pytest>=9.0.1",
     "ultralytics>=8.3.233",
     "python-dotenv>=1.0.0",
+    "torch>=2.9.1",
+    "torchvision>=0.24.1",
+    "jsonschema>=4.25.1",
 ]
 
 
