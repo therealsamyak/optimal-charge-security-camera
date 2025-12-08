@@ -153,7 +153,7 @@ class OracleController(Controller):
 class CustomController(Controller):
     """Custom controller using neural network for model selection and charging."""
 
-    def __init__(self, weights_file: str = "results/custom_controller_weights.json"):
+    def __init__(self, weights_file: str = "custom_controller_weights.json"):
         # Setup device (Apple Silicon optimization)
         if torch.backends.mps.is_available():
             self.device = torch.device("mps")
@@ -227,6 +227,9 @@ class CustomController(Controller):
 
         # Validate selected model is available
         if selected_model not in available_models:
+            if not available_models:
+                # No models available - raise error
+                raise ValueError("No available models provided to CustomController")
             # Fallback to first available model if prediction is invalid
             selected_model = list(available_models.keys())[0]
             reasoning = "Neural network prediction invalid, using fallback model"

@@ -21,26 +21,37 @@ from typing import List, Dict, Any
 # Add src directory to path
 sys.path.insert(0, str(Path(__file__).parent / "src"))
 
-from src.logging_config import setup_logging
+from src.logging_config import setup_logging, get_logger
 from src.metrics_collector import JSONExporter
 from src.simulation_runner_base import SimulationRunnerBase
+
+# Initialize logging
+logger = setup_logging()
 
 
 class BatchSimulationRunner(SimulationRunnerBase):
     """Orchestrates execution of batch simulations with parameter variations."""
 
     def __init__(self, config_path: str = "config.jsonc", max_workers: int = 100):
+        logger.info("Initializing BatchSimulationRunner")
+        logger.debug(f"Config path: {config_path}, Max workers: {max_workers}")
+
         super().__init__(config_path, max_workers)
 
         # Get batch configuration
         self.batch_config = self.config_loader.get_batch_config()
+        logger.info(f"Batch configuration loaded: {self.batch_config}")
 
         # Initialize exporter
         output_dir = self.config_loader.get_output_dir()
         self.exporter = JSONExporter(output_dir)
+        logger.info(f"Output directory: {output_dir}")
 
         # Generate timestamp for filenames
         self.timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        logger.info(f"Timestamp for this run: {self.timestamp}")
+
+        logger.info("BatchSimulationRunner initialization complete")
 
     def run_batch_simulations(self, parallel: bool = True) -> bool:
         """
@@ -52,14 +63,32 @@ class BatchSimulationRunner(SimulationRunnerBase):
         Returns:
             True if all simulations succeeded, False if any failed
         """
+        logger.info("=" * 80)
+        logger.info("STARTING BATCH SIMULATION RUN")
+        logger.info("=" * 80)
+
+        start_time = datetime.now()
+        logger.info(f"Batch simulation start time: {start_time}")
+        logger.info(f"Parallel execution: {parallel}")
+
         try:
             # Generate parameter variations
+            logger.info("Generating parameter variations...")
             variations = self.generate_parameter_variations(self.batch_config)
+            logger.info(f"Generated {len(variations)} parameter variations")
+            logger.debug(
+                f"Variation details: {variations[:2] if len(variations) > 2 else variations}"
+            )
 
             # Get configuration for simulation matrix
             locations = self.config_loader.get_locations()
             seasons = self.config_loader.get_seasons()
             controllers = self.config_loader.get_controllers()
+
+            logger.info(f"Configuration loaded:")
+            logger.info(f"  Locations: {locations}")
+            logger.info(f"  Seasons: {seasons}")
+            logger.info(f"  Controllers: {controllers}")
 
             # Generate base simulation list (full matrix: 4 locations × 4 seasons × 4 controllers × 3 weeks = 192)
             base_simulations = self._generate_simulation_list(
@@ -69,23 +98,21 @@ class BatchSimulationRunner(SimulationRunnerBase):
                 weeks=[1, 2, 3],  # All 3 weeks
             )
 
-            self.logger.info(
-                f"Starting batch simulation with {len(variations)} parameter variations"
+            total_simulations = len(variations) * len(base_simulations)
+            logger.info(
+                f"Base simulation matrix: {len(base_simulations)} simulations per variation"
             )
-            self.logger.info(
-                f"Each variation will run {len(base_simulations)} simulations"
-            )
-            self.logger.info(
-                f"Total simulations to run: {len(variations) * len(base_simulations)}"
-            )
+            logger.info(f"Total simulations to run: {total_simulations:,}")
 
             successful_results = []
 
             # Run simulations for each parameter variation
-            for variation in variations:
-                self.logger.info(
+            for i, variation in enumerate(variations):
+                variation_start_time = datetime.now()
+                logger.info(
                     f"Running variation {variation['variation_id']}/{len(variations)}"
                 )
+                logger.debug(f"Variation parameters: {variation}")
 
                 # Create simulation config with parameter overrides
                 base_config = self.config_loader.get_simulation_config()
@@ -96,6 +123,7 @@ class BatchSimulationRunner(SimulationRunnerBase):
                     battery_capacity_override=variation["battery_capacity_wh"],
                     charge_rate_override=variation["charge_rate_watts"],
                 )
+                logger.debug(f"Simulation config created with overrides")
 
                 # Run all simulations for this variation
                 variation_results = self._run_variation_simulations(
@@ -107,21 +135,27 @@ class BatchSimulationRunner(SimulationRunnerBase):
 
                 successful_results.extend(variation_results)
 
+                variation_time = (datetime.now() - variation_start_time).total_seconds()
+                logger.info(
+                    f"Variation {variation['variation_id']} completed in {variation_time:.2f}s, "
+                    f"{len(variation_results)} successful results"
+                )
+
             # Check if any simulations failed
             if len(self.failed_simulations) > 0:
-                self.logger.error(f"{len(self.failed_simulations)} simulations failed")
-                self.logger.error(
+                logger.error(f"{len(self.failed_simulations)} simulations failed")
+                logger.error(
                     "TERMINATING DUE TO FAILURES - NO OUTPUT WILL BE GENERATED"
                 )
 
                 # Print clear error information
                 for failure in self.failed_simulations[:5]:  # Show first 5 failures
-                    self.logger.error(
+                    logger.error(
                         f"FAILED: {failure.get('simulation_id', 'unknown')} - {failure.get('error', 'unknown error')}"
                     )
 
                 if len(self.failed_simulations) > 5:
-                    self.logger.error(
+                    logger.error(
                         f"... and {len(self.failed_simulations) - 5} more failures"
                     )
 
@@ -129,20 +163,23 @@ class BatchSimulationRunner(SimulationRunnerBase):
 
             # Store successful results
             self.all_results = successful_results
+            logger.info(f"Collected {len(successful_results)} successful results")
 
             # Export results
+            logger.info("Exporting batch results...")
             self._export_batch_results()
 
-            self.logger.info(
-                f"All {len(successful_results)} batch simulations completed successfully"
+            duration = (datetime.now() - start_time).total_seconds()
+            logger.info(
+                f"All {len(successful_results)} batch simulations completed successfully in {duration:.2f} seconds"
             )
             return True
 
         except Exception as e:
-            self.logger.error(f"Batch simulation failed with exception: {e}")
+            logger.error(f"Batch simulation failed with exception: {e}")
             import traceback
 
-            self.logger.error(traceback.format_exc())
+            logger.error(traceback.format_exc())
             return False
 
     def _run_variation_simulations(
@@ -152,20 +189,18 @@ class BatchSimulationRunner(SimulationRunnerBase):
         successful_results = []
         variation_start_time = datetime.now()
 
-        self.logger.info(
+        logger.info(
             f"[Variation {variation['variation_id']}] Starting {len(base_simulations)} simulations"
         )
-        self.logger.debug(
-            f"[Variation {variation['variation_id']}] Parameters: {variation}"
-        )
+        logger.debug(f"[Variation {variation['variation_id']}] Parameters: {variation}")
 
         if parallel:
+            logger.debug(
+                f"[Variation {variation['variation_id']}] Using parallel execution with {self.max_workers} workers"
+            )
             import concurrent.futures
 
             # Run simulations in parallel
-            self.logger.debug(
-                f"[Variation {variation['variation_id']}] Using parallel execution with {self.max_workers} workers"
-            )
             with concurrent.futures.ProcessPoolExecutor(
                 max_workers=self.max_workers
             ) as executor:
@@ -174,6 +209,9 @@ class BatchSimulationRunner(SimulationRunnerBase):
                     executor.submit(self._run_single_simulation, sim, sim_config): sim
                     for sim in base_simulations
                 }
+                logger.info(
+                    f"[Variation {variation['variation_id']}] Submitted all {len(base_simulations)} simulations to process pool"
+                )
 
                 completed_count = 0
                 error_count = 0
@@ -190,32 +228,41 @@ class BatchSimulationRunner(SimulationRunnerBase):
                             # Add variation metadata
                             result["variation_id"] = variation["variation_id"]
                             successful_results.append(result)
+                            logger.debug(
+                                f"[Variation {variation['variation_id']}] ✓ Simulation {sim['simulation_id']} completed"
+                            )
                         else:
                             error_count += 1
+                            logger.warning(
+                                f"[Variation {variation['variation_id']}] ✗ Simulation {sim['simulation_id']} returned no result"
+                            )
 
                         if completed_count % 10 == 0:  # Log every 10 completions
                             progress = (completed_count / len(base_simulations)) * 100
                             print(
                                 f"[Variation {variation['variation_id']}] Progress: {completed_count}/{len(base_simulations)} ({progress:.1f}%) - Errors: {error_count}"
                             )
-                            self.logger.info(
-                                f"[Variation {variation['variation_id']}] Progress: {progress:.1f}% ({completed_count}/{len(base_simulations)})"
+                            logger.info(
+                                f"[Variation {variation['variation_id']}] Progress: {progress:.1f}% ({completed_count}/{len(base_simulations)}) - Errors: {error_count}"
                             )
 
                     except Exception as e:
-                        self.logger.error(
+                        error_count += 1
+                        logger.error(
                             f"[Variation {variation['variation_id']}] Simulation {sim['simulation_id']} raised exception: {e}"
+                        )
+                        logger.exception(
+                            f"[Variation {variation['variation_id']}] Full traceback for simulation {sim['simulation_id']}"
                         )
                         # Failure already recorded in _run_single_simulation
         else:
-            # Run simulations sequentially
-            self.logger.debug(
+            logger.debug(
                 f"[Variation {variation['variation_id']}] Using sequential execution"
             )
             for i, sim in enumerate(base_simulations):
                 if (i + 1) % 10 == 0:  # Log every 10 simulations
                     progress = ((i + 1) / len(base_simulations)) * 100
-                    self.logger.info(
+                    logger.info(
                         f"[Variation {variation['variation_id']}] Progress: {progress:.1f}% ({i + 1}/{len(base_simulations)})"
                     )
 
@@ -224,11 +271,19 @@ class BatchSimulationRunner(SimulationRunnerBase):
                     # Add variation metadata
                     result["variation_id"] = variation["variation_id"]
                     successful_results.append(result)
+                    logger.debug(
+                        f"[Variation {variation['variation_id']}] ✓ Simulation {sim['simulation_id']} completed"
+                    )
+                else:
+                    logger.warning(
+                        f"[Variation {variation['variation_id']}] ✗ Simulation {sim['simulation_id']} returned no result"
+                    )
 
         variation_time = (datetime.now() - variation_start_time).total_seconds()
-        self.logger.info(
+        success_rate = (len(successful_results) / len(base_simulations)) * 100
+        logger.info(
             f"[Variation {variation['variation_id']}] Completed in {variation_time:.2f}s, "
-            f"{len(successful_results)} successful, {len(base_simulations) - len(successful_results)} failed"
+            f"{len(successful_results)} successful, {len(base_simulations) - len(successful_results)} failed ({success_rate:.1f}% success rate)"
         )
 
         return successful_results
@@ -313,25 +368,37 @@ class BatchSimulationRunner(SimulationRunnerBase):
 
     def _export_batch_results(self):
         """Export batch simulation results to JSON files with timestamps."""
+        logger.info("Starting batch results export process")
+
         if not self.all_results:
-            self.logger.warning("No results to export")
+            logger.warning("No results to export")
             return
 
         try:
             # Generate aggregated data for export
+            logger.info("Generating aggregated data for export...")
             aggregated_data = self._generate_aggregated_results(self.all_results)
+            logger.info(f"Generated {len(aggregated_data)} aggregated data records")
 
             # Export all results to hierarchical JSON
             results_filename = f"batch-run-{self.timestamp}-results.json"
+            logger.info(f"Exporting results to {results_filename}")
             results_file = self.exporter.export_results(
                 all_simulations=self.all_results,
                 aggregated_data=aggregated_data,
                 filename=results_filename,
             )
             if results_file:
-                self.logger.info(f"Results exported to {results_file}")
+                logger.info(f"Results exported to {results_file}")
+
+                # Log file size
+                if Path(results_file).exists():
+                    file_size = Path(results_file).stat().st_size
+                    file_size_mb = file_size / (1024 * 1024)
+                    logger.info(f"Results file size: {file_size_mb:.2f} MB")
 
             # Export batch metadata separately
+            logger.info("Creating batch metadata...")
             metadata = {
                 "total_simulations": len(self.all_results),
                 "total_variations": len(
@@ -353,42 +420,62 @@ class BatchSimulationRunner(SimulationRunnerBase):
                     "charge_rate_range": self.batch_config.charge_rate_range,
                 },
             }
+            logger.debug(f"Batch metadata: {metadata}")
 
             metadata_filename = f"batch-run-{self.timestamp}-metadata.json"
+            logger.info(f"Exporting metadata to {metadata_filename}")
             metadata_file = self.exporter.export_json(metadata, metadata_filename)
             if metadata_file:
-                self.logger.info(f"Metadata exported to {metadata_file}")
+                logger.info(f"Metadata exported to {metadata_file}")
+
+                # Log file size
+                if Path(metadata_file).exists():
+                    file_size = Path(metadata_file).stat().st_size
+                    file_size_kb = file_size / 1024
+                    logger.info(f"Metadata file size: {file_size_kb:.2f} KB")
 
         except Exception as e:
-            self.logger.error(f"Failed to export batch results: {e}")
+            logger.error(f"Failed to export batch results: {e}")
+            logger.exception("Full traceback for batch results export error")
             raise
 
 
 def main():
     """Main entry point for batch simulation runner."""
-    # Setup logging
-    setup_logging()
-    logging.getLogger(__name__)
+    logger.info("=" * 80)
+    logger.info("BATCH SIMULATION RUNNER - MAIN ENTRY POINT")
+    logger.info("=" * 80)
+
+    start_time = datetime.now()
+    logger.info(f"Batch simulation runner start time: {start_time}")
 
     print("🚀 Starting Batch Simulation Runner...")
+    logger.info("Starting Batch Simulation Runner...")
 
     try:
         print("📋 Loading configuration and setting up batch runner...")
+        logger.info("Loading configuration and setting up batch runner...")
         # Create batch simulation runner
         runner = BatchSimulationRunner(
             config_path="config.jsonc",
             max_workers=100,  # Parallel execution with 100 workers
         )
         print("✓ Batch simulation runner initialized")
+        logger.info("✓ Batch simulation runner initialized")
 
         print("🔄 Running batch simulations in parallel...")
+        logger.info("Running batch simulations in parallel...")
         # Run batch simulations in parallel
         success = runner.run_batch_simulations(parallel=True)
 
         if success:
             print("✓ Batch simulations completed successfully")
+            logger.info("✓ Batch simulations completed successfully")
+
             # Print summary statistics
             stats = runner.get_summary_stats()
+            logger.info(f"Summary statistics: {stats}")
+
             print("📊 === Batch Simulation Summary ===")
             print(f"Total simulations: {stats['total_simulations']}")
             print(f"Overall completion rate: {stats['overall_completion_rate']:.2f}%")
@@ -407,16 +494,29 @@ def main():
 
             print("\n✅ All batch simulations completed successfully!")
             print(f"📁 Results exported to: {runner.exporter.output_dir}")
+
+            duration = (datetime.now() - start_time).total_seconds()
+            logger.info(
+                f"All batch simulations completed successfully in {duration:.2f} seconds"
+            )
+            logger.info(f"Results exported to: {runner.exporter.output_dir}")
+            logger.info("=" * 80)
+            logger.info("BATCH SIMULATION RUNNER COMPLETED SUCCESSFULLY")
+            logger.info("=" * 80)
+
             return 0
         else:
             print("✗ Some batch simulations failed. Check logs for details.")
+            logger.error("Some batch simulations failed. Check logs for details.")
             return 1
 
     except Exception as e:
         print(f"✗ Batch simulation runner failed: {e}")
+        logger.error(f"✗ Batch simulation runner failed: {e}")
         import traceback
 
         print(f"Full error: {traceback.format_exc()}")
+        logger.exception("Full traceback for batch simulation runner error")
         return 1
 
 

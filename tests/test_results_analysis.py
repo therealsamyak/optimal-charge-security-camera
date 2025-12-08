@@ -5,26 +5,25 @@ Tests JSON parsing and metric calculations
 """
 
 import sys
-import os
+import logging
 import json
 import tempfile
 import statistics
-from pathlib import Path
-
-# Add src directory to path
-sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 
 # Import results analysis functions
-sys.path.insert(0, str(Path(__file__).parent.parent))
 from results import (
     read_json_full,
     analyze_battery_levels,
 )
 
+# Setup logging for tests
+logging.basicConfig(level=logging.DEBUG, format="%(levelname)s: %(message)s")
+logger = logging.getLogger(__name__)
+
 
 def test_json_parsing():
     """Test JSON parsing functionality."""
-    print("Testing JSON parsing...")
+    logger.info("Testing JSON parsing...")
 
     # Create test JSON data
     test_data = {
@@ -103,14 +102,20 @@ def test_json_parsing():
 
     # Write to temporary file
     with tempfile.NamedTemporaryFile(
-        mode="w", suffix=".json", delete=False
+        mode="w", suffix=".json", delete=True
     ) as temp_file:
-        temp_path = temp_file.name
+        logger.debug(f"Using temporary file: {temp_file.name}")
         json.dump(test_data, temp_file, indent=2)
+        temp_file.flush()
+        temp_path = temp_file.name
 
-    try:
         # Test parsing
-        parsed_data = read_json_full(temp_path)
+        try:
+            parsed_data = read_json_full(temp_path)
+            logger.debug("JSON data parsed successfully")
+        except Exception as e:
+            logger.error(f"Failed to parse JSON: {e}")
+            raise
 
         assert parsed_data is not None, "Parsed data should not be None"
         assert isinstance(parsed_data, dict), "Parsed data should be dictionary"
@@ -130,11 +135,7 @@ def test_json_parsing():
             "Should have 1 detailed metric"
         )
 
-        print("✓ JSON parsing test passed")
-
-    finally:
-        if os.path.exists(temp_path):
-            os.unlink(temp_path)
+        logger.info("✓ JSON parsing test passed")
 
 
 def test_battery_level_analysis():
@@ -318,7 +319,7 @@ def test_model_usage_analysis():
     assert model_energy["YOLOv10_S"] == 0.22, (
         f"YOLOv10_S energy should be 0.22, got {model_energy['YOLOv10_S']}"
     )
-    assert model_energy["YOLOv10_M"] == 0.23, (
+    assert abs(model_energy["YOLOv10_M"] - 0.23) < 1e-6, (
         f"YOLOv10_M energy should be 0.23, got {model_energy['YOLOv10_M']}"
     )
 
@@ -654,7 +655,7 @@ def test_error_handling():
 
     # Test with empty data for calculations
     try:
-        empty_avg = statistics.mean([])
+        statistics.mean([])
         assert False, "Empty list should raise StatisticsError"
     except statistics.StatisticsError:
         pass  # Expected behavior
@@ -664,8 +665,8 @@ def test_error_handling():
 
 def main():
     """Run all results analysis tests."""
-    print("🧪 Running Results Analysis Tests")
-    print("=" * 50)
+    logger.info("🧪 Running Results Analysis Tests")
+    logger.info("=" * 50)
 
     try:
         test_json_parsing()
@@ -677,14 +678,14 @@ def main():
         test_insights_generation()
         test_error_handling()
 
-        print("\n✅ All results analysis tests passed!")
+        logger.info("\n✅ All results analysis tests passed!")
         return 0
 
     except Exception as e:
-        print(f"\n❌ Test failed: {e}")
+        logger.error(f"\n❌ Test failed: {e}")
         import traceback
 
-        traceback.print_exc()
+        logger.error(traceback.format_exc())
         return 1
 
 

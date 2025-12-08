@@ -31,6 +31,9 @@ class NeuralLoss(nn.Module):
         self.bce_loss = nn.BCELoss()
 
     def forward(self, model_probs, charge_prob, model_targets, charge_targets):
-        ce = self.ce_loss(model_probs.log(), model_targets)
+        # Add small epsilon to prevent log(0)
+        eps = 1e-8
+        model_probs_clamped = torch.clamp(model_probs, min=eps, max=1 - eps)
+        ce = self.ce_loss(model_probs_clamped.log(), model_targets)
         bce = self.bce_loss(charge_prob, charge_targets.float())
         return 0.5 * ce + 0.5 * bce

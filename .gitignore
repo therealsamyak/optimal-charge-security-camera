@@ -49,3 +49,6 @@ logs/
 
 # Results CSV files
 results/*.csv
+
+# mcp
+.serena

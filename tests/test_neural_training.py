@@ -5,29 +5,38 @@ Tests forward/backward pass with 5 training scenarios
 """
 
 import sys
-from pathlib import Path
-
-# Add src directory to path
-sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
+import logging
 
 import torch
 from src.neural_controller import NeuralController, NeuralLoss
 
+# Setup logging for tests
+logging.basicConfig(level=logging.DEBUG, format="%(levelname)s: %(message)s")
+logger = logging.getLogger(__name__)
+
 
 def test_neural_controller_initialization():
     """Test neural network initialization."""
-    print("Testing NeuralController initialization...")
+    logger.info("Testing NeuralController initialization...")
 
     # Test device detection
     if torch.backends.mps.is_available():
         device = torch.device("mps")
+        logger.debug("Using MPS device")
     elif torch.cuda.is_available():
         device = torch.device("cuda")
+        logger.debug("Using CUDA device")
     else:
         device = torch.device("cpu")
+        logger.debug("Using CPU device")
 
-    model = NeuralController().to(device)
-    loss_fn = NeuralLoss()
+    try:
+        model = NeuralController().to(device)
+        loss_fn = NeuralLoss()
+        logger.debug(f"Model initialized on device: {device}")
+    except Exception as e:
+        logger.error(f"Failed to initialize model: {e}")
+        raise
 
     assert isinstance(model, NeuralController), (
         "Model should be NeuralController instance"
@@ -36,7 +45,16 @@ def test_neural_controller_initialization():
 
     # Test architecture
     test_input = torch.randn(2, 4).to(device)
-    model_probs, charge_prob = model(test_input)
+    logger.debug(f"Test input shape: {test_input.shape}")
+
+    try:
+        model_probs, charge_prob = model(test_input)
+        logger.debug(
+            f"Model output shapes: model_probs={model_probs.shape}, charge_prob={charge_prob.shape}"
+        )
+    except Exception as e:
+        logger.error(f"Forward pass failed: {e}")
+        raise
 
     assert model_probs.shape == (2, 6), f"Expected (2, 6), got {model_probs.shape}"
     assert charge_prob.shape == (2,), f"Expected (2,), got {charge_prob.shape}"
@@ -48,19 +66,26 @@ def test_neural_controller_initialization():
     assert torch.all(charge_prob >= 0) and torch.all(charge_prob <= 1), (
         "Charge probs should be in [0,1]"
     )
-    assert torch.allclose(model_probs.sum(dim=-1), torch.ones(2), atol=1e-6), (
-        "Model probs should sum to 1"
-    )
+    assert torch.allclose(
+        model_probs.sum(dim=-1), torch.ones(2).to(device), atol=1e-6
+    ), "Model probs should sum to 1"
 
-    print("✓ NeuralController initialization test passed")
+    logger.info("✓ NeuralController initialization test passed")
 
 
 def test_forward_pass():
     """Test forward pass with different inputs."""
-    print("Testing forward pass...")
+    logger.info("Testing forward pass...")
 
     device = torch.device("mps" if torch.backends.mps.is_available() else "cpu")
-    model = NeuralController().to(device)
+    logger.debug(f"Using device: {device}")
+
+    try:
+        model = NeuralController().to(device)
+        logger.debug("Model loaded successfully")
+    except Exception as e:
+        logger.error(f"Failed to load model: {e}")
+        raise
 
     # Test scenarios
     scenarios = [
@@ -87,8 +112,17 @@ def test_forward_pass():
     ]
 
     for i, scenario in enumerate(scenarios):
-        input_tensor = torch.tensor([scenario], dtype=torch.float32).to(device)
-        model_probs, charge_prob = model(input_tensor)
+        logger.debug(f"Testing scenario {i}: {scenario}")
+
+        try:
+            input_tensor = torch.tensor([scenario], dtype=torch.float32).to(device)
+            model_probs, charge_prob = model(input_tensor)
+            logger.debug(
+                f"Scenario {i} outputs: model_probs shape={model_probs.shape}, charge_prob shape={charge_prob.shape}"
+            )
+        except Exception as e:
+            logger.error(f"Forward pass failed for scenario {i}: {e}")
+            raise
 
         assert model_probs.shape == (1, 6), (
             f"Scenario {i}: Expected (1, 6), got {model_probs.shape}"
@@ -111,7 +145,7 @@ def test_forward_pass():
             f"Scenario {i}: Charge prob contains Inf"
         )
 
-    print("✓ Forward pass test passed")
+    logger.info("✓ Forward pass test passed")
 
 
 def test_backward_pass():
@@ -164,7 +198,7 @@ def test_loss_function():
         },
         # Wrong predictions (should have high loss)
         {
-            "model_probs": torch.tensor([[0.0, 1.0, 0.0, 0.0, 0.0, 0.0]]).to(device),
+            "model_probs": torch.tensor([[0.0, 0.9, 0.1, 0.0, 0.0, 0.0]]).to(device),
             "charge_prob": torch.tensor([0.1]).to(device),
             "model_targets": torch.tensor([0]).to(device),
             "charge_targets": torch.tensor([0.9]).to(device),
@@ -337,8 +371,8 @@ def test_model_convergence():
 
 def main():
     """Run all neural network training tests."""
-    print("🧪 Running Neural Network Training Tests")
-    print("=" * 50)
+    logger.info("🧪 Running Neural Network Training Tests")
+    logger.info("=" * 50)
 
     try:
         test_neural_controller_initialization()
@@ -348,14 +382,14 @@ def main():
         test_training_step()
         test_model_convergence()
 
-        print("\n✅ All neural network training tests passed!")
+        logger.info("\n✅ All neural network training tests passed!")
         return 0
 
     except Exception as e:
-        print(f"\n❌ Test failed: {e}")
+        logger.error(f"\n❌ Test failed: {e}")
         import traceback
 
-        traceback.print_exc()
+        logger.error(traceback.format_exc())
         return 1
 
 

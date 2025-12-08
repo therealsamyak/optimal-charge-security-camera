@@ -47,7 +47,7 @@ check_files() {
     print_status "Checking required files..."
     
     required_files=(
-        "results/power_profiles.json"
+        "model-data/power_profiles.json"
         "energy-data/US-CAL-LDWP_2024_5_minute.csv"
         "energy-data/US-FLA-FPL_2024_5_minute.csv"
         "energy-data/US-NW-PSEI_2024_5_minute.csv"

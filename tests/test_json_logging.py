@@ -5,41 +5,39 @@ Tests JSON export structure and schema validation
 """
 
 import sys
-import os
+import logging
 import json
 import tempfile
 from pathlib import Path
 
-# Add src directory to path
-sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
-
 from src.metrics_collector import JSONExporter
 import jsonschema
+
+# Setup logging for tests
+logging.basicConfig(level=logging.DEBUG, format="%(levelname)s: %(message)s")
+logger = logging.getLogger(__name__)
 
 
 def test_json_exporter_initialization():
     """Test JSONExporter initialization."""
-    print("Testing JSONExporter initialization...")
+    logger.info("Testing JSONExporter initialization...")
 
-    # Test with default directory
-    exporter = JSONExporter()
-    assert exporter is not None, "JSONExporter should be initialized"
-    assert exporter.output_dir == Path("results"), (
-        "Default output dir should be 'results'"
-    )
-    assert exporter.output_dir.exists(), "Output directory should be created"
-
-    # Test with custom directory
+    # Test with custom temporary directory instead of hardcoded "results"
     with tempfile.TemporaryDirectory() as temp_dir:
-        custom_exporter = JSONExporter(temp_dir)
-        assert custom_exporter.output_dir == Path(temp_dir), (
-            "Custom output dir should be set"
-        )
-        assert custom_exporter.output_dir.exists(), (
-            "Custom output directory should be created"
-        )
+        logger.debug(f"Using temp directory: {temp_dir}")
+        try:
+            exporter = JSONExporter(temp_dir)
+            assert exporter is not None, "JSONExporter should be initialized"
+            assert exporter.output_dir == Path(temp_dir), (
+                "Output dir should be set to temp directory"
+            )
+            assert exporter.output_dir.exists(), "Output directory should be created"
+            logger.debug("JSONExporter initialized successfully")
+        except Exception as e:
+            logger.error(f"Failed to initialize JSONExporter: {e}")
+            raise
 
-    print("✓ JSONExporter initialization test passed")
+    logger.info("✓ JSONExporter initialization test passed")
 
 
 def test_hierarchical_json_structure():
@@ -102,11 +100,10 @@ def test_hierarchical_json_structure():
 
     # Export to temporary file
     with tempfile.NamedTemporaryFile(
-        mode="w", suffix=".json", delete=False
+        mode="w", suffix=".json", delete=True
     ) as temp_file:
         temp_path = temp_file.name
 
-    try:
         # Export data
         result_path = exporter.export_results(
             all_simulations=test_simulations,
@@ -163,11 +160,6 @@ def test_hierarchical_json_structure():
         )
 
         print("✓ Hierarchical JSON structure test passed")
-
-    finally:
-        # Cleanup
-        if os.path.exists(temp_path):
-            os.unlink(temp_path)
 
 
 def test_json_schema_validation():
@@ -259,11 +251,10 @@ def test_json_schema_validation():
 
     # Export and validate
     with tempfile.NamedTemporaryFile(
-        mode="w", suffix=".json", delete=False
+        mode="w", suffix=".json", delete=True
     ) as temp_file:
         temp_path = temp_file.name
 
-    try:
         result_path = exporter.export_results(
             all_simulations=test_simulations,
             aggregated_data=test_aggregated,
@@ -278,13 +269,6 @@ def test_json_schema_validation():
         jsonschema.validate(exported_data, expected_schema)
 
         print("✓ JSON schema validation test passed")
-
-    except jsonschema.ValidationError as e:
-        print(f"❌ Schema validation failed: {e}")
-        raise
-    finally:
-        if os.path.exists(temp_path):
-            os.unlink(temp_path)
 
 
 def test_time_series_extraction():
@@ -339,11 +323,10 @@ def test_time_series_extraction():
 
     # Export and check time series
     with tempfile.NamedTemporaryFile(
-        mode="w", suffix=".json", delete=False
+        mode="w", suffix=".json", delete=True
     ) as temp_file:
         temp_path = temp_file.name
 
-    try:
         result_path = exporter.export_results(
             all_simulations=test_simulations,
             aggregated_data=test_aggregated,
@@ -405,10 +388,6 @@ def test_time_series_extraction():
 
         print("✓ Time series extraction test passed")
 
-    finally:
-        if os.path.exists(temp_path):
-            os.unlink(temp_path)
-
 
 def test_empty_data_handling():
     """Test handling of empty data."""
@@ -418,11 +397,10 @@ def test_empty_data_handling():
 
     # Test with empty data
     with tempfile.NamedTemporaryFile(
-        mode="w", suffix=".json", delete=False
+        mode="w", suffix=".json", delete=True
     ) as temp_file:
         temp_path = temp_file.name
 
-    try:
         result_path = exporter.export_results(
             all_simulations=[], aggregated_data=[], filename=Path(temp_path).name
         )
@@ -431,10 +409,6 @@ def test_empty_data_handling():
         assert result_path == "", "Export with no data should return empty path"
 
         print("✓ Empty data handling test passed")
-
-    finally:
-        if os.path.exists(temp_path):
-            os.unlink(temp_path)
 
 
 def test_large_data_export():
@@ -487,11 +461,10 @@ def test_large_data_export():
 
     # Export large dataset
     with tempfile.NamedTemporaryFile(
-        mode="w", suffix=".json", delete=False
+        mode="w", suffix=".json", delete=True
     ) as temp_file:
         temp_path = temp_file.name
 
-    try:
         result_path = exporter.export_results(
             all_simulations=large_simulations,
             aggregated_data=large_aggregated,
@@ -523,10 +496,6 @@ def test_large_data_export():
 
         print(f"✓ Large data export test passed ({file_size} bytes)")
 
-    finally:
-        if os.path.exists(temp_path):
-            os.unlink(temp_path)
-
 
 def test_json_export_method():
     """Test individual JSON export method."""
@@ -544,11 +513,10 @@ def test_json_export_method():
 
     # Export using individual method
     with tempfile.NamedTemporaryFile(
-        mode="w", suffix=".json", delete=False
+        mode="w", suffix=".json", delete=True
     ) as temp_file:
         temp_path = temp_file.name
 
-    try:
         result_path = exporter.export_json(test_data, Path(temp_path).name)
 
         assert result_path != "", "Individual export should return valid path"
@@ -562,15 +530,11 @@ def test_json_export_method():
 
         print("✓ Individual JSON export method test passed")
 
-    finally:
-        if os.path.exists(temp_path):
-            os.unlink(temp_path)
-
 
 def main():
     """Run all JSON logging tests."""
-    print("🧪 Running JSON Logging Tests")
-    print("=" * 50)
+    logger.info("🧪 Running JSON Logging Tests")
+    logger.info("=" * 50)
 
     try:
         test_json_exporter_initialization()
@@ -581,14 +545,14 @@ def main():
         test_large_data_export()
         test_json_export_method()
 
-        print("\n✅ All JSON logging tests passed!")
+        logger.info("\n✅ All JSON logging tests passed!")
         return 0
 
     except Exception as e:
-        print(f"\n❌ Test failed: {e}")
+        logger.error(f"\n❌ Test failed: {e}")
         import traceback
 
-        traceback.print_exc()
+        logger.error(traceback.format_exc())
         return 1
 
 

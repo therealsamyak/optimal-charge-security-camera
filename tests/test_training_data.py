@@ -5,27 +5,40 @@ Tests MIPS generation for 3 locations × 2 timestamps
 """
 
 import sys
+import logging
 import json
+import tempfile
 from pathlib import Path
-
-# Add src directory to path
-sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 
 from src.energy_data import EnergyData
 from src.power_profiler import PowerProfiler
 from src.yolo_model import YOLOModel
 
+# Setup logging for tests
+logging.basicConfig(level=logging.DEBUG, format="%(levelname)s: %(message)s")
+logger = logging.getLogger(__name__)
+
 
 def test_energy_data_loading():
     """Test loading energy data for different locations."""
-    print("Testing energy data loading...")
+    logger.info("Testing energy data loading...")
 
-    energy_data = EnergyData()
+    try:
+        energy_data = EnergyData()
+        logger.debug("EnergyData initialized")
+    except Exception as e:
+        logger.error(f"Failed to initialize EnergyData: {e}")
+        raise
 
     # Test locations
-    test_locations = ["CA", "FL", "NY"]  # 3 locations as specified
+    test_locations = [
+        "US-CAL-LDWP_2024_5_minute",
+        "US-FLA-FPL_2024_5_minute",
+        "US-NY-NYIS_2024_5_minute",
+    ]  # 3 locations as specified
 
     for location in test_locations:
+        logger.debug(f"Testing location: {location}")
         try:
             # Test getting clean energy percentage at different times
             morning_percentage = energy_data.get_clean_energy_percentage(
@@ -48,15 +61,15 @@ def test_energy_data_loading():
                 f"Invalid evening percentage for {location}: {evening_percentage}"
             )
 
-            print(
+            logger.debug(
                 f"  ✓ {location}: Morning={morning_percentage:.1f}%, Evening={evening_percentage:.1f}%"
             )
 
         except Exception as e:
-            print(f"  ❌ {location}: Error - {e}")
+            logger.error(f"  ❌ {location}: Error - {e}")
             raise
 
-    print("✓ Energy data loading test passed")
+    logger.info("✓ Energy data loading test passed")
 
 
 def test_power_profiles():
@@ -85,7 +98,11 @@ def test_power_profiles():
             assert model_data is not None, f"No data for model {model_name}"
 
             # Check required fields
-            required_fields = ["accuracy", "avg_inference_time_seconds", "power_cost"]
+            required_fields = [
+                "accuracy",
+                "avg_inference_time_seconds",
+                "model_power_mw",
+            ]
             for field in required_fields:
                 assert field in model_data, (
                     f"Missing field {field} for model {model_name}"
@@ -97,7 +114,7 @@ def test_power_profiles():
             print(
                 f"  ✓ {model_name}: accuracy={model_data['accuracy']:.3f}, "
                 f"time={model_data['avg_inference_time_seconds']:.3f}s, "
-                f"power={model_data['power_cost']:.3f}"
+                f"power={model_data['model_power_mw']:.3f}"
             )
 
         except Exception as e:
@@ -160,7 +177,11 @@ def test_mips_generation():
     profiler.load_profiles()
 
     # Test scenarios: 3 locations × 2 timestamps
-    locations = ["CA", "FL", "NY"]
+    locations = [
+        "US-CAL-LDWP_2024_5_minute",
+        "US-FLA-FPL_2024_5_minute",
+        "US-NY-NYIS_2024_5_minute",
+    ]
     timestamps = ["2024-01-15 08:00:00", "2024-01-15 20:00:00"]  # Morning and evening
 
     generated_scenarios = []
@@ -261,6 +282,72 @@ def test_mips_generation():
     print(
         f"✓ MIPS generation test passed ({len(generated_scenarios)} scenarios generated)"
     )
+
+
+def generate_test_scenarios():
+    """Generate test scenarios for other functions."""
+    # Initialize components
+    energy_data = EnergyData()
+    profiler = PowerProfiler()
+    profiler.load_profiles()
+
+    # Test scenarios: 3 locations × 2 timestamps
+    locations = [
+        "US-CAL-LDWP_2024_5_minute",
+        "US-FLA-FPL_2024_5_minute",
+        "US-NY-NYIS_2024_5_minute",
+    ]
+    timestamps = ["2024-01-15 08:00:00", "2024-01-15 20:00:00"]  # Morning and evening
+
+    generated_scenarios = []
+
+    for location in locations:
+        for timestamp in timestamps:
+            try:
+                # Get environmental conditions
+                clean_energy_pct = energy_data.get_clean_energy_percentage(
+                    location, timestamp
+                )
+                assert clean_energy_pct is not None, (
+                    f"No clean energy data for {location} at {timestamp}"
+                )
+
+                # Generate scenario with varying battery levels and requirements
+                battery_levels = [20.0, 50.0, 80.0]  # Low, medium, high
+                accuracy_requirements = [0.5, 0.8]  # Low, high
+                latency_requirements = [10.0, 25.0]  # Fast, slow
+
+                for battery_level in battery_levels:
+                    for accuracy_req in accuracy_requirements:
+                        for latency_req in latency_requirements:
+                            # Determine optimal model based on requirements
+                            available_models = profiler.get_all_models_data()
+                            optimal_model = select_optimal_model(
+                                available_models, accuracy_req, latency_req
+                            )
+
+                            # Determine charging decision
+                            should_charge = should_charge_decision(
+                                battery_level, clean_energy_pct
+                            )
+
+                            scenario = {
+                                "location": location,
+                                "timestamp": timestamp,
+                                "battery_level": battery_level,
+                                "clean_energy_percentage": clean_energy_pct,
+                                "accuracy_requirement": accuracy_req,
+                                "latency_requirement": latency_req,
+                                "optimal_model": optimal_model,
+                                "should_charge": should_charge,
+                            }
+
+                            generated_scenarios.append(scenario)
+
+            except Exception as e:
+                print(f"  ❌ {location} at {timestamp}: Error - {e}")
+                raise
+
     return generated_scenarios
 
 
@@ -276,7 +363,9 @@ def select_optimal_model(available_models, accuracy_requirement, latency_require
             and model_data["avg_inference_time_seconds"] * 1000 <= latency_requirement
         ):
             # Score based on efficiency (lower power is better)
-            score = 1.0 / (model_data["power_cost"] + 0.001)  # Avoid division by zero
+            score = 1.0 / (
+                model_data["model_power_mw"] + 0.001
+            )  # Avoid division by zero
             if score > best_score:
                 best_score = score
                 best_model = model_name
@@ -284,7 +373,7 @@ def select_optimal_model(available_models, accuracy_requirement, latency_require
     # If no model meets requirements, choose the most efficient one
     if best_model is None:
         best_model = min(
-            available_models.keys(), key=lambda x: available_models[x]["power_cost"]
+            available_models.keys(), key=lambda x: available_models[x]["model_power_mw"]
         )
 
     return best_model
@@ -298,43 +387,43 @@ def should_charge_decision(battery_level, clean_energy_percentage):
 
 def test_training_data_export():
     """Test exporting training data to JSON."""
-    print("Testing training data export...")
+    logger.info("Testing training data export...")
 
     # Generate test scenarios
-    scenarios = test_mips_generation()
+    scenarios = generate_test_scenarios()
+    logger.debug(f"Generated {len(scenarios)} scenarios for export")
 
-    # Create test output directory
-    test_dir = Path("test_output")
-    test_dir.mkdir(exist_ok=True)
+    # Use temporary directory
+    with tempfile.TemporaryDirectory() as temp_dir:
+        temp_path = Path(temp_dir)
+        output_file = temp_path / "test_training_data.json"
+        logger.debug(f"Using temporary file: {output_file}")
 
-    # Export to JSON
-    output_file = test_dir / "test_training_data.json"
+        try:
+            with open(output_file, "w") as f:
+                json.dump(scenarios, f, indent=2)
+            logger.debug("Scenarios exported to JSON")
 
-    try:
-        with open(output_file, "w") as f:
-            json.dump(scenarios, f, indent=2)
+            # Verify export
+            assert output_file.exists(), "Training data file not created"
 
-        # Verify export
-        assert output_file.exists(), "Training data file not created"
+            # Load and verify
+            with open(output_file, "r") as f:
+                loaded_scenarios = json.load(f)
+            logger.debug("Scenarios loaded back from JSON")
 
-        # Load and verify
-        with open(output_file, "r") as f:
-            loaded_scenarios = json.load(f)
+            assert len(loaded_scenarios) == len(scenarios), (
+                "Exported data length mismatch"
+            )
+            assert loaded_scenarios == scenarios, "Exported data mismatch"
 
-        assert len(loaded_scenarios) == len(scenarios), "Exported data length mismatch"
-        assert loaded_scenarios == scenarios, "Exported data mismatch"
+            logger.info(
+                f"✓ Training data export test passed ({len(scenarios)} scenarios exported)"
+            )
 
-        print(
-            f"✓ Training data export test passed ({len(scenarios)} scenarios exported)"
-        )
-
-        # Cleanup
-        output_file.unlink()
-        test_dir.rmdir()
-
-    except Exception as e:
-        print(f"  ❌ Export error: {e}")
-        raise
+        except Exception as e:
+            logger.error(f"  ❌ Export error: {e}")
+            raise
 
 
 def test_data_quality():
@@ -342,11 +431,11 @@ def test_data_quality():
     print("Testing data quality...")
 
     # Generate scenarios
-    scenarios = test_mips_generation()
+    scenarios = generate_test_scenarios()
 
     # Test for duplicates
     unique_scenarios = []
-    for scenario in scenarios:
+    for scenario in scenarios or []:
         scenario_key = (
             scenario["location"],
             scenario["timestamp"],
@@ -366,17 +455,19 @@ def test_data_quality():
 
     for scenario in scenarios:
         # Location distribution
-        location_counts[scenario["location"]] = (
-            location_counts.get(scenario["location"], 0) + 1
-        )
+        if scenarios:
+            location_counts[scenario["location"]] = (
+                location_counts.get(scenario["location"], 0) + 1
+            )
 
         # Model distribution
-        model_counts[scenario["optimal_model"]] = (
-            model_counts.get(scenario["optimal_model"], 0) + 1
-        )
+        if scenarios:
+            model_counts[scenario["optimal_model"]] = (
+                model_counts.get(scenario["optimal_model"], 0) + 1
+            )
 
         # Charge decision distribution
-        if scenario["should_charge"]:
+        if scenarios and scenario["should_charge"]:
             charge_decisions["charge"] += 1
         else:
             charge_decisions["no_charge"] += 1
@@ -394,20 +485,23 @@ def test_data_quality():
         "Some models have no scenarios"
     )
 
-    total_scenarios = len(scenarios)
-    charge_ratio = charge_decisions["charge"] / total_scenarios
+    total_scenarios = len(scenarios) if scenarios else 0
+    charge_ratio = (
+        charge_decisions["charge"] / total_scenarios if total_scenarios > 0 else 0
+    )
     assert 0.1 <= charge_ratio <= 0.9, f"Unreasonable charge ratio: {charge_ratio:.2f}"
 
     print("✓ Data quality test passed")
-    print(f"  Location distribution: {location_counts}")
-    print(f"  Model distribution: {model_counts}")
-    print(f"  Charge decisions: {charge_decisions}")
+    if scenarios:
+        print(f"  Location distribution: {location_counts}")
+        print(f"  Model distribution: {model_counts}")
+        print(f"  Charge decisions: {charge_decisions}")
 
 
 def main():
     """Run all training data tests."""
-    print("🧪 Running Training Data Tests")
-    print("=" * 50)
+    logger.info("🧪 Running Training Data Tests")
+    logger.info("=" * 50)
 
     try:
         test_energy_data_loading()
@@ -417,14 +511,14 @@ def main():
         test_training_data_export()
         test_data_quality()
 
-        print("\n✅ All training data tests passed!")
+        logger.info("\n✅ All training data tests passed!")
         return 0
 
     except Exception as e:
-        print(f"\n❌ Test failed: {e}")
+        logger.error(f"\n❌ Test failed: {e}")
         import traceback
 
-        traceback.print_exc()
+        logger.error(traceback.format_exc())
         return 1
 
 
