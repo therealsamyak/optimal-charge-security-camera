@@ -26,7 +26,13 @@ class SimulationRunnerBase:
 
     def __init__(self, config_path: str = "config.jsonc", max_workers: int = 100):
         self.config_loader = ConfigLoader(config_path)
-        self.max_workers = max_workers
+        # Read workers from config, fallback to provided max_workers or default 100
+        config = self.config_loader.config
+        self.max_workers = (
+            max_workers
+            if max_workers != 100
+            else config.get("workers", {}).get("max_workers", 100)
+        )
         self.logger = logging.getLogger(__name__)
 
         # Load power profiles

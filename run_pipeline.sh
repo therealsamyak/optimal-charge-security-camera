@@ -163,15 +163,17 @@ show_results() {
     fi
     
     # Simulation results
-    if ls results/*aggregated-results.csv 1> /dev/null 2>&1; then
-        print_success "Simulation Results: CSV files generated"
-        echo "  Latest: $(ls -t results/*aggregated-results.csv | head -1)"
+    if ls results/batch-run-*-metadata.json 1> /dev/null 2>&1; then
+        print_success "Simulation Results: JSON files generated"
+        latest_file=$(ls -t results/batch-run-*-metadata.json | head -1)
+        echo "  Latest: $latest_file"
+        echo "  Timestamp: $(stat -f "%Sm" -t "%Y-%m-%d %H:%M:%S" "$latest_file" 2>/dev/null || echo "Unknown")"
     else
         print_error "Simulation Results: Not found"
     fi
     
     echo "=============================================="
-    print_status "All results saved in 'results/' directory"
+    print_status "All JSON results saved in 'results/' directory"
 }
 
 # Main execution

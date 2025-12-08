@@ -43,5 +43,10 @@
     "latency_range": {"min": 2, "max": 15},
     "battery_capacity_range": {"min": 2, "max": 15},
     "charge_rate_range": {"min": 50, "max": 200}
+  },
+  // Parallel processing configuration
+  "workers": {
+    // Number of workers for parallel processing
+    "max_workers": 100
   }
 }
