@@ -169,17 +169,30 @@ class OracleController(Controller):
                 prob += battery_vars[t] == 50
             else:
                 # Battery transition: battery_t = battery_{t-1} + charge_{t-1} * rate - energy_used_{t-1}
-                energy_used = pulp.lpSum(
+
+                # Energy consumed in mWh for the task interval
+                energy_used_mwh = pulp.lpSum(
                     [
-                        available_models[name]["power_cost"] * model_vars[t - 1][name]
+                        available_models[name]["power_cost"]
+                        * model_vars[t - 1][name]
+                        * task_interval
+                        / 3600
                         for name in available_models.keys()
                     ]
                 )
-                charge_added = charge_vars[t - 1] * (
-                    charge_rate * task_interval / 3600 / battery_capacity * 100
-                )
+
+                # Convert mWh to battery percentage
+                energy_used_percent = energy_used_mwh / battery_capacity * 100
+
+                # Charging: convert watts to mWh, then to percentage
+                charge_added_mwh = (
+                    charge_vars[t - 1] * charge_rate * task_interval / 1000
+                )  # W to mWh
+                charge_added_percent = charge_added_mwh / battery_capacity * 100
+
                 prob += (
-                    battery_vars[t] == battery_vars[t - 1] + charge_added - energy_used
+                    battery_vars[t]
+                    == battery_vars[t - 1] + charge_added_percent - energy_used_percent
                 )
 
             # Battery bounds

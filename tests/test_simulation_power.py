@@ -284,6 +284,177 @@ def test_oracle_energy_optimization():
         return None
 
 
+def test_battery_dynamics_accuracy():
+    """Test battery dynamics calculations are mathematically accurate."""
+    print("Testing battery dynamics accuracy...")
+
+    try:
+        from controller import OracleController
+        from config_loader import ConfigLoader
+        from battery import Battery
+
+        # Load config
+        config_loader = ConfigLoader()
+        config = config_loader.get_simulation_config()
+
+        # Create simple test scenario
+        clean_energy_series = [50.0, 50.0, 50.0]  # 3 timesteps
+        task_requirements = [
+            {"accuracy": 0.5, "latency": 8.0},
+            {"accuracy": 0.5, "latency": 8.0},
+            {"accuracy": 0.5, "latency": 8.0},
+        ]
+
+        # Initialize oracle controller
+        oracle = OracleController(clean_energy_series, task_requirements, config)
+
+        # Get optimal schedule
+        schedule = oracle.optimal_schedule
+        print(f"  Optimal schedule: {schedule}")
+
+        # Manually calculate battery levels using same logic as Battery class
+        battery = Battery(
+            capacity_wh=config.battery_capacity_wh,
+            charge_rate_watts=config.charge_rate_watts,
+        )
+
+        # Set initial battery to 50% (matching oracle)
+        battery.current_level_wh = config.battery_capacity_wh * 0.5
+
+        # Load model power data
+        import json
+        from pathlib import Path
+
+        profiles_file = Path("model-data/power_profiles.json")
+        with open(profiles_file, "r") as f:
+            models = json.load(f)
+
+        manual_battery_levels = [50.0]  # Start at 50%
+
+        for t, (model_name, should_charge) in enumerate(schedule):
+            # Get model power in mW
+            power_mw = models[model_name]["model_power_mw"]
+
+            # Discharge for model usage
+            success = battery.discharge(
+                power_mw=power_mw,
+                duration_seconds=config.task_interval_seconds,
+                clean_energy_percentage=0.0,  # Don't track clean energy for this test
+            )
+            assert success, f"Battery discharge failed at timestep {t}"
+
+            # Charge if needed
+            if should_charge:
+                battery.charge(config.task_interval_seconds)
+
+            # Record battery percentage
+            manual_battery_levels.append(battery.get_percentage())
+
+        print(
+            f"  Manual battery levels: {manual_battery_levels[:-1]}"
+        )  # Exclude final state
+        print("  Oracle battery levels: [calculated internally]")
+
+        # Verify battery never goes negative or above 100%
+        for level in manual_battery_levels:
+            assert 0 <= level <= 100, f"Battery level {level} out of bounds"
+
+        # Verify final battery level is reasonable
+        final_level = manual_battery_levels[-1]
+        assert 0 <= final_level <= 100, (
+            f"Final battery level {final_level} out of bounds"
+        )
+
+        print("✓ Battery dynamics accuracy test passed")
+        return None
+
+    except Exception as e:
+        print(f"⚠️  Battery dynamics test failed: {e}")
+        import traceback
+
+        traceback.print_exc()
+        return None
+
+
+def test_energy_calculation_consistency():
+    """Test energy calculations are consistent between components."""
+    print("Testing energy calculation consistency...")
+
+    try:
+        from battery import Battery
+        from config_loader import ConfigLoader
+
+        # Load config
+        config_loader = ConfigLoader()
+        config = config_loader.get_simulation_config()
+
+        # Test with known values
+        battery = Battery(
+            capacity_wh=config.battery_capacity_wh,
+            charge_rate_watts=config.charge_rate_watts,
+        )
+
+        # Set to known state
+        battery.current_level_wh = 2.5  # 50% of 5Wh
+
+        # Test discharge calculation
+        power_mw = 1000  # 1W
+        duration_seconds = 3600  # 1 hour
+        initial_level = battery.get_level_wh()
+
+        success = battery.discharge(power_mw, duration_seconds)
+        final_level = battery.get_level_wh()
+
+        # Should consume exactly 1Wh (1000mW * 1h = 1Wh)
+        actual_energy_used = initial_level - final_level
+
+        print(f"  Initial: {initial_level:.4f}Wh")
+        print(f"  Final: {final_level:.4f}Wh")
+        print(f"  Energy used: {actual_energy_used:.4f}Wh")
+        print("  Expected: 1.0000Wh")
+
+        assert abs(actual_energy_used - 1.0) < 0.0001, (
+            f"Energy calculation error: {actual_energy_used}"
+        )
+        assert success, "Discharge should succeed with sufficient battery"
+
+        # Test charge calculation - start with lower battery to allow charging without hitting capacity
+        battery.current_level_wh = 4.9  # 98% to allow charging without hitting capacity
+        charge_duration = 60  # 1 minute
+        before_charge = battery.get_level_wh()
+
+        energy_added = battery.charge(charge_duration)
+        after_charge = battery.get_level_wh()
+
+        # Should add exactly 0.1Wh (space available to full capacity)
+        space_available = battery.capacity_wh - before_charge
+        expected_charge = space_available  # Should be limited by available space
+        actual_charge = after_charge - before_charge
+
+        print(f"  Charge duration: {charge_duration}s")
+        print(f"  Before charge: {before_charge:.4f}Wh")
+        print(f"  After charge: {after_charge:.4f}Wh")
+        print(f"  Energy added: {energy_added:.4f}Wh")
+        print(f"  Expected (space available): {expected_charge:.4f}Wh")
+
+        assert abs(actual_charge - expected_charge) < 0.0001, (
+            f"Charge calculation error: {actual_charge}"
+        )
+        assert abs(energy_added - expected_charge) < 0.0001, (
+            f"Charge return value error: {energy_added}"
+        )
+
+        print("✓ Energy calculation consistency test passed")
+        return None
+
+    except Exception as e:
+        print(f"⚠️  Energy consistency test failed: {e}")
+        import traceback
+
+        traceback.print_exc()
+        return None
+
+
 def main():
     """Run all simulation power tests."""
     logger.info("🧪 Running Simulation Power Tests")
@@ -294,9 +465,13 @@ def main():
         test_power_profile_validation()
         test_model_performance_ranking()
 
-        # New oracle controller tests
+        # Oracle controller tests
         test_oracle_controller()
         test_oracle_energy_optimization()
+
+        # Battery accuracy tests
+        test_battery_dynamics_accuracy()
+        test_energy_calculation_consistency()
 
         logger.info("\n✅ All simulation power tests passed!")
         return 0

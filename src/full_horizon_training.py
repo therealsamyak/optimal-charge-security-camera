@@ -19,6 +19,7 @@ from config_loader import ConfigLoader, SimulationConfig
 from energy_data import EnergyData
 
 logger = logging.getLogger(__name__)
+logger.setLevel(logging.WARNING)  # Reduce logging verbosity
 
 
 def solve_full_horizon_milp(
@@ -101,16 +102,31 @@ def solve_full_horizon_milp(
             prob += battery_vars[t] == 50
         else:
             # Battery transition: battery_t = battery_{t-1} + charge_{t-1} * rate - energy_used_{t-1}
-            energy_used = pulp.lpSum(
+
+            # Energy consumed in mWh for the task interval
+            energy_used_mwh = pulp.lpSum(
                 [
-                    available_models[name]["power_cost"] * model_vars[t - 1][name]
+                    available_models[name]["power_cost"]
+                    * model_vars[t - 1][name]
+                    * task_interval
+                    / 3600
                     for name in available_models.keys()
                 ]
             )
-            charge_added = charge_vars[t - 1] * (
-                charge_rate * task_interval / 3600 / battery_capacity * 100
+
+            # Convert mWh to battery percentage
+            energy_used_percent = energy_used_mwh / battery_capacity * 100
+
+            # Charging: convert watts to mWh, then to percentage
+            charge_added_mwh = (
+                charge_vars[t - 1] * charge_rate * task_interval / 1000
+            )  # W to mWh
+            charge_added_percent = charge_added_mwh / battery_capacity * 100
+
+            prob += (
+                battery_vars[t]
+                == battery_vars[t - 1] + charge_added_percent - energy_used_percent
             )
-            prob += battery_vars[t] == battery_vars[t - 1] + charge_added - energy_used
 
         # Battery bounds
         prob += battery_vars[t] >= 0
@@ -223,14 +239,21 @@ def calculate_battery_at_timestep(
     for i in range(t):
         model_name, should_charge = optimal_schedule[i]
 
-        # Discharge for model usage
-        energy_used = available_models[model_name]["power_cost"]
-        battery_level -= energy_used
+        # Energy consumed in mWh for the task interval
+        energy_used_mwh = (
+            available_models[model_name]["power_cost"] * task_interval / 3600
+        )
+
+        # Convert mWh to battery percentage
+        energy_used_percent = energy_used_mwh / battery_capacity * 100
+        battery_level -= energy_used_percent
 
         # Charge if needed
         if should_charge:
-            charge_added = charge_rate * task_interval / 3600 / battery_capacity * 100
-            battery_level += charge_added
+            # Charging: convert watts to mWh, then to percentage
+            charge_added_mwh = charge_rate * task_interval / 1000  # W to mWh
+            charge_added_percent = charge_added_mwh / battery_capacity * 100
+            battery_level += charge_added_percent
 
         # Ensure bounds
         battery_level = max(0, min(100, battery_level))
