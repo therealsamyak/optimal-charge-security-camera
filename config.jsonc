@@ -4,7 +4,7 @@
     // Total simulation duration in days
     "duration_days": 1,
     // Time between simulation tasks in seconds
-    "task_interval_seconds": 60,
+    "task_interval_seconds": 300,
     // Time acceleration factor (1 = real-time)
     // Time acceleration factor: 1 = real-time, 2 = 2x faster, 10 = 10x faster
     // Controls how fast simulated time passes compared to real time
@@ -18,7 +18,7 @@
   // Battery configuration
   "battery": {
     // Total battery capacity in watt-hours
-    "capacity_wh": 5.0,
+    "capacity_wh": 200.0,
     // Maximum charging rate in watts
     "charge_rate_watts": 100
   },

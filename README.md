@@ -61,9 +61,9 @@ In short, we have **4 weeks, 4 locations, 4 controllers, 3 different accuracy/la
 
 ### Major High-Level Deliverables
 
-- Code to benchmark power consumption of each model task call.
+- Code to benchmark power consumption of each model task call. (already DONE)
 - Code to train the custom controller.
-- Code to run the simulations, and output a CSV file with metrics described in earlier sections. (which integrates the above 2 deliverables)
+- Code to run the simulations, and output a JSON file with metrics described in earlier sections. (which integrates the above 2 deliverables)
 
 #### Important Code-related Instructions
 

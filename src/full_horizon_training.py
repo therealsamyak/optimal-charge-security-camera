@@ -148,16 +148,26 @@ def solve_full_horizon_milp(
         # Task requirements: accuracy >= requirement, latency <= requirement
         task_req = task_requirements[t]
         eligible_models = []
+        ineligible_models = []
         for name, specs in available_models.items():
-            # Convert latency from ms to seconds for comparison
-            latency_seconds = specs["latency"] / 1000.0
             # Higher accuracy is fine, lower latency is required
-            if latency_seconds > task_req["latency"]:
+            if specs["latency"] > task_req["latency"]:
                 # Too slow - cannot use
                 prob += model_vars[t][name] == 0
+                ineligible_models.append(name)
+            elif specs["accuracy"] < task_req["accuracy"]:
+                # Too low accuracy - cannot use
+                prob += model_vars[t][name] == 0
+                ineligible_models.append(name)
             else:
-                # Latency OK, accuracy OK (higher is fine)
+                # Both requirements met
                 eligible_models.append(name)
+
+        print(
+            f"🔍 DEBUG T{t}: Required accuracy={task_req['accuracy']:.2f}, latency={task_req['latency']:.3f}s"
+        )
+        print(f"🔍 DEBUG T{t}: Eligible models: {eligible_models}")
+        print(f"🔍 DEBUG T{t}: Ineligible models: {ineligible_models}")
 
         # Battery dynamics
         if t == 0:
@@ -548,6 +558,7 @@ def generate_day_training_data(
         actual_status = status
         if battery_before_action <= 0.01 and status == "success" and model is not None:
             actual_status = "task_miss"  # Cannot run models with no battery
+            print(f"🔍 DEBUG T{t}: OVERRIDING success->task_miss due to zero battery")
 
         example = {
             "battery_level": battery_before_action,
