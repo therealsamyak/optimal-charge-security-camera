@@ -12,7 +12,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent / "src"))
 
 try:
-    from full_horizon_training import generate_full_horizon_training_data
+    from src.full_horizon_training import generate_full_horizon_training_data
 except ImportError as e:
     print(f"Import error: {e}")
     print(
@@ -26,23 +26,20 @@ def main():
     print("Generating full-horizon training data...")
 
     try:
-        # Generate training data using existing full-horizon implementation
+        # Generate training data using full-horizon MILP optimization
         training_data = generate_full_horizon_training_data()
 
-        # Save to JSON
-        output_file = "results/training_data.json"
-        print(f"Saving training data to {output_file}...")
+        print(f"✓ Generated {len(training_data)} training samples")
+
+        # Save to JSON file
+        results_dir = Path("results")
+        results_dir.mkdir(exist_ok=True)
+        output_file = results_dir / "training_data.json"
 
         with open(output_file, "w") as f:
             json.dump(training_data, f, indent=2)
 
-        print(f"✓ Generated {len(training_data)} training samples")
-        print(f"✓ Training data saved to results/training_data.json")
-
-        # Log file size
-        file_size = Path(output_file).stat().st_size
-        file_size_mb = file_size / (1024 * 1024)
-        print(f"File size: {file_size_mb:.2f} MB")
+        print(f"✓ Training data saved to {output_file}")
 
     except Exception as e:
         print(f"✗ Error generating training data: {e}")
