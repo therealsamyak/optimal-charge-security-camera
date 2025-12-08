@@ -38,7 +38,7 @@ def solve_full_horizon_milp(
 
     Returns:
         List of (model_name, should_charge, status) tuples for each timestep
-        status: "success", "task_miss", "super_miss"
+        status: "success", "small_miss", "large_miss"
     """
     print(f"🔧 Starting MILP solver with {len(clean_energy_series)} timesteps")
     print(
@@ -83,7 +83,8 @@ def solve_full_horizon_milp(
     model_vars = {}
     charge_vars = {}
     battery_vars = {}
-    task_miss_vars = {}
+    small_miss_vars = {}
+    large_miss_vars = {}
     super_miss_vars = {}
 
     for t in range(num_timesteps):
@@ -93,7 +94,8 @@ def solve_full_horizon_milp(
         }
         charge_vars[t] = pulp.LpVariable(f"charge_{t}", cat="Binary")
         battery_vars[t] = pulp.LpVariable(f"battery_{t}", lowBound=0, upBound=100)
-        task_miss_vars[t] = pulp.LpVariable(f"task_miss_{t}", cat="Binary")
+        small_miss_vars[t] = pulp.LpVariable(f"small_miss_{t}", cat="Binary")
+        large_miss_vars[t] = pulp.LpVariable(f"large_miss_{t}", cat="Binary")
         super_miss_vars[t] = pulp.LpVariable(f"super_miss_{t}", cat="Binary")
 
     # Objective: maximize successful tasks, penalize misses heavily
@@ -114,8 +116,8 @@ def solve_full_horizon_milp(
         )
         * 0.1  # Very small bonus for clean charging
     )
-    task_miss_penalty = (
-        pulp.lpSum([task_miss_vars[t] for t in range(num_timesteps)]) * 5000
+    small_miss_penalty = (
+        pulp.lpSum([small_miss_vars[t] for t in range(num_timesteps)]) * 5000
     )
     super_miss_penalty = (
         pulp.lpSum([super_miss_vars[t] for t in range(num_timesteps)]) * 10000
@@ -129,7 +131,7 @@ def solve_full_horizon_milp(
     prob += (
         successful_tasks
         + clean_energy_reward
-        - task_miss_penalty
+        - small_miss_penalty
         - super_miss_penalty
         - excessive_charge_penalty
     )
@@ -140,7 +142,8 @@ def solve_full_horizon_milp(
         prob += (
             pulp.lpSum(model_vars[t].values())
             + charge_vars[t]
-            + task_miss_vars[t]
+            + small_miss_vars[t]
+            + large_miss_vars[t]
             + super_miss_vars[t]
             == 1
         )
@@ -162,12 +165,6 @@ def solve_full_horizon_milp(
             else:
                 # Both requirements met
                 eligible_models.append(name)
-
-        print(
-            f"🔍 DEBUG T{t}: Required accuracy={task_req['accuracy']:.2f}, latency={task_req['latency']:.3f}s"
-        )
-        print(f"🔍 DEBUG T{t}: Eligible models: {eligible_models}")
-        print(f"🔍 DEBUG T{t}: Ineligible models: {ineligible_models}")
 
         # Battery dynamics
         if t == 0:
@@ -244,7 +241,13 @@ def solve_full_horizon_milp(
 
     # Extract optimal schedule
     optimal_schedule = []
-    action_counts = {"success": 0, "task_miss": 0, "super_miss": 0, "charge": 0}
+    action_counts = {
+        "success": 0,
+        "small_miss": 0,
+        "large_miss": 0,
+        "super_miss": 0,
+        "charge": 0,
+    }
     model_counts = {}
 
     for t in range(num_timesteps):
@@ -265,8 +268,8 @@ def solve_full_horizon_milp(
             should_charge = True
             action_counts["charge"] += 1
 
-        task_miss_val = pulp.value(task_miss_vars[t])
-        if task_miss_val is not None and abs(task_miss_val - 1.0) < 1e-6:
+        small_miss_val = pulp.value(small_miss_vars[t])
+        if small_miss_val is not None and abs(small_miss_val - 1.0) < 1e-6:
             # Find closest model to criteria (may not meet requirements)
             current_task_req = task_requirements[t]
 
@@ -288,8 +291,8 @@ def solve_full_horizon_milp(
                 key=lambda x: model_distance(x, available_models[x]),
             )
             selected_model = best_model
-            status = "task_miss"
-            action_counts["task_miss"] += 1
+            status = "small_miss"
+            action_counts["small_miss"] += 1
 
         super_miss_val = pulp.value(super_miss_vars[t])
         if super_miss_val is not None and abs(super_miss_val - 1.0) < 1e-6:
@@ -312,7 +315,7 @@ def solve_full_horizon_milp(
     print("📊 Schedule Summary:")
     print(f"   ✅ Success: {action_counts['success']}")
     print(f"   ⚡ Charge: {action_counts['charge']}")
-    print(f"   ❌ Task Miss: {action_counts['task_miss']}")
+    print(f"   ❌ Small Miss: {action_counts['small_miss']}")
     print(f"   💀 Super Miss: {action_counts['super_miss']}")
     print(f"   🤖 Models used: {dict(model_counts)}")
 
@@ -418,8 +421,8 @@ def calculate_battery_at_timestep(
     for i in range(t):
         model_name, should_charge, status = optimal_schedule[i]
 
-        # Only consume energy for both successful tasks and task misses
-        if status in ["success", "task_miss"] and model_name is not None:
+        # Only consume energy for both successful tasks and small misses
+        if status in ["success", "small_miss"] and model_name is not None:
             energy_used_mwh = available_models[model_name]["energy_per_task_mwh"]
         else:
             energy_used_mwh = 0  # No energy consumption for super misses or None models
@@ -557,8 +560,7 @@ def generate_day_training_data(
         # If battery is 0, override status to task_miss or super_miss
         actual_status = status
         if battery_before_action <= 0.01 and status == "success" and model is not None:
-            actual_status = "task_miss"  # Cannot run models with no battery
-            print(f"🔍 DEBUG T{t}: OVERRIDING success->task_miss due to zero battery")
+            actual_status = "large_miss"  # Cannot run models with no battery (Large Miss per README)
 
         example = {
             "battery_level": battery_before_action,

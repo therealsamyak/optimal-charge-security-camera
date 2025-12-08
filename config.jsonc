@@ -4,21 +4,21 @@
     // Total simulation duration in days
     "duration_days": 1,
     // Time between simulation tasks in seconds
-    "task_interval_seconds": 300,
+    "task_interval_seconds": 15,
     // Time acceleration factor (1 = real-time)
     // Time acceleration factor: 1 = real-time, 2 = 2x faster, 10 = 10x faster
     // Controls how fast simulated time passes compared to real time
     // Higher values make simulations run faster but may affect timing accuracy
     "time_acceleration": 10,
     // Minimum accuracy requirement percentage for user tasks
-    "user_accuracy_requirement": 50.0,
+    "user_accuracy_requirement": 55.0,
     // Maximum latency requirement in seconds for user tasks
-    "user_latency_requirement": 0.6
+    "user_latency_requirement": 4.5
   },
   // Battery configuration
   "battery": {
-    // Total battery capacity in watt-hours
-    "capacity_wh": 200.0,
+    // Total battery capacity in watt-hours (small device)
+    "capacity_wh": 20.0,
     // Maximum charging rate in watts
     "charge_rate_watts": 100
   },
@@ -47,6 +47,6 @@
   // Parallel processing configuration
   "workers": {
     // Number of workers for parallel processing
-    "max_workers": 100
+    "max_workers": 4
   }
 }
