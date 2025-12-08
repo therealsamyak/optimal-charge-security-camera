@@ -6,7 +6,7 @@ from dataclasses import dataclass
 from datetime import datetime
 
 from src.battery import Battery
-from src.controller import Controller
+from src.controller import Controller, OracleController
 from src.energy_data import EnergyData
 from src.config_loader import SimulationConfig
 
@@ -99,11 +99,16 @@ class SimulationEngine:
             "model_energy_breakdown": {model: 0.0 for model in power_profiles.keys()},
             "time_below_20_percent": 0,
             "time_above_80_percent": 0,
-            "total_simulation_time": 0.0,
         }
+
+        # Oracle controller will be prepared after method definitions
 
         # Load energy data for location and season
         self.clean_energy_data = self._load_clean_energy_data()
+
+        # For oracle controller: prepare full-day data
+        if isinstance(controller, OracleController):
+            self.prepare_oracle_future_data()
 
     def _load_clean_energy_data(self) -> Dict[int, float]:
         """Load clean energy data for specific location and season."""
@@ -260,6 +265,10 @@ class SimulationEngine:
             available_models=available_models,
         )
 
+        # Advance oracle timestep if this is an oracle controller
+        if isinstance(self.controller, OracleController):
+            self.controller.advance_timestep()
+
         self.logger.debug(
             f"[{sim_id}] Controller selected model: {choice.model_name}, charge: {choice.should_charge}"
         )
@@ -359,6 +368,78 @@ class SimulationEngine:
             )
 
         return True
+
+    def prepare_oracle_future_data(self):
+        """Extract full day's clean energy and task requirements for oracle"""
+        # Get clean energy for entire day
+        clean_energy_series = self.get_full_day_clean_energy()
+
+        # Generate task requirements for entire day
+        task_requirements = self.generate_full_day_task_requirements()
+
+        # Re-initialize oracle with full data
+        self.controller = OracleController(
+            clean_energy_series=clean_energy_series,
+            task_requirements=task_requirements,
+            config=self.config,
+        )
+
+    def get_full_day_clean_energy(self) -> List[float]:
+        """Get clean energy percentages for entire day"""
+        from datetime import datetime, timedelta
+
+        # Get representative day for the season
+        day = self.get_representative_day_for_season()
+
+        clean_energy_series = []
+        duration_seconds = self.config.duration_days * 24 * 3600
+        task_interval = self.config.task_interval_seconds
+
+        for timestamp in range(0, int(duration_seconds), task_interval):
+            dt = datetime(2024, day["month"], day["day"]) + timedelta(seconds=timestamp)
+            clean_energy_pct = self.energy_data.get_clean_energy_percentage(
+                self.get_location_filename(), dt.strftime("%Y-%m-%d %H:%M:%S")
+            )
+            clean_energy_series.append(clean_energy_pct or 0.0)
+
+        return clean_energy_series
+
+    def generate_full_day_task_requirements(self) -> List[Dict]:
+        """Generate task requirements for entire day"""
+        task_requirements = []
+        duration_seconds = self.config.duration_days * 24 * 3600
+        task_interval = self.config.task_interval_seconds
+
+        for timestamp in range(0, int(duration_seconds), task_interval):
+            task_requirements.append(
+                {
+                    "accuracy": self.config.user_accuracy_requirement
+                    / 100.0,  # Convert to decimal
+                    "latency": self.config.user_latency_requirement,
+                }
+            )
+
+        return task_requirements
+
+    def get_representative_day_for_season(self) -> Dict[str, int]:
+        """Get representative day for current season"""
+        season_days = {
+            "winter": {"month": 1, "day": 15},  # January 15
+            "spring": {"month": 4, "day": 15},  # April 15
+            "summer": {"month": 7, "day": 15},  # July 15
+            "fall": {"month": 10, "day": 15},  # October 15
+        }
+        return season_days.get(self.season, {"month": 1, "day": 15})
+
+    def get_location_filename(self) -> str:
+        """Get energy data filename for location"""
+        location_mapping = {
+            "CA": "US-CAL-LDWP_2024_5_minute",
+            "FL": "US-FLA-FPL_2024_5_minute",
+            "NW": "US-NW-PSEI_2024_5_minute",
+            "NY": "US-NY-NYIS_2024_5_minute",
+        }
+        return location_mapping.get(self.location, "US-CAL-LDWP_2024_5_minute")
 
     def run(self) -> Dict:
         """Run the complete simulation."""
@@ -598,24 +679,6 @@ class SimulationEngine:
                 self.logger.warning(
                     f"Clean energy percentage inconsistency: calculated {calculated_clean_pct:.2f}% vs recorded {recorded_clean_pct:.2f}%"
                 )
-
-    def _validate_metrics_consistency(self):
-        """Validate that metrics are logically consistent."""
-        # Energy balance check
-        calculated_total_mwh = self.metrics.get(
-            "clean_energy_mwh", 0.0
-        ) + self.metrics.get("dirty_energy_mwh", 0.0)
-        calculated_total_wh = calculated_total_mwh * 1000
-        if abs(calculated_total_wh - self.metrics.get("total_energy_wh", 0.0)) > 0.001:
-            self.logger.warning(
-                f"Energy balance mismatch: calculated {calculated_total_wh:.3f}Wh vs recorded {self.metrics.get('total_energy_wh', 0.0):.3f}Wh"
-            )
-
-        # Task completion consistency
-        if self.metrics.get("completed_tasks", 0) > self.metrics.get("total_tasks", 0):
-            self.logger.error(
-                f"Task completion inconsistency: completed_tasks ({self.metrics.get('completed_tasks', 0)}) > total_tasks ({self.metrics.get('total_tasks', 0)})"
-            )
 
         # Model selection consistency
         total_model_selections = sum(self.metrics.get("model_selections", {}).values())

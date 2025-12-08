@@ -53,6 +53,13 @@ class BatchConfig:
         self.charge_rate_range = charge_rate_range or {"min": 50, "max": 200}
 
 
+class WorkersConfig:
+    """Configuration for parallel processing workers."""
+
+    def __init__(self, max_workers: int = 100):
+        self.max_workers = max_workers
+
+
 class ConfigLoader:
     """Loads and validates simulation configuration."""
 
@@ -157,6 +164,12 @@ class ConfigLoader:
                 "charge_rate_range", {"min": 50, "max": 200}
             ),
         )
+
+    def get_workers_config(self) -> WorkersConfig:
+        """Get workers configuration as WorkersConfig object."""
+        workers_config = self.config.get("workers", {})
+
+        return WorkersConfig(max_workers=workers_config.get("max_workers", 100))
 
     def validate_config(self) -> bool:
         """Validate configuration parameters."""

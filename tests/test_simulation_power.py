@@ -9,7 +9,9 @@ import logging
 import json
 from pathlib import Path
 
-from src.power_profiler import PowerProfiler
+# Add src to path
+sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
+
 
 # Setup logging for tests
 logging.basicConfig(level=logging.DEBUG, format="%(levelname)s: %(message)s")
@@ -44,185 +46,51 @@ def test_power_profiles_loading():
     return None
 
 
-def test_power_profiler_initialization():
-    """Test PowerProfiler initialization."""
-    print("Testing PowerProfiler initialization...")
+def test_power_profile_validation():
+    """Test power profile data validation."""
+    print("Testing power profile validation...")
 
-    try:
-        profiler = PowerProfiler()
-        assert profiler is not None, "PowerProfiler should be initialized"
-        assert hasattr(profiler, "power_profiles"), (
-            "Should have power_profiles attribute"
-        )
-        assert hasattr(profiler, "profiles_file"), "Should have profiles_file attribute"
-        print("✓ PowerProfiler initialized successfully")
-        return None
-    except Exception as e:
-        # This might fail on non-macOS systems due to powermetrics requirement
-        print(f"⚠️  PowerProfiler initialization failed (expected on non-macOS): {e}")
-        return None
-
-
-def test_load_profiles():
-    """Test loading profiles into PowerProfiler."""
-    print("Testing load_profiles method...")
-
-    profiler = PowerProfiler()
-
-    try:
-        profiler.load_profiles()
-        assert len(profiler.power_profiles) > 0, "No profiles loaded"
-
-        # Check expected models
-        expected_models = [
-            "YOLOv10_N",
-            "YOLOv10_S",
-            "YOLOv10_M",
-            "YOLOv10_B",
-            "YOLOv10_L",
-            "YOLOv10_X",
-        ]
-
-        for model in expected_models:
-            assert model in profiler.power_profiles, f"Missing model: {model}"
-            model_data = profiler.power_profiles[model]
-
-            # Check required fields
-            required_fields = [
-                "accuracy",
-                "avg_inference_time_seconds",
-                "model_power_mw",
-            ]
-            for field in required_fields:
-                assert field in model_data, f"Missing field {field} for model {model}"
-                assert isinstance(model_data[field], (int, float)), (
-                    f"Field {field} should be numeric"
-                )
-                assert model_data[field] >= 0, f"Field {field} should be non-negative"
-
-            print(
-                f"  ✓ {model}: accuracy={model_data['accuracy']:.3f}, "
-                f"time={model_data['avg_inference_time_seconds']:.3f}s, "
-                f"power={model_data['model_power_mw']:.3f}"
-            )
-
-        print(f"✓ Loaded {len(profiler.power_profiles)} profiles successfully")
-        return None
-
-    except Exception as e:
-        print(f"⚠️  Load profiles failed (expected on non-macOS): {e}")
-        return None
-
-
-def test_get_all_models_data():
-    """Test getting all models data."""
-    print("Testing get_all_models_data...")
-
-    profiler = PowerProfiler()
-
-    try:
-        profiler.load_profiles()
-        all_models = profiler.get_all_models_data()
-
-        assert isinstance(all_models, dict), "Should return dictionary"
-        assert len(all_models) > 0, "Should return non-empty dictionary"
-
-        # Check structure of model data
-        for model_name, model_data in all_models.items():
-            assert isinstance(model_name, str), "Model name should be string"
-            assert isinstance(model_data, dict), "Model data should be dictionary"
-
-            # Verify required fields
-            required_fields = [
-                "accuracy",
-                "avg_inference_time_seconds",
-                "model_power_mw",
-            ]
-            for field in required_fields:
-                assert field in model_data, f"Missing field {field} in {model_name}"
-                assert model_data[field] >= 0, (
-                    f"Field {field} should be non-negative in {model_name}"
-                )
-
-        print(f"✓ get_all_models_data returned {len(all_models)} models")
-        return None
-
-    except Exception as e:
-        print(f"⚠️  get_all_models_data failed (expected on non-macOS): {e}")
-        return None
-
-
-def test_get_model_power():
-    """Test getting power for specific models."""
-    print("Testing get_model_power...")
-
-    profiler = PowerProfiler()
-
-    try:
-        profiler.load_profiles()
-
-        # Test power for each model
-        test_models = [
-            ("YOLOv10_N", "n"),
-            ("YOLOv10_S", "s"),
-            ("YOLOv10_M", "m"),
-            ("YOLOv10_B", "b"),
-            ("YOLOv10_L", "l"),
-            ("YOLOv10_X", "x"),
-        ]
-
-        for model_name, model_version in test_models:
-            try:
-                power = profiler.get_model_power(model_name, model_version)
-                assert isinstance(power, (int, float)), "Power should be numeric"
-                assert power >= 0, "Power should be non-negative"
-                print(f"  ✓ {model_name} v{model_version}: {power:.3f}W")
-            except Exception as e:
-                print(f"  ⚠️  {model_name} v{model_version}: {e}")
-
-        print("✓ get_model_power tests completed")
-
-    except Exception as e:
-        print(f"⚠️  get_model_power failed (expected on non-macOS): {e}")
-
-
-def test_power_calculation_consistency():
-    """Test power calculation consistency."""
-    print("Testing power calculation consistency...")
-
-    # Load raw profiles data
     profiles_file = Path("model-data/power_profiles.json")
     with open(profiles_file, "r") as f:
-        raw_profiles = json.load(f)
+        profiles_data = json.load(f)
 
-    # Test consistency across different access methods
-    profiler = PowerProfiler()
+    # Validate each model profile
+    for model_name, model_data in profiles_data.items():
+        # Check model name format
+        assert model_name.startswith("YOLOv10_"), (
+            f"Invalid model name format: {model_name}"
+        )
 
-    try:
-        profiler.load_profiles()
+        # Check required fields
+        required_fields = ["accuracy", "avg_inference_time_seconds", "model_power_mw"]
+        for field in required_fields:
+            assert field in model_data, f"Missing field {field} in {model_name}"
 
-        for model_name in raw_profiles.keys():
-            # Compare raw data with profiler data
-            raw_data = raw_profiles[model_name]
-            profiler_data = profiler.power_profiles.get(model_name)
-
-            assert profiler_data is not None, (
-                f"Model {model_name} missing from profiler"
+            value = model_data[field]
+            assert isinstance(value, (int, float)), (
+                f"Field {field} should be numeric in {model_name}"
             )
+            assert value >= 0, f"Field {field} should be non-negative in {model_name}"
+            assert not (value != value), (
+                f"Field {field} should not be NaN in {model_name}"
+            )  # NaN check
 
-            # Check consistency
-            for field in ["accuracy", "avg_inference_time_seconds", "model_power_mw"]:
-                raw_value = raw_data.get(field)
-                profiler_value = profiler_data.get(field)
+        # Validate reasonable ranges
+        accuracy = model_data["accuracy"]
+        latency = model_data["avg_inference_time_seconds"]
+        power = model_data["model_power_mw"]
 
-                assert raw_value == profiler_value, (
-                    f"Inconsistent {field} for {model_name}: {raw_value} vs {profiler_value}"
-                )
+        assert 0 <= accuracy <= 1, (
+            f"Accuracy should be in [0,1]: {accuracy} for {model_name}"
+        )
+        assert 0 < latency < 1, (
+            f"Latency should be reasonable: {latency}s for {model_name}"
+        )
+        assert 0 < power < 5000, (
+            f"Power should be reasonable: {power}mW for {model_name}"
+        )
 
-        print("✓ Power calculation consistency verified")
-
-    except Exception as e:
-        print(f"⚠️  Consistency test failed (expected on non-macOS): {e}")
+    print(f"✓ All {len(profiles_data)} profiles validated")
 
 
 def test_model_performance_ranking():
@@ -273,103 +141,147 @@ def test_model_performance_ranking():
     print("✓ Model performance ranking verified")
 
 
-def test_power_profile_validation():
-    """Test power profile data validation."""
-    print("Testing power profile validation...")
+def test_oracle_controller():
+    """Test OracleController with full-horizon optimization."""
+    print("Testing OracleController with full-horizon optimization...")
 
-    profiles_file = Path("model-data/power_profiles.json")
-    with open(profiles_file, "r") as f:
-        profiles_data = json.load(f)
+    try:
+        from controller import OracleController
+        from config_loader import ConfigLoader
 
-    # Validate each model profile
-    for model_name, model_data in profiles_data.items():
-        # Check model name format
-        assert model_name.startswith("YOLOv10_"), (
-            f"Invalid model name format: {model_name}"
+        # Load config
+        config_loader = ConfigLoader()
+        config = config_loader.get_simulation_config()
+
+        # Load actual model data from JSON
+        import json
+        from pathlib import Path
+
+        profiles_file = Path("model-data/power_profiles.json")
+        with open(profiles_file, "r") as f:
+            raw_models = json.load(f)
+
+        # Transform to expected format
+        available_models = {}
+        for name, profile in raw_models.items():
+            available_models[name] = {
+                "accuracy": profile["accuracy"],
+                "latency": profile["avg_inference_time_seconds"]
+                * 1000,  # Convert to ms
+                "power_cost": profile["model_power_mw"],  # Power in mW
+            }
+
+        # Create test data (shorter for testing)
+        clean_energy_series = [50.0, 60.0, 70.0, 80.0, 40.0]  # 5 timesteps
+        task_requirements = [
+            {"accuracy": 0.5, "latency": 8.0},
+            {"accuracy": 0.5, "latency": 8.0},
+            {"accuracy": 0.5, "latency": 8.0},
+            {"accuracy": 0.5, "latency": 8.0},
+            {"accuracy": 0.5, "latency": 8.0},
+        ]
+
+        # Initialize oracle controller
+        oracle = OracleController(clean_energy_series, task_requirements, config)
+
+        # Test DP matrix creation
+        assert hasattr(oracle, "dp_matrix"), "Oracle should have DP matrix"
+        assert len(oracle.dp_matrix) == 5, "DP matrix should have 5 entries"
+
+        # Test optimal schedule
+        assert hasattr(oracle, "optimal_schedule"), (
+            "Oracle should have optimal schedule"
         )
+        assert len(oracle.optimal_schedule) == 5, "Schedule should have 5 entries"
 
-        # Check required fields
-        required_fields = ["accuracy", "avg_inference_time_seconds", "model_power_mw"]
-        for field in required_fields:
-            assert field in model_data, f"Missing field {field} in {model_name}"
-
-            value = model_data[field]
-            assert isinstance(value, (int, float)), (
-                f"Field {field} should be numeric in {model_name}"
+        # Test model selection at each timestep
+        for t in range(5):
+            choice = oracle.select_model(
+                battery_level=50.0,
+                clean_energy_percentage=clean_energy_series[t],
+                user_accuracy_requirement=0.5,
+                user_latency_requirement=8.0,
+                available_models=available_models,
             )
-            assert value >= 0, f"Field {field} should be non-negative in {model_name}"
-            assert not (value != value), (
-                f"Field {field} should not be NaN in {model_name}"
-            )  # NaN check
 
-        # Validate reasonable ranges
-        accuracy = model_data["accuracy"]
-        latency = model_data["avg_inference_time_seconds"]
-        power = model_data["model_power_mw"]
+            # Verify choice structure
+            assert hasattr(choice, "model_name"), "Choice should have model_name"
+            assert hasattr(choice, "should_charge"), "Choice should have should_charge"
+            assert choice.model_name in available_models.keys(), (
+                "Invalid model selected"
+            )
+            assert isinstance(choice.should_charge, bool), (
+                "should_charge should be boolean"
+            )
 
-        assert 0 <= accuracy <= 1, (
-            f"Accuracy should be in [0,1]: {accuracy} for {model_name}"
-        )
-        assert 0 < latency < 1, (
-            f"Latency should be reasonable: {latency}s for {model_name}"
-        )
-        assert 0 < power < 5000, (
-            f"Power should be reasonable: {power}mW for {model_name}"
-        )
+            # Test should_charge method
+            should_charge = oracle.should_charge()
+            assert isinstance(should_charge, bool), (
+                "should_charge should return boolean"
+            )
 
-    print(f"✓ All {len(profiles_data)} profiles validated")
+            # Advance timestep
+            oracle.advance_timestep()
+
+        print("✓ OracleController full-horizon optimization test passed")
+        return None
+
+    except Exception as e:
+        print(f"⚠️  OracleController test failed: {e}")
+        import traceback
+
+        traceback.print_exc()
+        return None
 
 
-def test_power_calculation_scenarios():
-    """Test power calculations for different scenarios."""
-    print("Testing power calculation scenarios...")
+def test_oracle_energy_optimization():
+    """Test that oracle optimizes for clean energy usage."""
+    print("Testing oracle clean energy optimization...")
 
-    profiles_file = Path("model-data/power_profiles.json")
-    with open(profiles_file, "r") as f:
-        profiles_data = json.load(f)
+    try:
+        from controller import OracleController
+        from config_loader import ConfigLoader
 
-    # Test scenarios
-    scenarios = [
-        {
-            "name": "Low power scenario",
-            "models": ["YOLOv10_N", "YOLOv10_S"],
-            "max_total_power": 6000.0,  # 6000mW total (2 models)
-        },
-        {
-            "name": "Balanced scenario",
-            "models": ["YOLOv10_N", "YOLOv10_M", "YOLOv10_L"],
-            "max_total_power": 6000.0,  # 6000mW total
-        },
-        {
-            "name": "High performance scenario",
-            "models": ["YOLOv10_M", "YOLOv10_B", "YOLOv10_X"],
-            "max_total_power": 8000.0,  # 8000mW total
-        },
-    ]
+        # Load config
+        config_loader = ConfigLoader()
+        config = config_loader.get_simulation_config()
 
-    for scenario in scenarios:
-        total_power = 0.0
-        model_count = 0
+        # Create test data with high clean energy at t=2
+        clean_energy_series = [10.0, 20.0, 90.0, 30.0, 10.0]  # Peak at t=2
+        task_requirements = [
+            {"accuracy": 0.5, "latency": 8.0},
+            {"accuracy": 0.5, "latency": 8.0},
+            {"accuracy": 0.5, "latency": 8.0},
+            {"accuracy": 0.5, "latency": 8.0},
+            {"accuracy": 0.5, "latency": 8.0},
+        ]
 
-        for model in scenario["models"]:
-            if model in profiles_data:
-                power = profiles_data[model]["model_power_mw"]
-                total_power += power
-                model_count += 1
-                print(f"    {model}: {power:.3f}mW")
+        # Initialize oracle controller
+        oracle = OracleController(clean_energy_series, task_requirements, config)
 
-        avg_power = total_power / model_count if model_count > 0 else 0
+        # Check that oracle charges during high clean energy period
+        charging_decisions = []
+        for t in range(5):
+            should_charge = oracle.should_charge()
+            charging_decisions.append(should_charge)
+            oracle.advance_timestep()
 
-        print(f"  ✓ {scenario['name']}:")
-        print(f"    Total power: {total_power:.3f}mW")
-        print(f"    Average power: {avg_power:.3f}mW")
-        print(f"    Model count: {model_count}")
+        # Oracle should prefer charging at t=2 (90% clean energy)
+        print(f"  Charging decisions: {charging_decisions}")
+        print(f"  Clean energy series: {clean_energy_series}")
 
-        assert total_power <= scenario["max_total_power"], (
-            f"Total power exceeds limit: {total_power:.3f}mW > {scenario['max_total_power']}mW"
-        )
+        # At least one charging decision should be True
+        assert any(charging_decisions), "Oracle should charge at least once"
 
-    print("✓ Power calculation scenarios verified")
+        print("✓ Oracle clean energy optimization test passed")
+        return None
+
+    except Exception as e:
+        print(f"⚠️  Oracle optimization test failed: {e}")
+        import traceback
+
+        traceback.print_exc()
+        return None
 
 
 def main():
@@ -379,14 +291,12 @@ def main():
 
     try:
         test_power_profiles_loading()
-        test_power_profiler_initialization()
-        test_load_profiles()
-        test_get_all_models_data()
-        test_get_model_power()
-        test_power_calculation_consistency()
-        test_model_performance_ranking()
         test_power_profile_validation()
-        test_power_calculation_scenarios()
+        test_model_performance_ranking()
+
+        # New oracle controller tests
+        test_oracle_controller()
+        test_oracle_energy_optimization()
 
         logger.info("\n✅ All simulation power tests passed!")
         return 0

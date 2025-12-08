@@ -66,8 +66,9 @@ class SimulationRunnerBase:
         }
 
         if controller_type == "oracle":
-            # Oracle controller needs future data - simplified for now
-            return OracleController({}, 0)
+            # Oracle controller will be initialized with full future data in SimulationEngine
+            # For now, create placeholder that will be replaced
+            return OracleController([], [], self.config_loader.get_simulation_config())
 
         if controller_type not in controllers:
             raise ValueError(f"Unknown controller type: {controller_type}")
