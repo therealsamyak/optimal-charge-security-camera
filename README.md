@@ -71,7 +71,6 @@ In short, we have **4 weeks, 4 locations, 4 controllers, 3 different accuracy/la
 - Ensure that all code is future-proof and can be easily modified to add more controllers, metrics, or locations. Additionally ensure that it follows best practices with Python.
 - Ensure all code / files are organized appropriately, according to best engineering practices with object-oriented and/or functional programming.
 
-
 ## Citations
 
 Electricity Maps. "United States California LDWP 2024 5 minute Carbon Intensity Data". Electricity Maps, ver. July 2, 2025, https://www.electricitymaps.com.
