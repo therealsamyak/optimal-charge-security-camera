@@ -235,6 +235,37 @@ class TreeSearch:
 
         return energy_map
 
+    def _classify_models(self, node: TreeNode) -> Dict[str, List[str]]:
+        """Classify models into qualified, fallback, and unavailable categories."""
+        battery_level_wh = node.battery_level_wh
+        task_req = {
+            "accuracy": self.config["simulation"]["user_accuracy_requirement"] / 100.0,
+            "latency": self.config["simulation"]["user_latency_requirement"],
+        }
+
+        qualified = []  # Meet requirements AND have sufficient battery
+        fallback = []  # Can run but don't meet requirements
+        unavailable = []  # Insufficient battery
+
+        for model_name, model_spec in self.models.items():
+            meets_accuracy = model_spec["accuracy"] >= task_req["accuracy"]
+            meets_latency = model_spec["latency"] <= task_req["latency"]
+            energy_needed_wh = model_spec["energy_per_inference_mwh"] / 1000.0
+            has_battery = battery_level_wh >= energy_needed_wh
+
+            if not has_battery:
+                unavailable.append(model_name)
+            elif meets_accuracy and meets_latency:
+                qualified.append(model_name)
+            else:
+                fallback.append(model_name)
+
+        return {
+            "qualified": qualified,
+            "fallback": fallback,
+            "unavailable": unavailable,
+        }
+
     def _should_allow_idle(self, node: TreeNode) -> bool:
         """Determine if IDLE action should be allowed based on strict logical rules."""
         battery_level_wh = node.battery_level_wh
@@ -248,42 +279,25 @@ class TreeSearch:
         if battery_level_wh >= battery_capacity_wh:
             return False
 
-        # Check if any model is possible (meets requirements AND has sufficient battery)
-        if self._any_model_possible(node):
-            return False
+        # Check if any model can run with current battery
+        for model_name, model_spec in self.models.items():
+            energy_needed_wh = model_spec["energy_per_inference_mwh"] / 1000.0
+            if battery_level_wh >= energy_needed_wh:
+                return False  # At least one model can run
 
         # No models possible → can idle+charge
         return True
 
     def _any_model_possible(self, node: TreeNode) -> bool:
         """Check if any model can be executed from current state."""
-        battery_level_wh = node.battery_level_wh
-        task_req = {
-            "accuracy": self.config["simulation"]["user_accuracy_requirement"] / 100.0,
-            "latency": self.config["simulation"]["user_latency_requirement"],
-        }
-
-        # Check models that meet requirements AND have sufficient battery
-        for model_name, model_spec in self.models.items():
-            meets_accuracy = model_spec["accuracy"] >= task_req["accuracy"]
-            meets_latency = model_spec["latency"] <= task_req["latency"]
-
-            if meets_accuracy and meets_latency:
-                energy_needed_wh = model_spec["energy_per_inference_mwh"] / 1000.0
-                if battery_level_wh >= energy_needed_wh:
-                    return True
-
-        # Check if smallest model (YOLOv10_N) can run as fallback
-        smallest_model_energy = (
-            self.models["YOLOv10_N"]["energy_per_inference_mwh"] / 1000.0
+        classification = self._classify_models(node)
+        # Any model is possible if there are qualified or fallback models available
+        return (
+            len(classification["qualified"]) > 0 or len(classification["fallback"]) > 0
         )
-        if battery_level_wh >= smallest_model_energy:
-            return True
-
-        return False
 
     def _get_valid_actions(self, node: TreeNode) -> List[Tuple[str, bool]]:
-        """Get valid actions for current node with strict IDLE pruning rules."""
+        """Get valid actions for current node - generate ALL possible model actions."""
         actions = []
         battery_level_wh = node.battery_level_wh
         battery_capacity_wh = self.config["battery"]["capacity_wh"]
@@ -295,58 +309,48 @@ class TreeSearch:
         # Pruning: battery = 100% → no charging actions
         can_charge = battery_level_wh < battery_capacity_wh
 
-        # Get task requirements for current timestep
-        task_req = {
-            "accuracy": self.config["simulation"]["user_accuracy_requirement"] / 100.0,
-            "latency": self.config["simulation"]["user_latency_requirement"],
-        }
+        # Get all models that can run with current battery level
+        runnable_models = []
+        for model_name, model_spec in self.models.items():
+            energy_needed_wh = model_spec["energy_per_inference_mwh"] / 1000.0
+            if battery_level_wh >= energy_needed_wh:
+                runnable_models.append(model_name)
 
         # Log valid models at first timestep for debugging
         if node.timestep == 0 and not hasattr(self, "_logged_models"):
-            valid_models = []
-            for model_name, model_spec in self.models.items():
-                meets_accuracy = model_spec["accuracy"] >= task_req["accuracy"]
-                meets_latency = model_spec["latency"] <= task_req["latency"]
-                if meets_accuracy and meets_latency:
-                    valid_models.append(model_name)
+            task_req = {
+                "accuracy": self.config["simulation"]["user_accuracy_requirement"]
+                / 100.0,
+                "latency": self.config["simulation"]["user_latency_requirement"],
+            }
+            qualified_models = [
+                name
+                for name in runnable_models
+                if (
+                    self.models[name]["accuracy"] >= task_req["accuracy"]
+                    and self.models[name]["latency"] <= task_req["latency"]
+                )
+            ]
+            fallback_models = [
+                name for name in runnable_models if name not in qualified_models
+            ]
             self.logger.info(
-                f"Models meeting requirements (accuracy>={task_req['accuracy']:.2f}, latency<={task_req['latency']:.3f}s): {valid_models}"
+                f"Models meeting requirements (accuracy>={task_req['accuracy']:.2f}, latency<={task_req['latency']:.3f}s): {qualified_models}"
             )
+            self.logger.info(f"Fallback models available: {fallback_models}")
             self.logger.info(
                 f"Battery capacity: {self.config['battery']['capacity_wh']}Wh, Charge rate: {self.config['battery']['charge_rate_watts']}W"
             )
             self._logged_models = True
 
-        # Find models that meet requirements AND have sufficient battery
-        models_meeting_req = []
-        for model_name, model_spec in self.models.items():
-            meets_accuracy = model_spec["accuracy"] >= task_req["accuracy"]
-            meets_latency = model_spec["latency"] <= task_req["latency"]
+        # Generate ALL possible actions for runnable models
+        for model_name in runnable_models:
+            actions.append((model_name, False))  # Without charging
+            if can_charge:
+                actions.append((model_name, True))  # With charging
 
-            if meets_accuracy and meets_latency:
-                energy_needed_wh = model_spec["energy_per_inference_mwh"] / 1000.0
-                if battery_level_wh >= energy_needed_wh:
-                    models_meeting_req.append(model_name)
-
-        # Action space logic based on requirements
-        if models_meeting_req:
-            # Models meet requirements → add all meeting models with/without charging
-            for model_name in models_meeting_req:
-                actions.append((model_name, False))  # Without charging
-                if can_charge:
-                    actions.append((model_name, True))  # With charging
-        else:
-            # No models meet requirements → forced smallest model (YOLOv10_N)
-            smallest_model_energy = (
-                self.models["YOLOv10_N"]["energy_per_inference_mwh"] / 1000.0
-            )
-            if battery_level_wh >= smallest_model_energy:
-                actions.append(("YOLOv10_N", False))  # Without charging
-                if can_charge:
-                    actions.append(("YOLOv10_N", True))  # With charging
-
-        # Add IDLE+charging ONLY if strictly necessary based on logical rules
-        if can_charge and self._should_allow_idle(node):
+        # Add IDLE+charging ONLY if no models can run
+        if not runnable_models and can_charge:
             actions.append(("IDLE", True))
 
         return actions
@@ -375,20 +379,16 @@ class TreeSearch:
         if should_charge:
             charge_energy_wh = charge_rate_w * (task_interval / 3600.0)
             space_available = battery_capacity_wh - current_battery_wh
+            actual_charge = min(charge_energy_wh, space_available)
 
-            # Apply discretization if configured
-            discretization_step = self.config["battery"].get(
-                "charge_discretization_wh", 0
+            # Debug logging for charging
+            self.logger.debug(
+                f"Charging: raw={charge_energy_wh:.8f}Wh, space={space_available:.8f}Wh, actual={actual_charge:.8f}Wh"
             )
-            if discretization_step > 0:
-                # Discretize to nearest step
-                max_discrete_charge = min(charge_energy_wh, space_available)
-                discrete_steps = int(max_discrete_charge / discretization_step)
-                actual_charge = discrete_steps * discretization_step
-            else:
-                actual_charge = min(charge_energy_wh, space_available)
+        else:
+            actual_charge = 0.0
 
-            charge_energy_wh = actual_charge
+        charge_energy_wh = actual_charge
 
         # Handle model energy calculation
         if model_name != "IDLE":
@@ -422,7 +422,7 @@ class TreeSearch:
             # Model energy already accounted for in net calculation
             new_dirty_energy += model_energy_wh  # Model usage is dirty energy
 
-            # Check if model meets requirements
+            # Check if chosen model meets user requirements
             task_req = {
                 "accuracy": self.config["simulation"]["user_accuracy_requirement"]
                 / 100.0,
@@ -436,7 +436,7 @@ class TreeSearch:
             if meets_accuracy and meets_latency:
                 decision_outcome = "success"
             else:
-                # Model doesn't meet requirements = small miss (forced smallest model)
+                # Chosen model doesn't meet requirements = small miss
                 decision_outcome = "small_miss"
 
         # Create new node
@@ -453,6 +453,7 @@ class TreeSearch:
                     "model": model_name,
                     "charged": should_charge,
                     "outcome": decision_outcome,
+                    "charge_energy_used": charge_energy_wh,
                 }
             ],
             parent=node,
@@ -1001,19 +1002,15 @@ class TreeSearch:
         return penalty
 
     def _assign_to_buckets(self, states: List[TreeNode]) -> List[TreeNode]:
-        """Assign states to Pareto buckets with enhanced pruning for illogical states."""
+        """Assign states to Pareto buckets with minimum preservation logic."""
         if not states:
             return []
 
-        # First, filter out clearly invalid states
+        # Filter valid states
         valid_states = []
         for state in states:
             if self._is_valid_state(state):
-                # Calculate penalty for illogical actions
-                penalty = self._calculate_illogical_action_penalty(state)
-                # Only reject if penalty is very high (severely illogical)
-                if penalty < 5.0:
-                    valid_states.append(state)
+                valid_states.append(state)
 
         # Remove duplicates while preserving diversity
         unique_states = []
@@ -1027,6 +1024,11 @@ class TreeSearch:
             if state_key not in seen_states:
                 seen_states.add(state_key)
                 unique_states.append(state)
+
+        # If we have fewer states than bucket capacity, keep all
+        total_bucket_capacity = sum(self.config["beam_search"]["bucket_sizes"].values())
+        if len(unique_states) <= total_bucket_capacity:
+            return unique_states
 
         # Assign to buckets with diversity preservation
         bucket_results = []
@@ -1085,27 +1087,6 @@ class TreeSearch:
         ]
         charge_bucket = self._bucket_charge_dominant(remaining_states)
         bucket_results.extend(charge_bucket)
-
-        # Log bucket diversity for debugging
-        if len(unique_states) > 1:
-            clean_energy_range = (
-                min(s.get_clean_energy_percentage() for s in unique_states),
-                max(s.get_clean_energy_percentage() for s in unique_states),
-            )
-            total_energy_range = (
-                min(s.get_total_energy() for s in unique_states),
-                max(s.get_total_energy() for s in unique_states),
-            )
-            battery_range = (
-                min(s.battery_level_wh for s in unique_states),
-                max(s.battery_level_wh for s in unique_states),
-            )
-
-            self.logger.debug(
-                f"Bucket diversity - Clean %: {clean_energy_range}, "
-                f"Total E: {total_energy_range}, "
-                f"Battery: {battery_range}"
-            )
 
         # Remove duplicates from merged buckets
         final_frontier = []
@@ -1191,31 +1172,13 @@ class TreeSearch:
             clean_before = current_clean
             dirty_before = current_dirty
 
-            # Calculate energy changes for this action
-            charge_energy = 0.0
+            # Get charge energy from decision history (stored during tree search)
+            charge_energy = decision.get("charge_energy_used", 0.0)
             model_energy = 0.0
 
             if should_charge:
-                task_interval = self.config["simulation"]["task_interval_seconds"]
-                charge_rate_w = self.config["battery"]["charge_rate_watts"]
-                charge_energy = charge_rate_w * (task_interval / 3600.0)
-
-                # Apply discretization
-                discretization_step = self.config["battery"].get(
-                    "charge_discretization_wh", 0
-                )
-                if discretization_step > 0:
-                    space_available = (
-                        self.config["battery"]["capacity_wh"] - current_battery
-                    )
-                    max_discrete_charge = min(charge_energy, space_available)
-                    discrete_steps = int(max_discrete_charge / discretization_step)
-                    charge_energy = discrete_steps * discretization_step
-                else:
-                    charge_energy = min(
-                        charge_energy,
-                        self.config["battery"]["capacity_wh"] - current_battery,
-                    )
+                # Debug logging for charging (using stored value)
+                self.logger.debug(f"Charging: stored={charge_energy:.8f}Wh")
 
             if model_name != "IDLE":
                 model_energy = (
