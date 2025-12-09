@@ -1,26 +1,28 @@
 {
-  // Simulation parameters
+    // Simulation parameters
   "simulation": {
     // Total simulation duration in days
     "duration_days": 1,
     // Time between simulation tasks in seconds
-    "task_interval_seconds": 15,
+    "task_interval_seconds": 300,
     // Time acceleration factor (1 = real-time)
     // Time acceleration factor: 1 = real-time, 2 = 2x faster, 10 = 10x faster
     // Controls how fast simulated time passes compared to real time
     // Higher values make simulations run faster but may affect timing accuracy
-    "time_acceleration": 10,
+    "time_acceleration": 1,
     // Minimum accuracy requirement percentage for user tasks
-    "user_accuracy_requirement": 55.0,
+    "user_accuracy_requirement": 90.5,
     // Maximum latency requirement in seconds for user tasks
-    "user_latency_requirement": 4.5
+    "user_latency_requirement": 0.01
   },
   // Battery configuration
   "battery": {
     // Total battery capacity in watt-hours (small device)
-    "capacity_wh": 20.0,
+    "capacity_wh": 5,
     // Maximum charging rate in watts
-    "charge_rate_watts": 100
+    "charge_rate_watts": 1,
+    // Charge discretization step size in absolute Wh values
+    "charge_discretization_wh": 0.01
   },
   // Geographic locations for energy data
   "locations": ["CA", "FL", "NW", "NY"],
@@ -41,12 +43,29 @@
     // Parameter ranges for batch simulation
     "accuracy_range": {"min": 30, "max": 80},
     "latency_range": {"min": 2, "max": 15},
-    "battery_capacity_range": {"min": 2, "max": 15},
-    "charge_rate_range": {"min": 50, "max": 200}
+    "battery_capacity_range": {"min": 0.01, "max": 0.1},
+    "charge_rate_range": {"min": 0.1, "max": 1.0}
   },
   // Parallel processing configuration
   "workers": {
     // Number of workers for parallel processing
     "max_workers": 4
+  },
+  // Beam search configuration for efficient tree exploration
+  "beam_search": {
+    // Enable beam search (Pareto bucketed beams approach)
+    "enabled": true,
+    // Default beam width per bucket (number of states to keep per objective)
+    "beam_width_per_bucket": 10,
+    // Configurable bucket sizes for different objectives
+    "bucket_sizes": {
+      "clean_energy": 10,
+      "small_miss": 10,
+      "success": 10,
+      "large_miss": 10,
+      "energy_efficient": 10
+    },
+    // Maximum total frontier size (sum of all buckets)
+    "max_frontier_size": 50
   }
 }
