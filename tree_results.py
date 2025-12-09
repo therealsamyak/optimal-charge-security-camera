@@ -32,6 +32,7 @@ class TreeResultsAnalyzer:
             "top_small_miss",
             "top_large_miss",
             "top_least_energy",
+            "top_charge_dominant",
         ]
         self.colors = {
             "top_clean_energy": "#2E8B57",  # Sea Green
@@ -39,6 +40,7 @@ class TreeResultsAnalyzer:
             "top_small_miss": "#FF8C00",  # Dark Orange
             "top_large_miss": "#DC143C",  # Crimson
             "top_least_energy": "#9370DB",  # Medium Purple
+            "top_charge_dominant": "#FFD700",  # Gold
         }
 
     def load_data(self) -> bool:
@@ -317,8 +319,9 @@ class TreeResultsAnalyzer:
             for model in ts_data["models"]:
                 model_counts[cat][model] = model_counts[cat].get(model, 0) + 1
 
-        # Pie charts for each category
-        for i, cat in enumerate(self.categories[:4]):  # First 4 categories
+        # Pie charts for each category (show first 4, but handle all 6)
+        categories_to_show = self.categories[:4]  # Show first 4 in 2x2 grid
+        for i, cat in enumerate(categories_to_show):
             ax = [ax1, ax2, ax3, ax4][i]
             if cat in model_counts and model_counts[cat]:
                 models = list(model_counts[cat].keys())
