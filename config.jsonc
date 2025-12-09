@@ -1,5 +1,5 @@
 {
-    // Simulation parameters
+  // Simulation parameters
   "simulation": {
     // Total simulation duration in days
     "duration_days": 1,
@@ -41,10 +41,10 @@
     // Output detailed CSV with all variations
     "output_detailed_csv": true,
     // Parameter ranges for batch simulation
-    "accuracy_range": {"min": 30, "max": 80},
-    "latency_range": {"min": 2, "max": 15},
-    "battery_capacity_range": {"min": 0.01, "max": 0.1},
-    "charge_rate_range": {"min": 0.1, "max": 1.0}
+    "accuracy_range": { "min": 30, "max": 80 },
+    "latency_range": { "min": 2, "max": 15 },
+    "battery_capacity_range": { "min": 0.01, "max": 0.1 },
+    "charge_rate_range": { "min": 0.1, "max": 1.0 }
   },
   // Parallel processing configuration
   "workers": {
@@ -55,17 +55,20 @@
   "beam_search": {
     // Enable beam search (Pareto bucketed beams approach)
     "enabled": true,
-    // Default beam width per bucket (number of states to keep per objective)
-    "beam_width_per_bucket": 10,
-    // Configurable bucket sizes for different objectives
+
+    // Keep 1000 states per bucket
+    "beam_width_per_bucket": 1000,
+
+    // Bucket capacities (each can hold 1000 entries)
     "bucket_sizes": {
-      "clean_energy": 10,
-      "small_miss": 10,
-      "success": 10,
-      "large_miss": 10,
-      "energy_efficient": 10
+      "clean_energy": 1000,
+      "small_miss": 1000,
+      "success": 1000,
+      "large_miss": 1000,
+      "energy_efficient": 1000
     },
-    // Maximum total frontier size (sum of all buckets)
-    "max_frontier_size": 50
+
+    // Total frontier capacity (5 buckets × 1000 each)
+    "max_frontier_size": 5000
   }
 }
