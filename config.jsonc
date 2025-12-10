@@ -81,5 +81,5 @@
     // Number of iterations after which to reset the beam search
     // Can help escape local optima when > 0, 0 disables reset
     "beam_reset_interval": 1
-  },
+  }
 }
