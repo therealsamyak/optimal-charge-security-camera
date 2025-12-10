@@ -27,20 +27,32 @@ class TreeResultsAnalyzer:
         self.metadata: Optional[Dict] = None
         self.results: Optional[Dict] = None
         self.categories = [
-            "top_clean_energy",
+            "top_most_clean_energy_usage",
             "top_success",
-            "top_small_miss",
-            "top_large_miss",
-            "top_least_energy",
-            "top_charge_dominant",
+            "top_max_uptime",
+            "top_h_1",
+            "top_h_2",
+            "top_h_3",
+            "top_h_4",
         ]
         self.colors = {
-            "top_clean_energy": "#2E8B57",  # Sea Green
+            "top_most_clean_energy_usage": "#2E8B57",  # Sea Green
             "top_success": "#4169E1",  # Royal Blue
-            "top_small_miss": "#FF8C00",  # Dark Orange
-            "top_large_miss": "#DC143C",  # Crimson
-            "top_least_energy": "#9370DB",  # Medium Purple
-            "top_charge_dominant": "#FFD700",  # Gold
+            "top_max_uptime": "#FFD700",  # Gold
+            "top_h_1": "#9370DB",  # Medium Purple
+            "top_h_2": "#FF8C00",  # Dark Orange
+            "top_h_3": "#DC143C",  # Crimson
+            "top_h_4": "#20B2AA",  # Light Sea Green
+        }
+        # Distinct colors for different models
+        self.model_colors = {
+            "yolov8n": "#FF6B6B",  # Red
+            "yolov8s": "#4ECDC4",  # Teal
+            "yolov8m": "#45B7D1",  # Blue
+            "yolov8l": "#96CEB4",  # Green
+            "yolov8x": "#FFEAA7",  # Yellow
+            "efficientdet": "#DDA0DD",  # Plum
+            "mobilenet": "#F4A460",  # Sandy Brown
         }
 
     def load_data(self) -> bool:
@@ -48,6 +60,7 @@ class TreeResultsAnalyzer:
         try:
             if not self.results_file.exists():
                 print(f"❌ Error: Results file not found: {self.results_file}")
+                print(f"💡 Tip: Use --timestamp 20251209_230426 to specify timestamp")
                 return False
 
             print(f"📊 Loading tree search results from {self.results_file}...")
@@ -67,6 +80,9 @@ class TreeResultsAnalyzer:
                     if self.results is None or cat not in self.results
                 ]
                 print(f"❌ Error: Missing result categories: {missing}")
+                print(
+                    f"📋 Available categories: {list(self.results.keys()) if self.results else 'None'}"
+                )
                 return False
 
             print(
@@ -303,11 +319,13 @@ class TreeResultsAnalyzer:
         """Window 3: Model Selection Analysis."""
         fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2, 2, figsize=(14, 10))
         fig.suptitle(
-            "Model Selection & Charging Strategies", fontsize=16, fontweight="bold"
+            "Model Selection & Energy-Accuracy Tradeoffs",
+            fontsize=16,
+            fontweight="bold",
         )
 
-        # Model usage frequency for each category
-        model_counts = {}
+        # Collect all model usage data across categories
+        all_model_data = {}
         for cat in self.categories:
             if self.results is None or not self.results[cat]:
                 continue
@@ -315,48 +333,315 @@ class TreeResultsAnalyzer:
             result = self.results[cat][0]
             ts_data = self.extract_time_series(result)
 
-            model_counts[cat] = {}
-            for model in ts_data["models"]:
-                model_counts[cat][model] = model_counts[cat].get(model, 0) + 1
+            # Track model usage with outcomes
+            for i, model in enumerate(ts_data["models"]):
+                if model not in all_model_data:
+                    all_model_data[model] = {
+                        "usage_count": 0,
+                        "success_count": 0,
+                        "total_energy": 0,
+                        "categories": set(),
+                    }
 
-        # Pie charts for each category (show first 4, but handle all 6)
-        categories_to_show = self.categories[:4]  # Show first 4 in 2x2 grid
-        for i, cat in enumerate(categories_to_show):
-            ax = [ax1, ax2, ax3, ax4][i]
-            if cat in model_counts and model_counts[cat]:
-                models = list(model_counts[cat].keys())
-                counts = list(model_counts[cat].values())
-                colors = plt.get_cmap("tab10")(np.linspace(0, 1, len(models)))
+                all_model_data[model]["usage_count"] += 1
+                all_model_data[model]["categories"].add(cat)
 
-                ax.pie(
-                    counts,
-                    labels=models,
-                    autopct="%1.1f%%",
-                    colors=colors,
-                    startangle=90,
-                )
-                ax.set_title(cat.replace("top_", "").replace("_", " ").title())
-            else:
-                ax.text(
-                    0.5,
-                    0.5,
-                    "No Data",
-                    ha="center",
-                    va="center",
-                    transform=ax.transAxes,
-                )
-                ax.set_title(cat.replace("top_", "").replace("_", " ").title())
+                if ts_data["outcomes"][i] == "success":
+                    all_model_data[model]["success_count"] += 1
+
+        # Model usage frequency across all categories
+        models = list(all_model_data.keys())
+        usage_counts = [all_model_data[model]["usage_count"] for model in models]
+        success_rates = [
+            (
+                all_model_data[model]["success_count"]
+                / all_model_data[model]["usage_count"]
+            )
+            * 100
+            if all_model_data[model]["usage_count"] > 0
+            else 0
+            for model in models
+        ]
+
+        # Get colors for each model
+        model_colors_list = [
+            self.model_colors.get(model, "#808080") for model in models
+        ]
+
+        # Bar chart of model usage
+        bars1 = ax1.bar(models, usage_counts, color=model_colors_list)
+        ax1.set_title("Model Usage Frequency")
+        ax1.set_ylabel("Usage Count")
+        ax1.tick_params(axis="x", rotation=45)
+        for bar, val in zip(bars1, usage_counts):
+            ax1.text(
+                bar.get_x() + bar.get_width() / 2,
+                bar.get_height() + 0.5,
+                str(val),
+                ha="center",
+                va="bottom",
+            )
+
+        # Success rate by model
+        bars2 = ax2.bar(models, success_rates, color=model_colors_list)
+        ax2.set_title("Model Success Rate")
+        ax2.set_ylabel("Success Rate (%)")
+        ax2.tick_params(axis="x", rotation=45)
+        for bar, val in zip(bars2, success_rates):
+            ax2.text(
+                bar.get_x() + bar.get_width() / 2,
+                bar.get_height() + 1,
+                f"{val:.1f}%",
+                ha="center",
+                va="bottom",
+            )
+
+        # Clean energy vs accuracy scatter plot
+        clean_percentages = []
+        model_names = []
+        colors_scatter = []
+
+        for cat in self.categories:
+            if self.results is None or not self.results[cat]:
+                continue
+
+            result = self.results[cat][0]
+            ts_data = self.extract_time_series(result)
+            summary = self.get_category_summary(cat)
+
+            # Calculate per-model clean energy percentage
+            model_clean_energy = {}
+            model_usage = {}
+
+            for i, model in enumerate(ts_data["models"]):
+                if model not in model_clean_energy:
+                    model_clean_energy[model] = 0
+                    model_usage[model] = 0
+
+                model_usage[model] += 1
+                # Add clean energy contribution for this timestep
+                if i < len(ts_data["clean_energy"]):
+                    model_clean_energy[model] += ts_data["clean_energy"][i] - (
+                        ts_data["clean_energy"][i - 1] if i > 0 else 0
+                    )
+
+            # Average clean energy per model
+            for model in model_usage:
+                if model_usage[model] > 0:
+                    avg_clean = model_clean_energy[model] / model_usage[model]
+                    clean_percentages.append(avg_clean * 100)  # Convert to percentage
+                    model_names.append(
+                        f"{model}\n({cat.replace('top_', '').replace('_', ' ').title()})"
+                    )
+                    colors_scatter.append(self.model_colors.get(model, "#808080"))
+
+        ax3.scatter(
+            range(len(clean_percentages)),
+            clean_percentages,
+            c=colors_scatter,
+            s=100,
+            alpha=0.7,
+        )
+        ax3.set_title("Clean Energy Usage by Model & Category")
+        ax3.set_ylabel("Clean Energy per Usage (%)")
+        ax3.set_xticks(range(len(model_names)))
+        ax3.set_xticklabels(model_names, rotation=45, ha="right", fontsize=8)
+        ax3.grid(True, alpha=0.3)
+
+        # Model selection timeline for top clean energy category
+        if (
+            self.results
+            and "top_most_clean_energy_usage" in self.results
+            and self.results["top_most_clean_energy_usage"]
+        ):
+            result = self.results["top_most_clean_energy_usage"][0]
+            ts_data = self.extract_time_series(result)
+
+            # Create timeline showing model switches
+            unique_models = list(set(ts_data["models"]))
+            model_to_y = {model: i for i, model in enumerate(unique_models)}
+
+            y_positions = [model_to_y[model] for model in ts_data["models"]]
+            colors_timeline = [
+                self.model_colors.get(model, "#808080") for model in ts_data["models"]
+            ]
+
+            ax4.scatter(
+                ts_data["timesteps"], y_positions, c=colors_timeline, s=20, alpha=0.8
+            )
+            ax4.set_title("Model Selection Timeline (Top Clean Energy)")
+            ax4.set_xlabel("Timestep")
+            ax4.set_ylabel("Model")
+            ax4.set_yticks(range(len(unique_models)))
+            ax4.set_yticklabels(unique_models)
+            ax4.grid(True, alpha=0.3)
 
         plt.tight_layout()
         return fig
 
-    def plot_decision_outcomes(self):
-        """Window 4: Decision Outcomes Deep Dive."""
+    def plot_clean_energy_vs_accuracy(self):
+        """Window 4: Clean Energy vs Accuracy Tradeoff Analysis."""
         fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2, 2, figsize=(14, 10))
-        fig.suptitle("Decision Outcome Analysis", fontsize=16, fontweight="bold")
+        fig.suptitle(
+            "Clean Energy vs Accuracy Tradeoffs", fontsize=16, fontweight="bold"
+        )
 
-        # Outcome distribution for each category
-        outcome_data = {}
+        # Collect tradeoff data for each category
+        tradeoff_data = {}
+        for cat in self.categories:
+            if self.results is None or not self.results[cat]:
+                continue
+
+            result = self.results[cat][0]
+            ts_data = self.extract_time_series(result)
+            summary = self.get_category_summary(cat)
+
+            # Calculate metrics
+            success_count = sum(
+                1 for outcome in ts_data["outcomes"] if outcome == "success"
+            )
+            total_decisions = len(ts_data["outcomes"])
+            accuracy = (
+                (success_count / total_decisions * 100) if total_decisions > 0 else 0
+            )
+
+            tradeoff_data[cat] = {
+                "accuracy": accuracy,
+                "clean_energy_pct": summary.get("clean_energy_percentage", 0),
+                "total_energy": summary.get("total_energy", 0),
+                "final_battery": summary.get("final_battery", 0),
+                "model_diversity": len(set(ts_data["models"])),
+                "avg_clean_per_success": summary.get("total_energy", 0) / success_count
+                if success_count > 0
+                else 0,
+            }
+
+        # Scatter plot: Clean Energy % vs Accuracy
+        clean_pcts = [tradeoff_data[cat]["clean_energy_pct"] for cat in self.categories]
+        accuracies = [tradeoff_data[cat]["accuracy"] for cat in self.categories]
+        colors_scatter = [self.colors[cat] for cat in self.categories]
+
+        ax1.scatter(
+            clean_pcts,
+            accuracies,
+            c=colors_scatter,
+            s=150,
+            alpha=0.8,
+            edgecolors="black",
+            linewidth=2,
+        )
+        ax1.set_xlabel("Clean Energy Percentage (%)")
+        ax1.set_ylabel("Accuracy (Success Rate %)")
+        ax1.set_title("Clean Energy vs Accuracy Tradeoff")
+        ax1.grid(True, alpha=0.3)
+
+        # Add category labels
+        for i, cat in enumerate(self.categories):
+            ax1.annotate(
+                cat.replace("top_", "").replace("_", " ").title(),
+                (clean_pcts[i], accuracies[i]),
+                xytext=(5, 5),
+                textcoords="offset points",
+                fontsize=9,
+                fontweight="bold",
+            )
+
+        # Energy efficiency vs accuracy
+        energy_per_success = [
+            tradeoff_data[cat]["avg_clean_per_success"] for cat in self.categories
+        ]
+        bars2 = ax2.bar(
+            range(len(self.categories)),
+            energy_per_success,
+            color=[self.colors[cat] for cat in self.categories],
+        )
+        ax2.set_title("Energy per Successful Inference")
+        ax2.set_ylabel("Energy per Success (Wh)")
+        ax2.set_xticks(range(len(self.categories)))
+        ax2.set_xticklabels(
+            [
+                cat.replace("top_", "").replace("_", " ").title()
+                for cat in self.categories
+            ],
+            rotation=45,
+            ha="right",
+        )
+        for bar, val in zip(bars2, energy_per_success):
+            ax2.text(
+                bar.get_x() + bar.get_width() / 2,
+                bar.get_height() + max(energy_per_success) * 0.01,
+                f"{val:.4f}",
+                ha="center",
+                va="bottom",
+                fontsize=8,
+            )
+
+        # Model diversity vs performance
+        diversities = [tradeoff_data[cat]["model_diversity"] for cat in self.categories]
+        ax3.scatter(
+            diversities,
+            accuracies,
+            c=colors_scatter,
+            s=150,
+            alpha=0.8,
+            edgecolors="black",
+            linewidth=2,
+        )
+        ax3.set_xlabel("Number of Different Models Used")
+        ax3.set_ylabel("Accuracy (Success Rate %)")
+        ax3.set_title("Model Diversity vs Accuracy")
+        ax3.grid(True, alpha=0.3)
+
+        # Add labels
+        for i, cat in enumerate(self.categories):
+            ax3.annotate(
+                cat.replace("top_", "").replace("_", " ").title(),
+                (diversities[i], accuracies[i]),
+                xytext=(5, 5),
+                textcoords="offset points",
+                fontsize=9,
+                fontweight="bold",
+            )
+
+        # Performance radar-style comparison
+        categories_short = [
+            cat.replace("top_", "").replace("_", " ").title() for cat in self.categories
+        ]
+
+        # Normalize metrics for comparison (0-1 scale)
+        norm_clean = [pct / 100 for pct in clean_pcts]
+        norm_accuracy = [acc / 100 for acc in accuracies]
+        norm_battery = [
+            tradeoff_data[cat]["final_battery"]
+            / max([tradeoff_data[c]["final_battery"] for c in self.categories])
+            for cat in self.categories
+        ]
+
+        x = np.arange(len(categories_short))
+        width = 0.25
+
+        ax4.bar(x - width, norm_clean, width, label="Clean Energy %", alpha=0.8)
+        ax4.bar(x, norm_accuracy, width, label="Accuracy", alpha=0.8)
+        ax4.bar(x + width, norm_battery, width, label="Final Battery", alpha=0.8)
+
+        ax4.set_xlabel("Strategy Categories")
+        ax4.set_ylabel("Normalized Performance (0-1)")
+        ax4.set_title("Multi-Metric Performance Comparison")
+        ax4.set_xticks(x)
+        ax4.set_xticklabels(categories_short, rotation=45, ha="right")
+        ax4.legend()
+        ax4.grid(True, alpha=0.3)
+
+        plt.tight_layout()
+        return fig
+
+    def plot_bucket_analysis(self):
+        """Window 5: Per-Bucket Cross-Analysis."""
+        fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2, 2, figsize=(14, 10))
+        fig.suptitle("Per-Bucket Cross-Analysis", fontsize=16, fontweight="bold")
+
+        # Collect all data points across all categories for bucket analysis
+        all_data_points = []
         for cat in self.categories:
             if self.results is None or not self.results[cat]:
                 continue
@@ -364,140 +649,185 @@ class TreeResultsAnalyzer:
             result = self.results[cat][0]
             ts_data = self.extract_time_series(result)
 
-            outcome_counts = {"success": 0, "small_miss": 0, "large_miss": 0}
-            for outcome in ts_data["outcomes"]:
-                if outcome in outcome_counts:
-                    outcome_counts[outcome] += 1
-            outcome_data[cat] = outcome_counts
-
-        # Stacked bar chart of outcomes
-        categories = list(outcome_data.keys())
-        successes = [outcome_data[cat].get("success", 0) for cat in categories]
-        small_misses = [outcome_data[cat].get("small_miss", 0) for cat in categories]
-        large_misses = [outcome_data[cat].get("large_miss", 0) for cat in categories]
-
-        width = 0.6
-        ax1.bar(categories, successes, width, label="Success", color="#2E8B57")
-        ax1.bar(
-            categories,
-            small_misses,
-            width,
-            bottom=successes,
-            label="Small Miss",
-            color="#FF8C00",
-        )
-        ax1.bar(
-            categories,
-            large_misses,
-            width,
-            bottom=[s + sm for s, sm in zip(successes, small_misses)],
-            label="Large Miss",
-            color="#DC143C",
-        )
-
-        ax1.set_title("Decision Outcome Distribution")
-        ax1.set_ylabel("Count")
-        ax1.legend()
-        ax1.tick_params(axis="x", rotation=45)
-
-        # Success rate vs final battery scatter
-        success_rates = []
-        final_batteries = []
-        colors_list = []
-
-        for cat in self.categories:
-            if cat not in outcome_data:
-                continue
-            total = sum(outcome_data[cat].values())
-            success_rate = (
-                (outcome_data[cat].get("success", 0) / total) * 100 if total > 0 else 0
-            )
-            final_battery = self.get_category_summary(cat).get("final_battery", 0)
-
-            success_rates.append(success_rate)
-            final_batteries.append(final_battery)
-            colors_list.append(self.colors[cat])
-
-        ax2.scatter(final_batteries, success_rates, c=colors_list, s=100, alpha=0.7)
-        ax2.set_xlabel("Final Battery (Wh)")
-        ax2.set_ylabel("Success Rate (%)")
-        ax2.set_title("Success Rate vs Final Battery")
-        ax2.grid(True, alpha=0.3)
-
-        # Add category labels to scatter plot
-        for i, cat in enumerate(self.categories):
-            if i < len(success_rates):
-                ax2.annotate(
-                    cat.replace("top_", "").replace("_", " ").title(),
-                    (final_batteries[i], success_rates[i]),
-                    xytext=(5, 5),
-                    textcoords="offset points",
-                    fontsize=8,
+            for i, timestep in enumerate(ts_data["timesteps"]):
+                all_data_points.append(
+                    {
+                        "category": cat,
+                        "timestep": timestep,
+                        "model": ts_data["models"][i],
+                        "battery": ts_data["battery_levels"][i],
+                        "clean_energy": ts_data["clean_energy"][i],
+                        "dirty_energy": ts_data["dirty_energy"][i],
+                        "charging": ts_data["charging"][i],
+                        "outcome": ts_data["outcomes"][i],
+                        "total_energy": ts_data["clean_energy"][i]
+                        + ts_data["dirty_energy"][i],
+                    }
                 )
 
-        # Outcome timeline for top clean energy category
-        if (
-            self.results is not None
-            and "top_clean_energy" in self.results
-            and self.results["top_clean_energy"]
+        # Define buckets
+        success_bucket = [dp for dp in all_data_points if dp["outcome"] == "success"]
+        clean_energy_bucket = sorted(
+            all_data_points, key=lambda x: x["clean_energy"], reverse=True
+        )[: len(all_data_points) // 3]
+        high_battery_bucket = sorted(
+            all_data_points, key=lambda x: x["battery"], reverse=True
+        )[: len(all_data_points) // 3]
+
+        # 1. Clean energy distribution in success bucket
+        if success_bucket:
+            clean_energies_success = [dp["clean_energy"] for dp in success_bucket]
+            models_in_success = [dp["model"] for dp in success_bucket]
+
+            # Group by model
+            model_clean_energy = {}
+            for model, clean_e in zip(models_in_success, clean_energies_success):
+                if model not in model_clean_energy:
+                    model_clean_energy[model] = []
+                model_clean_energy[model].append(clean_e)
+
+            # Box plot of clean energy by model in success bucket
+            models = list(model_clean_energy.keys())
+            clean_data = [model_clean_energy[model] for model in models]
+            colors_box = [self.model_colors.get(model, "#808080") for model in models]
+
+            bp1 = ax1.boxplot(clean_data, patch_artist=True, labels=models)
+            for patch, color in zip(bp1["boxes"], colors_box):
+                patch.set_facecolor(color)
+                patch.set_alpha(0.7)
+
+            ax1.set_title("Clean Energy Distribution in Success Bucket")
+            ax1.set_ylabel("Clean Energy (Wh)")
+            ax1.tick_params(axis="x", rotation=45)
+            ax1.grid(True, alpha=0.3)
+
+        # 2. Success rate by model in clean energy bucket
+        if clean_energy_bucket:
+            model_success_counts = {}
+            model_total_counts = {}
+
+            for dp in clean_energy_bucket:
+                model = dp["model"]
+                if model not in model_success_counts:
+                    model_success_counts[model] = 0
+                    model_total_counts[model] = 0
+                model_total_counts[model] += 1
+                if dp["outcome"] == "success":
+                    model_success_counts[model] += 1
+
+            models = list(model_total_counts.keys())
+            success_rates = [
+                (model_success_counts[model] / model_total_counts[model]) * 100
+                for model in models
+            ]
+            colors_bar = [self.model_colors.get(model, "#808080") for model in models]
+
+            bars2 = ax2.bar(models, success_rates, color=colors_bar)
+            ax2.set_title("Success Rate in Top Clean Energy Bucket")
+            ax2.set_ylabel("Success Rate (%)")
+            ax2.tick_params(axis="x", rotation=45)
+            for bar, val in zip(bars2, success_rates):
+                ax2.text(
+                    bar.get_x() + bar.get_width() / 2,
+                    bar.get_height() + 1,
+                    f"{val:.1f}%",
+                    ha="center",
+                    va="bottom",
+                )
+
+        # 3. Battery levels by outcome across all buckets
+        outcome_battery_data = {"success": [], "small_miss": [], "large_miss": []}
+        for dp in all_data_points:
+            outcome_battery_data[dp["outcome"]].append(dp["battery"])
+
+        outcomes = list(outcome_battery_data.keys())
+        battery_data = [outcome_battery_data[outcome] for outcome in outcomes]
+        colors_outcome = ["#2E8B57", "#FF8C00", "#DC143C"]  # Green, Orange, Red
+
+        bp3 = ax3.boxplot(battery_data, patch_artist=True, labels=outcomes)
+        for patch, color in zip(bp3["boxes"], colors_outcome):
+            patch.set_facecolor(color)
+            patch.set_alpha(0.7)
+
+        ax3.set_title("Battery Levels by Outcome (All Data)")
+        ax3.set_ylabel("Battery Level (Wh)")
+        ax3.grid(True, alpha=0.3)
+
+        # 4. Cross-bucket performance matrix
+        bucket_metrics = {
+            "Success Bucket": {
+                "avg_clean": np.mean([dp["clean_energy"] for dp in success_bucket])
+                if success_bucket
+                else 0,
+                "avg_battery": np.mean([dp["battery"] for dp in success_bucket])
+                if success_bucket
+                else 0,
+                "success_rate": 100.0,  # By definition
+            },
+            "Clean Energy Bucket": {
+                "avg_clean": np.mean([dp["clean_energy"] for dp in clean_energy_bucket])
+                if clean_energy_bucket
+                else 0,
+                "avg_battery": np.mean([dp["battery"] for dp in clean_energy_bucket])
+                if clean_energy_bucket
+                else 0,
+                "success_rate": (
+                    len(
+                        [dp for dp in clean_energy_bucket if dp["outcome"] == "success"]
+                    )
+                    / len(clean_energy_bucket)
+                    * 100
+                )
+                if clean_energy_bucket
+                else 0,
+            },
+            "High Battery Bucket": {
+                "avg_clean": np.mean([dp["clean_energy"] for dp in high_battery_bucket])
+                if high_battery_bucket
+                else 0,
+                "avg_battery": np.mean([dp["battery"] for dp in high_battery_bucket])
+                if high_battery_bucket
+                else 0,
+                "success_rate": (
+                    len(
+                        [dp for dp in high_battery_bucket if dp["outcome"] == "success"]
+                    )
+                    / len(high_battery_bucket)
+                    * 100
+                )
+                if high_battery_bucket
+                else 0,
+            },
+        }
+
+        bucket_names = list(bucket_metrics.keys())
+        metrics = ["avg_clean", "avg_battery", "success_rate"]
+        metric_labels = ["Avg Clean Energy", "Avg Battery", "Success Rate"]
+        colors_metrics = ["#2E8B57", "#4169E1", "#FFD700"]
+
+        x = np.arange(len(bucket_names))
+        width = 0.25
+
+        for i, (metric, label, color) in enumerate(
+            zip(metrics, metric_labels, colors_metrics)
         ):
-            result = self.results["top_clean_energy"][0]
-            ts_data = self.extract_time_series(result)
+            values = [bucket_metrics[bucket][metric] for bucket in bucket_names]
+            # Normalize for comparison (except success rate which is already 0-100)
+            if metric != "success_rate":
+                max_val = max(values) if max(values) > 0 else 1
+                values = [
+                    v / max_val * 100 for v in values
+                ]  # Scale to 0-100 for comparison
 
-            # Convert outcomes to numeric for plotting
-            outcome_numeric = []
-            for outcome in ts_data["outcomes"]:
-                if outcome == "success":
-                    outcome_numeric.append(1)
-                elif outcome == "small_miss":
-                    outcome_numeric.append(0.5)
-                else:  # large_miss
-                    outcome_numeric.append(0)
+            ax4.bar(x + i * width, values, width, label=label, color=color, alpha=0.8)
 
-            ax3.plot(
-                ts_data["timesteps"], outcome_numeric, "o-", markersize=2, linewidth=1
-            )
-            ax3.set_title("Outcome Timeline (Top Clean Energy)")
-            ax3.set_xlabel("Timestep")
-            ax3.set_ylabel("Outcome (1=Success, 0.5=Small Miss, 0=Large Miss)")
-            ax3.set_ylim(-0.1, 1.1)
-            ax3.grid(True, alpha=0.3)
-
-        # Charging events vs outcomes
-        if (
-            self.results is not None
-            and "top_success" in self.results
-            and self.results["top_success"]
-        ):
-            result = self.results["top_success"][0]
-            ts_data = self.extract_time_series(result)
-
-            charging_events = [1 if charge else 0 for charge in ts_data["charging"]]
-            outcome_numeric = []
-            for outcome in ts_data["outcomes"]:
-                if outcome == "success":
-                    outcome_numeric.append(1)
-                elif outcome == "small_miss":
-                    outcome_numeric.append(0.5)
-                else:
-                    outcome_numeric.append(0)
-
-            ax4.scatter(
-                ts_data["timesteps"],
-                outcome_numeric,
-                c=["red" if c else "blue" for c in charging_events],
-                alpha=0.6,
-                s=10,
-            )
-            ax4.set_title("Outcomes by Charging (Top Success)")
-            ax4.set_xlabel("Timestep")
-            ax4.set_ylabel("Outcome")
-            ax4.set_ylim(-0.1, 1.1)
-
-            # Add legend
-            red_patch = mpatches.Patch(color="red", label="Charging")
-            blue_patch = mpatches.Patch(color="blue", label="Not Charging")
-            ax4.legend(handles=[red_patch, blue_patch])
+        ax4.set_xlabel("Buckets")
+        ax4.set_ylabel("Normalized Performance (0-100)")
+        ax4.set_title("Cross-Bucket Performance Comparison")
+        ax4.set_xticks(x + width)
+        ax4.set_xticklabels(bucket_names, rotation=45, ha="right")
+        ax4.legend()
+        ax4.grid(True, alpha=0.3)
 
         plt.tight_layout()
         return fig
@@ -749,7 +1079,12 @@ class TreeResultsAnalyzer:
 
         print("\n" + "=" * 80)
 
-    def run_analysis(self, show_plots: bool = True, save_plots: bool = False):
+    def run_analysis(
+        self,
+        show_plots: bool = True,
+        save_plots: bool = False,
+        timestamp: Optional[str] = None,
+    ):
         """Run complete analysis with all visualizations."""
         if not self.load_data():
             return False
@@ -763,7 +1098,8 @@ class TreeResultsAnalyzer:
             figures.append(self.plot_performance_comparison())
             figures.append(self.plot_battery_energy_time_series())
             figures.append(self.plot_model_selection_analysis())
-            figures.append(self.plot_decision_outcomes())
+            figures.append(self.plot_clean_energy_vs_accuracy())
+            figures.append(self.plot_bucket_analysis())
             figures.append(self.plot_energy_efficiency())
 
             # Save plots if requested
@@ -773,8 +1109,23 @@ class TreeResultsAnalyzer:
                 tree_images_dir = Path("tree_images")
                 tree_images_dir.mkdir(exist_ok=True)
 
+                # Use provided timestamp or extract from filename
+                if timestamp:
+                    file_timestamp = timestamp
+                else:
+                    # Extract timestamp from results filename
+                    import re
+
+                    match = re.search(
+                        r"tree-search-(\d{8}_\d{6})-metadata", str(self.results_file)
+                    )
+                    file_timestamp = match.group(1) if match else "unknown"
+
                 for i, fig in enumerate(figures):
-                    filename = tree_images_dir / f"tree_results_window_{i + 1}.png"
+                    filename = (
+                        tree_images_dir
+                        / f"tree_results_{file_timestamp}_window_{i + 1}.png"
+                    )
                     fig.savefig(filename, dpi=300, bbox_inches="tight")
                     print(f"   Saved: {filename}")
 
@@ -798,9 +1149,12 @@ def main():
         description="Visualize tree search results from tree_search.py"
     )
     parser.add_argument(
+        "--timestamp",
+        help="Exact timestamp value from tree search run (e.g., 20251209_230426)",
+    )
+    parser.add_argument(
         "--file",
-        default="results/tree_results.json",
-        help="Path to tree search results JSON file",
+        help="Direct path to tree search results JSON file (overrides --timestamp)",
     )
     parser.add_argument("--save", action="store_true", help="Save plots to PNG files")
     parser.add_argument(
@@ -809,10 +1163,31 @@ def main():
 
     args = parser.parse_args()
 
-    # Create analyzer and run analysis
-    analyzer = TreeResultsAnalyzer(args.file)
+    # Determine file path
+    if args.file:
+        results_file = args.file
+    elif args.timestamp:
+        results_file = f"results/tree-search-{args.timestamp}-metadata.json"
+    else:
+        # Try to find the most recent tree search file
+        import glob
 
-    if analyzer.run_analysis(show_plots=not args.no_show, save_plots=args.save):
+        tree_search_files = glob.glob("results/tree-search-*-metadata.json")
+        if tree_search_files:
+            tree_search_files.sort(reverse=True)  # Most recent first
+            results_file = tree_search_files[0]
+            print(f"🔍 Using most recent file: {results_file}")
+        else:
+            results_file = "results/tree_results.json"  # Fallback to old default
+
+    # Create analyzer and run analysis
+    analyzer = TreeResultsAnalyzer(results_file)
+
+    # Pass timestamp to run_analysis
+    timestamp_arg = args.timestamp if args.timestamp else None
+    if analyzer.run_analysis(
+        show_plots=not args.no_show, save_plots=args.save, timestamp=timestamp_arg
+    ):
         analyzer.print_console_summary()
     else:
         print("❌ Analysis failed!")

@@ -2,7 +2,7 @@
   // Simulation parameters
   "simulation": {
     // Total simulation duration in days
-    "duration_days": 1,
+    "duration_days": 0.01,
     // Time between simulation tasks in seconds
     "task_interval_seconds": 0.5,
     // Time acceleration factor (1 = real-time)
@@ -51,9 +51,11 @@
     "charge_rate_range": { "min": 0.1, "max": 1.0 }
   },
   // Parallel processing configuration
-  "workers": {
+  "parallel": {
     // Number of workers for parallel processing
-    "max_workers": 100
+    "max_workers": 100,
+    // Target leaf count before switching to parallel beaming
+    "leaf_target": 100
   },
   // Beam search configuration for efficient tree exploration
   "beam_search": {

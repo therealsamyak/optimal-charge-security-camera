@@ -118,6 +118,10 @@ class TreeSearch:
         # Beam reset interval
         self.beam_reset_interval = self.beam_config.get("beam_reset_interval", 5)
 
+        # Parallel configuration
+        self.parallel_config = self.config.get("parallel", {})
+        self.leaf_target = self.parallel_config.get("leaf_target", 100)
+
     def _load_config(self) -> Dict:
         """Load configuration from JSONC file."""
         with open(self.config_path, "r") as f:
@@ -486,9 +490,71 @@ class TreeSearch:
         )
         return hashlib.md5(str(state_data).encode()).hexdigest()
 
+    def _expand_sequential_to_leaf_limit(self, root: TreeNode) -> List[TreeNode]:
+        """Expand tree sequentially without pruning until leaf target reached."""
+        current_level = [root]
+        current_depth = 0
+
+        self.logger.info(
+            f"Starting sequential expansion to leaf target: {self.leaf_target}"
+        )
+
+        while current_depth < self.horizon:
+            # Estimate next level size (no pruning)
+            estimated_next_size = sum(
+                len(self._get_valid_actions(node)) for node in current_level
+            )
+
+            if len(current_level) + estimated_next_size > self.leaf_target:
+                self.logger.info(
+                    f"Stopping sequential expansion at depth {current_depth}: "
+                    f"current_leaves={len(current_level)}, "
+                    f"estimated_next={estimated_next_size}, "
+                    f"target={self.leaf_target}"
+                )
+                break  # Stop here to avoid exceeding target
+
+            # Expand to next level (no pruning)
+            next_level = []
+            for node in current_level:
+                self.nodes_explored += 1
+
+                # Get clean energy percentage for current timestep
+                timestamp = (
+                    current_depth * self.config["simulation"]["task_interval_seconds"]
+                )
+                clean_pct = self.energy_data.get(int(timestamp % 86400), 50.0)
+
+                # Get all valid actions (no pruning)
+                valid_actions = self._get_valid_actions(node)
+
+                # Add children to next level
+                for action in valid_actions:
+                    child = self._apply_action(node, action, clean_pct)
+                    if child:
+                        self.children_found += 1
+                        next_level.append(child)
+                    else:
+                        self.children_pruned += 1
+
+            current_level = next_level
+            current_depth += 1
+
+            # Progress logging
+            if current_depth % 10 == 0:
+                self.logger.info(
+                    f"Sequential expansion progress: depth={current_depth}, "
+                    f"leaves={len(current_level)}"
+                )
+
+        self.logger.info(
+            f"Sequential expansion complete: {len(current_level)} leaf nodes at depth {current_depth}"
+        )
+        return current_level
+
     def _expand_subtree_worker(self, worker_args: Tuple) -> List[TreeNode]:
-        """Worker function for parallel subtree expansion."""
-        node, depth, config_path, location, season = worker_args
+        """Worker function for parallel beam search expansion."""
+        node, config_path, location, season = worker_args
 
         # Create worker-specific TreeSearch instance
         worker_search = TreeSearch(config_path, location, season, parallel=False)
@@ -498,92 +564,56 @@ class TreeSearch:
         worker_search.children_found = 0
         worker_search.children_pruned = 0
 
-        return worker_search._expand_tree_fallback(node, depth)
+        # Enable beam search for worker
+        worker_search.config["beam_search"]["enabled"] = True
 
-    def _expand_tree_parallel(
-        self, root: TreeNode, split_depths: List[int] = [5, 10, 15]
-    ) -> List[TreeNode]:
-        """Expand tree using parallel depth-based splitting."""
+        # Set all bucket sizes to 1 for parallel workers
+        for bucket_name in worker_search.bucket_sizes.keys():
+            worker_search.bucket_sizes[bucket_name] = 1
+
+        # Continue expansion from this leaf node using beam search
+        return worker_search._beam_search_expand(node)
+
+    def _expand_hybrid_parallel(self, root: TreeNode) -> List[TreeNode]:
+        """Hybrid parallel expansion: sequential to leaf target, then parallel beam search."""
+        # Phase 1: Sequential expansion to leaf limit
+        leaf_nodes = self._expand_sequential_to_leaf_limit(root)
+
+        if not leaf_nodes:
+            self.logger.warning("No leaf nodes found in sequential phase")
+            return []
+
+        # Phase 2: Parallel beam processing
+        max_workers = min(len(leaf_nodes), self.config["parallel"]["max_workers"])
+        worker_args = [
+            (node, self.config_path, self.location, self.season) for node in leaf_nodes
+        ]
+
+        self.logger.info(
+            f"Starting parallel beam processing: {len(leaf_nodes)} leaf nodes, {max_workers} workers"
+        )
+
         all_leaves = []
-        max_workers = min(self.config["workers"]["max_workers"], mp.cpu_count())
+        with ProcessPoolExecutor(max_workers=max_workers) as executor:
+            future_to_args = {
+                executor.submit(self._expand_subtree_worker, args): args
+                for args in worker_args
+            }
 
-        self.logger.info(f"Starting parallel expansion with {max_workers} workers")
+            for future in as_completed(future_to_args):
+                try:
+                    worker_leaves = future.result(
+                        timeout=300
+                    )  # 5min timeout per worker
+                    all_leaves.extend(worker_leaves)
+                    self.leaves_found += len(worker_leaves)
+                except Exception as e:
+                    self.logger.error(f"Worker failed: {e}")
+                    # Continue with other workers
 
-        # Expand to first split depth
-        current_nodes = [root]
-        current_depth = 0
-
-        for split_depth in split_depths:
-            if current_depth >= split_depth or current_depth >= self.horizon:
-                break
-
-            self.logger.info(f"Expanding to depth {split_depth}...")
-            next_nodes = []
-
-            for node in current_nodes:
-                # Get clean energy percentage for current timestep
-                timestamp = (
-                    node.timestep * self.config["simulation"]["task_interval_seconds"]
-                )
-                clean_pct = self.energy_data.get(int(timestamp % 86400), 50.0)
-
-                valid_actions = self._get_valid_actions(node)
-                for action in valid_actions:
-                    child = self._apply_action(node, action, clean_pct)
-                    if child:
-                        next_nodes.append(child)
-
-            current_nodes = next_nodes
-            current_depth = split_depth
-
-            if len(current_nodes) >= max_workers * 10:  # Enough nodes to parallelize
-                break
-
-        # If we have enough nodes, parallelize the remaining expansion
-        if len(current_nodes) >= max_workers and current_depth < self.horizon:
-            self.logger.info(
-                f"Parallelizing {len(current_nodes)} subtrees at depth {current_depth}"
-            )
-
-            # Prepare worker arguments
-            worker_args = [
-                (node, current_depth, self.config_path, self.location, self.season)
-                for node in current_nodes
-            ]
-
-            # Process subtrees in parallel
-            with ProcessPoolExecutor(max_workers=max_workers) as executor:
-                future_to_node = {
-                    executor.submit(self._expand_subtree_worker, args): args[0]
-                    for args in worker_args
-                }
-
-                for future in as_completed(future_to_node):
-                    try:
-                        subtree_leaves = future.result(
-                            timeout=300
-                        )  # 5min timeout per worker
-                        all_leaves.extend(subtree_leaves)
-                        self.leaves_found += len(subtree_leaves)
-                    except Exception as e:
-                        self.logger.error(f"Worker failed: {e}")
-                        # Fall back to sequential processing for this subtree
-                        node = future_to_node[future]
-                        try:
-                            sequential_leaves = self._expand_tree_fallback(
-                                node, current_depth
-                            )
-                            all_leaves.extend(sequential_leaves)
-                            self.leaves_found += len(sequential_leaves)
-                        except Exception as e2:
-                            self.logger.error(f"Sequential fallback also failed: {e2}")
-        else:
-            # Not enough nodes to parallelize, use sequential
-            self.logger.info(
-                "Using sequential expansion (insufficient nodes for parallelization)"
-            )
-            all_leaves = self._expand_tree_fallback(root, 0)
-
+        self.logger.info(
+            f"Parallel beam processing complete: {len(all_leaves)} total leaves from {len(leaf_nodes)} workers"
+        )
         return all_leaves
 
     def _beam_search_expand(self, root: TreeNode) -> List[TreeNode]:
@@ -1461,12 +1491,12 @@ class TreeSearch:
             f"Battery: {self.config['battery']['capacity_wh']}Wh, Charge: {self.config['battery']['charge_rate_hours']}h"
         )
 
-        # Expand tree (beam search, parallel, or sequential)
+        # Expand tree (parallel hybrid, beam search, or sequential)
         self.logger.info("Expanding decision tree...")
-        if self.config.get("beam_search", {}).get("enabled", False):
+        if self.parallel:
+            leaves = self._expand_hybrid_parallel(root)
+        elif self.config.get("beam_search", {}).get("enabled", False):
             leaves = self._beam_search_expand(root)
-        elif self.parallel:
-            leaves = self._expand_tree_parallel(root)
         else:
             leaves = self._expand_tree_fallback(root, 0)
 
@@ -1553,7 +1583,9 @@ def main():
         "--output", help="Output file path (ignored - timestamp-based naming used)"
     )
     parser.add_argument(
-        "--parallel", action="store_true", help="Enable parallel processing"
+        "--parallel",
+        action="store_true",
+        help="Enable hybrid parallel processing (sequential expansion + parallel beam search)",
     )
 
     args = parser.parse_args()
