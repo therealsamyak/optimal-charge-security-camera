@@ -4,15 +4,16 @@
     // Total duration of the simulation in days
     "duration_days": 1,
     // Interval between simulation task evaluations in seconds
-    "task_interval_seconds": 5,
+    "task_interval_seconds": 60,
     // Time acceleration factor (1 = real-time)
     // Controls the speed of the simulation relative to real time
     // Higher values make the simulation run faster but may affect timing precision
     // Example: If set to 2, the simulation will run twice as fast as real-time
     "time_acceleration": 1,
     // Minimum required accuracy percentage for tasks (0-100)
-    "user_accuracy_requirement": 90.5
+    "user_accuracy_requirement": 90.5,
     // Maximum allowed latency for task processing in seconds
+    "user_latency_requirement": 0.01,
   },
   // Battery configuration
   "battery": {
@@ -20,7 +21,7 @@
     "capacity_wh": 15,
     // Hours required to charge from 0% to 100% capacity
     // Lower values indicate faster charging capability
-    "charge_rate_hours": 8
+    "charge_rate_hours": 8,
     // Note: The relationship between charge rate and model energy consumption
     // determines the sustainability of continuous operation. The tree search
     // algorithm will optimize the balance between model usage and charging
@@ -46,76 +47,38 @@
     "accuracy_range": { "min": 30, "max": 80 },
     "latency_range": { "min": 2, "max": 15 },
     "battery_capacity_range": { "min": 0.01, "max": 0.1 },
-    "charge_rate_range": { "min": 0.1, "max": 1.0 }
+    "charge_rate_range": { "min": 0.1, "max": 1.0 },
   },
   // Parallel processing configuration
   "parallel": {
     // Number of workers for parallel processing
     "max_workers": 100,
     // Target leaf count before switching to parallel beaming
-    "leaf_target": 100
+    "leaf_target": 100,
   },
   // Beam search configuration for efficient tree exploration
   "beam_search": {
     // Enable/disable the beam search algorithm
     "enabled": true,
 
-    // Heuristic weights for different optimization strategies
-    // Each heuristic (h_1 through h_4) defines a different weighting of objectives
-    // The weights should sum to 1.0 for each heuristic
-    // - success: Weight for task completion success rate
-    // - small_miss: Weight for minor timing/accuracy misses
-    // - large_miss: Weight for significant timing/accuracy misses
-    // - clean_energy: Weight for clean energy utilization
-    "heuristic_weights": {
-      "h_1": {
-        "success": 0.5,
-        "small_miss": 0.2,
-        "large_miss": 0.1,
-        "clean_energy": 0.2
-      },
-      "h_2": {
-        "success": 0.2,
-        "small_miss": 0.1,
-        "large_miss": 0.1,
-        "clean_energy": 0.5
-      },
-      "h_3": {
-        "success": 0.8,
-        "small_miss": 0.1,
-        "large_miss": 0.05,
-        "clean_energy": 0.05
-      },
-      "h_4": {
-        "success": 0.05,
-        "small_miss": 0.05,
-        "large_miss": 0.1,
-        "clean_energy": 0.8
-      }
-    },
-
     // Number of states to keep per bucket during beam search
     // Higher values provide better solution quality but increase computation time
-    "beam_width_per_bucket": 5,
+    "beam_width_per_bucket": 30,
 
     // Maximum number of states to maintain in each bucket category
-    // Categories include different optimization objectives and heuristics
+    // Categories include different optimization objectives
     "bucket_sizes": {
-      "success": 5,
-      "most_clean_energy_usage": 5,
-      "max_uptime": 5,
-      "h_1": 5,
-      "h_2": 5,
-      "h_3": 5,
-      "h_4": 5
+      "success": 30,
+      "success_small_miss": 30,
+      "most_clean_energy": 30,
     },
 
     // Maximum number of states to maintain in the search frontier
     // This limits memory usage during the search
     "max_frontier_size": 1000000,
-    
+
     // Number of iterations after which to reset the beam search
     // Can help escape local optima when > 0, 0 disables reset
-    "beam_reset_interval": 1
-  }
+    "beam_reset_interval": 1,
+  },
 }

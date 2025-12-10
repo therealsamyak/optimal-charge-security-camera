@@ -26,23 +26,16 @@ class TreeResultsAnalyzer:
         self.data: Optional[Dict] = None
         self.metadata: Optional[Dict] = None
         self.results: Optional[Dict] = None
-        self.categories = [
-            "top_most_clean_energy_usage",
+        self.base_categories = [
+            "top_most_clean_energy",
             "top_success",
-            "top_max_uptime",
-            "top_h_1",
-            "top_h_2",
-            "top_h_3",
-            "top_h_4",
+            "top_success_small_miss",
         ]
+
         self.colors = {
-            "top_most_clean_energy_usage": "#2E8B57",  # Sea Green
+            "top_most_clean_energy": "#2E8B57",  # Sea Green
             "top_success": "#4169E1",  # Royal Blue
-            "top_max_uptime": "#FFD700",  # Gold
-            "top_h_1": "#9370DB",  # Medium Purple
-            "top_h_2": "#FF8C00",  # Dark Orange
-            "top_h_3": "#DC143C",  # Crimson
-            "top_h_4": "#20B2AA",  # Light Sea Green
+            "top_success_small_miss": "#FFD700",  # Gold
         }
         # Distinct colors for different models
         self.model_colors = {
@@ -54,6 +47,19 @@ class TreeResultsAnalyzer:
             "efficientdet": "#DDA0DD",  # Plum
             "mobilenet": "#F4A460",  # Sandy Brown
         }
+
+    @property
+    def categories(self):
+        """Get available categories based on loaded data."""
+        if self.results is None:
+            return self.base_categories
+
+        available = []
+        for cat in self.base_categories:
+            if cat in self.results and self.results[cat]:
+                available.append(cat)
+
+        return available
 
     def load_data(self) -> bool:
         """Load and validate tree search results data."""
@@ -451,10 +457,10 @@ class TreeResultsAnalyzer:
         # Model selection timeline for top clean energy category
         if (
             self.results
-            and "top_most_clean_energy_usage" in self.results
-            and self.results["top_most_clean_energy_usage"]
+            and "top_most_clean_energy" in self.results
+            and self.results["top_most_clean_energy"]
         ):
-            result = self.results["top_most_clean_energy_usage"][0]
+            result = self.results["top_most_clean_energy"][0]
             ts_data = self.extract_time_series(result)
 
             # Create timeline showing model switches
