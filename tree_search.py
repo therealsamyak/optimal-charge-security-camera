@@ -103,6 +103,7 @@ class TreeSearch:
             {
                 "success": 10,
                 "most_clean_energy_usage": 10,
+                "max_uptime": 10,
                 "h_1": 10,
                 "h_2": 10,
                 "h_3": 10,
@@ -113,6 +114,9 @@ class TreeSearch:
         # Beam search performance tracking
         self.frontier_sizes = []
         self.bucket_utilization = {bucket: [] for bucket in self.bucket_sizes.keys()}
+
+        # Beam reset interval
+        self.beam_reset_interval = self.beam_config.get("beam_reset_interval", 5)
 
     def _load_config(self) -> Dict:
         """Load configuration from JSONC file."""
@@ -602,6 +606,7 @@ class TreeSearch:
             "bucket_utilization": {
                 "success": 0,
                 "most_clean_energy_usage": 0,
+                "max_uptime": 0,
                 "h_1": 0,
                 "h_2": 0,
                 "h_3": 0,
@@ -636,9 +641,17 @@ class TreeSearch:
 
             beam_stats["total_states_generated"] += len(next_states)
 
-            # Assign states to buckets and prune
-            frontier = self._assign_to_buckets(next_states)
-            beam_stats["total_states_pruned"] += len(next_states) - len(frontier)
+            # Apply beam reset logic
+            if (
+                self.beam_reset_interval > 0
+                and timestep % self.beam_reset_interval == 0
+            ):
+                # Reset: assign all current states to buckets
+                frontier = self._assign_to_buckets(next_states)
+                beam_stats["total_states_pruned"] += len(next_states) - len(frontier)
+            else:
+                # Normal expansion: keep all states
+                frontier = next_states
 
             # Progress logging
             if timestep % 50 == 0 or timestep == self.horizon - 1:
@@ -659,6 +672,14 @@ class TreeSearch:
                     key=lambda x: x.get_clean_energy_percentage(), reverse=True
                 )
                 frontier = frontier[:max_frontier_size]
+
+        # Final bucket assignment if last reset wasn't at horizon
+        if (
+            self.beam_reset_interval > 0
+            and (self.horizon - 1) % self.beam_reset_interval != 0
+        ):
+            self.logger.info("Applying final bucket assignment...")
+            frontier = self._assign_to_buckets(frontier)
 
         # Final statistics
         if self.horizon > 0:
@@ -898,6 +919,44 @@ class TreeSearch:
 
         return result
 
+    def _bucket_max_uptime(self, states: List[TreeNode]) -> List[TreeNode]:
+        """Bucket: Max Uptime - fewest IDLE/large misses, random tiebreak."""
+        bucket_size = self.config["beam_search"]["bucket_sizes"]["max_uptime"]
+
+        # Sort by uptime (inverse of large_miss count)
+        sorted_states = sorted(
+            states, key=lambda x: x.get_decision_counts()["large_miss"]
+        )
+
+        # Group states with same large_miss count
+        result = []
+        i = 0
+        while i < len(sorted_states) and len(result) < bucket_size:
+            current_large_misses = sorted_states[i].get_decision_counts()["large_miss"]
+
+            # Find all states with same large_miss count
+            same_large_miss_states = []
+            j = i
+            while (
+                j < len(sorted_states)
+                and sorted_states[j].get_decision_counts()["large_miss"]
+                == current_large_misses
+            ):
+                same_large_miss_states.append(sorted_states[j])
+                j += 1
+
+            # Randomly select from ties
+            available_slots = bucket_size - len(result)
+            selected = random.sample(
+                same_large_miss_states,
+                min(len(same_large_miss_states), available_slots),
+            )
+            result.extend(selected)
+
+            i = j
+
+        return result
+
     def _bucket_success_dominant(self, states: List[TreeNode]) -> List[TreeNode]:
         """Bucket: Success Dominant - most successes, random tiebreak."""
         bucket_size = self.config["beam_search"]["bucket_sizes"]["success"]
@@ -1106,6 +1165,14 @@ class TreeSearch:
         remaining_states = [
             s for s in unique_states if get_state_key(s) not in used_states
         ]
+        max_uptime_bucket = self._bucket_max_uptime(remaining_states)
+        bucket_results.extend(max_uptime_bucket)
+        for state in max_uptime_bucket:
+            used_states.add(get_state_key(state))
+
+        remaining_states = [
+            s for s in unique_states if get_state_key(s) not in used_states
+        ]
         h_1_bucket = self._bucket_h_1(remaining_states)
         bucket_results.extend(h_1_bucket)
         for state in h_1_bucket:
@@ -1292,6 +1359,7 @@ class TreeSearch:
             return {
                 "top_success": [],
                 "top_most_clean_energy_usage": [],
+                "top_max_uptime": [],
                 "top_h_1": [],
                 "top_h_2": [],
                 "top_h_3": [],
@@ -1309,6 +1377,11 @@ class TreeSearch:
             leaves,
             key=lambda x: x.get_clean_energy_percentage(),
             reverse=True,
+        )[:5]
+
+        top_max_uptime = sorted(
+            leaves,
+            key=lambda x: x.get_decision_counts()["large_miss"],
         )[:5]
 
         # Get heuristic weights from config
@@ -1347,6 +1420,7 @@ class TreeSearch:
             "top_most_clean_energy_usage": [
                 self._serialize_leaf(leaf) for leaf in top_clean_energy
             ],
+            "top_max_uptime": [self._serialize_leaf(leaf) for leaf in top_max_uptime],
             "top_h_1": [self._serialize_leaf(leaf) for leaf in top_h_1],
             "top_h_2": [self._serialize_leaf(leaf) for leaf in top_h_2],
             "top_h_3": [self._serialize_leaf(leaf) for leaf in top_h_3],

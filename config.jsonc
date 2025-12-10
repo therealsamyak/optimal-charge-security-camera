@@ -2,9 +2,9 @@
   // Simulation parameters
   "simulation": {
     // Total simulation duration in days
-    "duration_days": 7,
+    "duration_days": 1,
     // Time between simulation tasks in seconds
-    "task_interval_seconds": 5,
+    "task_interval_seconds": 0.5,
     // Time acceleration factor (1 = real-time)
     // Time acceleration factor: 1 = real-time, 2 = 2x faster, 10 = 10x faster
     // Controls how fast simulated time passes compared to real time
@@ -88,20 +88,24 @@
       }
     },
 
-    // Keep 20 states per bucket
-    "beam_width_per_bucket": 20,
+    // Keep 5 states per bucket
+    "beam_width_per_bucket": 5,
 
-    // Bucket capacities (each can hold 20 entries)
+    // Bucket capacities (each can hold 5 entries)
     "bucket_sizes": {
-      "success": 20,
-      "most_clean_energy_usage": 20,
-      "h_1": 20,
-      "h_2": 20,
-      "h_3": 20,
-      "h_4": 20
+      "success": 5,
+      "most_clean_energy_usage": 5,
+      "max_uptime": 5,
+      "h_1": 5,
+      "h_2": 5,
+      "h_3": 5,
+      "h_4": 5
     },
 
-    // Total frontier capacity (6 buckets × 20 each)
-    "max_frontier_size": 120
+    // Total frontier capacity (7 buckets × 5 each)
+    "max_frontier_size": 35,
+    
+    // Reset beam search every <x> iterations (0 = disable reset)
+    "beam_reset_interval": 10
   }
 }
