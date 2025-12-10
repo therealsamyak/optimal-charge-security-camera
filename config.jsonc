@@ -103,9 +103,9 @@
     },
 
     // Total frontier capacity (7 buckets × 5 each)
-    "max_frontier_size": 35,
+    "max_frontier_size": 1000000,
     
     // Reset beam search every <x> iterations (0 = disable reset)
-    "beam_reset_interval": 10
+    "beam_reset_interval": 1
   }
 }

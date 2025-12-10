@@ -663,15 +663,15 @@ class TreeSearch:
                 )
 
             # Safety check for frontier explosion
-            if len(frontier) > max_frontier_size * 2:
-                self.logger.warning(
-                    f"Frontier size exceeded safety limit: {len(frontier)}"
-                )
-                # Emergency pruning - keep only top states by clean energy
-                frontier.sort(
-                    key=lambda x: x.get_clean_energy_percentage(), reverse=True
-                )
-                frontier = frontier[:max_frontier_size]
+            # if len(frontier) > max_frontier_size * 2:
+            #     self.logger.warning(
+            #         f"Frontier size exceeded safety limit: {len(frontier)}"
+            #     )
+            #     # Emergency pruning - keep only top states by clean energy
+            #     frontier.sort(
+            #         key=lambda x: x.get_clean_energy_percentage(), reverse=True
+            #     )
+            #     frontier = frontier[:max_frontier_size]
 
         # Final bucket assignment if last reset wasn't at horizon
         if (
