@@ -63,16 +63,16 @@ class TreeResultsAnalyzer:
         self, filename: str
     ) -> Tuple[Optional[str], Optional[str]]:
         """Extract timestamp and season from filename."""
-        pattern = r"tree-search-(\w+)-(\d{8}_\d{6})-metadata\.json"
+        pattern = r"([A-Z]{2})-(\d{8}_\d{6})-(\w+)-metadata\.json"
         match = re.search(pattern, filename)
         if match:
-            return match.group(2), match.group(1)  # timestamp, season
+            return match.group(2), match.group(3)  # timestamp, season
         return None, None
 
     def _extract_timestamp_from_file(self) -> str:
         """Extract timestamp from the results file name."""
         match = re.search(
-            r"tree-search-(?:\w+-)?(\d{8}_\d{6})-metadata", str(self.results_file)
+            r"[A-Z]{2}-(\d{8}_\d{6})-(?:\w+)-metadata", str(self.results_file)
         )
         return match.group(1) if match else "unknown"
 
@@ -89,7 +89,7 @@ class TreeResultsAnalyzer:
             return {}
 
         # Find all tree search files
-        all_files = glob.glob("results/tree-search-*-metadata.json")
+        all_files = glob.glob("results/*-metadata.json")
 
         seasonal_files = {}
         for file_path in all_files:
@@ -1297,7 +1297,8 @@ class TreeResultsAnalyzer:
                 else:
                     # Extract timestamp from results filename
                     match = re.search(
-                        r"tree-search-(\d{8}_\d{6})-metadata", str(self.results_file)
+                        r"[A-Z]{2}-(\d{8}_\d{6})-(?:\w+)-metadata",
+                        str(self.results_file),
                     )
                     file_timestamp = match.group(1) if match else "unknown"
 
@@ -1567,10 +1568,10 @@ def main():
     if args.file:
         results_file = args.file
     elif args.timestamp:
-        results_file = f"results/tree-search-{args.timestamp}-metadata.json"
+        results_file = f"results/*-{args.timestamp}-*-metadata.json"
     else:
         # Try to find the most recent tree search file
-        tree_search_files = glob.glob("results/tree-search-*-metadata.json")
+        tree_search_files = glob.glob("results/*-metadata.json")
         if tree_search_files:
             tree_search_files.sort(reverse=True)  # Most recent first
             results_file = tree_search_files[0]

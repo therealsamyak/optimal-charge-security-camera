@@ -1632,7 +1632,7 @@ def main():
     results_dir.mkdir(exist_ok=True)
 
     for season, results in all_results.items():
-        output_filename = f"tree-search-{season}-{timestamp}-metadata.json"
+        output_filename = f"{args.location}-{timestamp}-{season}-metadata.json"
         output_path = results_dir / output_filename
 
         with open(output_path, "w") as f:
