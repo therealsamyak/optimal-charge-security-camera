@@ -2,9 +2,9 @@
   // Simulation parameters
   "simulation": {
     // Total simulation duration in days
-    "duration_days": 1,
+    "duration_days": 7,
     // Time between simulation tasks in seconds
-    "task_interval_seconds": 15,
+    "task_interval_seconds": 5,
     // Time acceleration factor (1 = real-time)
     // Time acceleration factor: 1 = real-time, 2 = 2x faster, 10 = 10x faster
     // Controls how fast simulated time passes compared to real time
@@ -18,9 +18,9 @@
   // Battery configuration
   "battery": {
     // Total battery capacity in watt-hours (small device)
-    "capacity_wh": 0.02,
-    // Maximum charging rate in watts
-    "charge_rate_watts": 0.005
+    "capacity_wh": 15,
+    // Hours to charge from 0 to 100% capacity
+    "charge_rate_hours": 8
     // NOTE: Charge rate vs model energy balance:
     // - YOLOv10_N consumes 0.001019 Wh per inference
     // - Charging provides 0.0000208 Wh per timestep (15s @ 0.005W)
@@ -60,20 +60,48 @@
     // Enable beam search (Pareto bucketed beams approach)
     "enabled": true,
 
-     // Keep 1000 states per bucket
-    "beam_width_per_bucket": 1000,
-
-     // Bucket capacities (each can hold 1000 entries)
-    "bucket_sizes": {
-      "clean_energy": 1000,
-      "small_miss": 1000,
-      "success": 1000,
-      "large_miss": 1000,
-      "energy_efficient": 1000,
-      "charge_dominant": 1000
+    // Heuristic weights for different bucket strategies
+    "heuristic_weights": {
+      "h_1": {
+        "success": 0.5,
+        "small_miss": 0.2,
+        "large_miss": 0.1,
+        "clean_energy": 0.2
+      },
+      "h_2": {
+        "success": 0.2,
+        "small_miss": 0.1,
+        "large_miss": 0.1,
+        "clean_energy": 0.5
+      },
+      "h_3": {
+        "success": 0.8,
+        "small_miss": 0.1,
+        "large_miss": 0.05,
+        "clean_energy": 0.05
+      },
+      "h_4": {
+        "success": 0.05,
+        "small_miss": 0.05,
+        "large_miss": 0.1,
+        "clean_energy": 0.8
+      }
     },
 
-    // Total frontier capacity (5 buckets × 100 each)
-    "max_frontier_size": 6000
+    // Keep 20 states per bucket
+    "beam_width_per_bucket": 20,
+
+    // Bucket capacities (each can hold 20 entries)
+    "bucket_sizes": {
+      "success": 20,
+      "most_clean_energy_usage": 20,
+      "h_1": 20,
+      "h_2": 20,
+      "h_3": 20,
+      "h_4": 20
+    },
+
+    // Total frontier capacity (6 buckets × 20 each)
+    "max_frontier_size": 120
   }
 }

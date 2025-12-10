@@ -11,6 +11,7 @@ import dataclasses
 import argparse
 import logging
 import time
+import random
 import multiprocessing as mp
 from concurrent.futures import ProcessPoolExecutor, as_completed
 from typing import Dict, List, Tuple, Optional
@@ -100,11 +101,12 @@ class TreeSearch:
         self.bucket_sizes = self.beam_config.get(
             "bucket_sizes",
             {
-                "clean_energy": 10,
-                "small_miss": 10,
                 "success": 10,
-                "large_miss": 10,
-                "energy_efficient": 10,
+                "most_clean_energy_usage": 10,
+                "h_1": 10,
+                "h_2": 10,
+                "h_3": 10,
+                "h_4": 10,
             },
         )
 
@@ -339,7 +341,7 @@ class TreeSearch:
             )
             self.logger.info(f"Fallback models available: {fallback_models}")
             self.logger.info(
-                f"Battery capacity: {self.config['battery']['capacity_wh']}Wh, Charge rate: {self.config['battery']['charge_rate_watts']}W"
+                f"Battery capacity: {self.config['battery']['capacity_wh']}Wh, Charge rate: {self.config['battery']['charge_rate_hours']}h"
             )
             self._logged_models = True
 
@@ -362,7 +364,13 @@ class TreeSearch:
         model_name, should_charge = action
         task_interval = self.config["simulation"]["task_interval_seconds"]
         battery_capacity_wh = self.config["battery"]["capacity_wh"]
-        charge_rate_w = self.config["battery"]["charge_rate_watts"]
+        charge_rate_w = (
+            self.config["battery"]["capacity_wh"]
+            / self.config["battery"]["charge_rate_hours"]
+        )  # Wh per hour
+        charge_rate_w = charge_rate_w * (
+            task_interval / 3600.0
+        )  # Convert to Wh per task interval
 
         # Calculate current battery energy
         current_battery_wh = node.battery_level_wh
@@ -377,7 +385,9 @@ class TreeSearch:
 
         # Handle charging energy calculation
         if should_charge:
-            charge_energy_wh = charge_rate_w * (task_interval / 3600.0)
+            charge_energy_wh = (
+                charge_rate_w  # Already converted to Wh per task interval
+            )
             space_available = battery_capacity_wh - current_battery_wh
             actual_charge = min(charge_energy_wh, space_available)
 
@@ -590,12 +600,12 @@ class TreeSearch:
             "total_states_generated": 0,
             "total_states_pruned": 0,
             "bucket_utilization": {
-                "clean_energy": 0,
-                "small_miss": 0,
                 "success": 0,
-                "large_miss": 0,
-                "energy_efficient": 0,
-                "charge_dominant": 0,
+                "most_clean_energy_usage": 0,
+                "h_1": 0,
+                "h_2": 0,
+                "h_3": 0,
+                "h_4": 0,
             },
         }
 
@@ -849,134 +859,169 @@ class TreeSearch:
                 )
                 break
 
-    def _bucket_clean_energy_dominant(self, states: List[TreeNode]) -> List[TreeNode]:
-        """Bucket A: Clean Energy Dominant - highest clean %, tiebreak: lowest dirty."""
-        bucket_size = self.config["beam_search"]["bucket_sizes"]["clean_energy"]
+    def _bucket_most_clean_energy_usage(self, states: List[TreeNode]) -> List[TreeNode]:
+        """Bucket: Most Clean Energy Usage - highest clean energy percentage, random tiebreak."""
+        bucket_size = self.config["beam_search"]["bucket_sizes"][
+            "most_clean_energy_usage"
+        ]
+
+        # Sort by clean energy percentage
         sorted_states = sorted(
-            states, key=lambda x: (-x.get_clean_energy_percentage(), x.agg_dirty_energy)
+            states, key=lambda x: x.get_clean_energy_percentage(), reverse=True
         )
-        return sorted_states[:bucket_size]
 
-    def _bucket_small_miss_dominant(self, states: List[TreeNode]) -> List[TreeNode]:
-        """Bucket B: Small Miss Dominant - highest small misses, tiebreak: model variety."""
-        bucket_size = self.config["beam_search"]["bucket_sizes"]["small_miss"]
+        # Group states with same clean energy percentage
+        result = []
+        i = 0
+        while i < len(sorted_states) and len(result) < bucket_size:
+            current_percentage = sorted_states[i].get_clean_energy_percentage()
 
-        def get_model_variety(state: TreeNode) -> int:
-            # Count different models used (prefer variety)
-            models = set()
-            for action in state.action_sequence:
-                models.add(action[0])  # model_name
-            return len(models)
+            # Find all states with same percentage
+            same_percentage_states = []
+            j = i
+            while (
+                j < len(sorted_states)
+                and sorted_states[j].get_clean_energy_percentage() == current_percentage
+            ):
+                same_percentage_states.append(sorted_states[j])
+                j += 1
 
-        sorted_states = sorted(
-            states,
-            key=lambda x: (
-                -x.get_decision_counts()["small_miss"],
-                -get_model_variety(x),
-                x.battery_level_wh,
-            ),
-        )
-        return sorted_states[:bucket_size]
+            # Randomly select from ties
+            available_slots = bucket_size - len(result)
+            selected = random.sample(
+                same_percentage_states,
+                min(len(same_percentage_states), available_slots),
+            )
+            result.extend(selected)
+
+            i = j
+
+        return result
 
     def _bucket_success_dominant(self, states: List[TreeNode]) -> List[TreeNode]:
-        """Bucket C: Success Dominant - most successes, tiebreak: action diversity."""
+        """Bucket: Success Dominant - most successes, random tiebreak."""
         bucket_size = self.config["beam_search"]["bucket_sizes"]["success"]
 
-        def get_action_diversity(state: TreeNode) -> int:
-            # Count unique models used
-            models = set()
-            for action in state.action_sequence:
-                models.add(action[0])  # model_name
-            return len(models)
-
+        # Sort by success count
         sorted_states = sorted(
-            states,
-            key=lambda x: (
-                -x.get_decision_counts()["success"],
-                -get_action_diversity(x),
-                x.battery_level_wh,
-            ),
+            states, key=lambda x: x.get_decision_counts()["success"], reverse=True
         )
-        return sorted_states[:bucket_size]
 
-    def _bucket_large_miss_dominant(self, states: List[TreeNode]) -> List[TreeNode]:
-        """Bucket D: Large Miss Dominant - highest large misses, tiebreak: charging frequency."""
-        bucket_size = self.config["beam_search"]["bucket_sizes"]["large_miss"]
+        # Group states with same success count
+        result = []
+        i = 0
+        while i < len(sorted_states) and len(result) < bucket_size:
+            current_success = sorted_states[i].get_decision_counts()["success"]
 
-        def get_charging_frequency(state: TreeNode) -> int:
-            # Count charging actions (prefer different charging patterns)
-            charging_count = sum(
-                1 for action in state.action_sequence if action[1]
-            )  # should_charge
-            return charging_count
+            # Find all states with same success count
+            same_success_states = []
+            j = i
+            while (
+                j < len(sorted_states)
+                and sorted_states[j].get_decision_counts()["success"] == current_success
+            ):
+                same_success_states.append(sorted_states[j])
+                j += 1
 
-        sorted_states = sorted(
-            states,
-            key=lambda x: (
-                -x.get_decision_counts()["large_miss"],
-                -get_charging_frequency(x),
-                x.battery_level_wh,
-            ),
+            # Randomly select from ties
+            available_slots = bucket_size - len(result)
+            selected = random.sample(
+                same_success_states, min(len(same_success_states), available_slots)
+            )
+            result.extend(selected)
+
+            i = j
+
+        return result
+
+    def _calculate_heuristic_score(
+        self, state: TreeNode, weights: Dict[str, float]
+    ) -> float:
+        """Calculate heuristic score for a state using given weights."""
+        decision_counts = state.get_decision_counts()
+        clean_energy_pct = state.get_clean_energy_percentage()
+
+        # Normalize counts to 0-1 range (assuming max possible is horizon)
+        max_possible = self.horizon
+        success_score = (
+            decision_counts["success"] / max_possible if max_possible > 0 else 0
         )
-        return sorted_states[:bucket_size]
-
-    def _bucket_energy_efficient(self, states: List[TreeNode]) -> List[TreeNode]:
-        """Bucket E: Energy Efficient - least total energy, tiebreak: highest clean %."""
-        bucket_size = self.config["beam_search"]["bucket_sizes"]["energy_efficient"]
-        sorted_states = sorted(
-            states,
-            key=lambda x: (x.get_total_energy(), -x.get_clean_energy_percentage()),
+        small_miss_score = (
+            decision_counts["small_miss"] / max_possible if max_possible > 0 else 0
         )
-        return sorted_states[:bucket_size]
-
-    def _bucket_charge_dominant(self, states: List[TreeNode]) -> List[TreeNode]:
-        """Bucket F: Charge Dominant - most total charge consumed, tiebreak: charging consistency."""
-        bucket_size = self.config["beam_search"]["bucket_sizes"]["charge_dominant"]
-
-        # Calculate total charge energy for each state
-        def get_total_charge(state: TreeNode) -> float:
-            total_charge = 0.0
-            for decision in state.decision_history:
-                if decision.get("charged", False):
-                    # Reconstruct charge energy from action sequence
-                    task_interval = self.config["simulation"]["task_interval_seconds"]
-                    charge_rate_w = self.config["battery"]["charge_rate_watts"]
-                    charge_energy = charge_rate_w * (task_interval / 3600.0)
-                    total_charge += charge_energy
-            return total_charge
-
-        def get_charging_consistency(state: TreeNode) -> float:
-            # Prefer consistent charging patterns over sporadic ones
-            charging_actions = [
-                i
-                for i, decision in enumerate(state.decision_history)
-                if decision.get("charged", False)
-            ]
-            if not charging_actions:
-                return 0.0
-
-            # Calculate variance in charging intervals (lower is more consistent)
-            intervals = [
-                charging_actions[i + 1] - charging_actions[i]
-                for i in range(len(charging_actions) - 1)
-            ]
-            if not intervals:
-                return 1.0
-
-            avg_interval = sum(intervals) / len(intervals)
-            variance = sum((x - avg_interval) ** 2 for x in intervals) / len(intervals)
-            return 1.0 / (1.0 + variance)  # Higher for more consistent charging
-
-        sorted_states = sorted(
-            states,
-            key=lambda x: (
-                get_total_charge(x),
-                -get_charging_consistency(x),
-                x.battery_level_wh,
-            ),
-            reverse=True,
+        large_miss_score = (
+            decision_counts["large_miss"] / max_possible if max_possible > 0 else 0
         )
-        return sorted_states[:bucket_size]
+        clean_energy_score = clean_energy_pct / 100.0
+
+        # Apply weights
+        score = (
+            weights["success"] * success_score
+            + weights["small_miss"] * small_miss_score
+            + weights["large_miss"] * large_miss_score
+            + weights["clean_energy"] * clean_energy_score
+        )
+
+        return score
+
+    def _bucket_heuristic(
+        self, states: List[TreeNode], heuristic_name: str
+    ) -> List[TreeNode]:
+        """Generic heuristic bucket method with random tiebreak."""
+        bucket_size = self.config["beam_search"]["bucket_sizes"][heuristic_name]
+        weights = self.config["beam_search"]["heuristic_weights"][heuristic_name]
+
+        # Calculate scores for all states
+        scored_states = []
+        for state in states:
+            score = self._calculate_heuristic_score(state, weights)
+            scored_states.append((score, state))
+
+        # Sort by score (descending)
+        scored_states.sort(key=lambda x: x[0], reverse=True)
+
+        # Group states with same score and randomly select from ties
+        result = []
+        i = 0
+        while i < len(scored_states) and len(result) < bucket_size:
+            current_score = scored_states[i][0]
+
+            # Find all states with same score
+            same_score_states = []
+            j = i
+            while (
+                j < len(scored_states)
+                and abs(scored_states[j][0] - current_score) < 1e-10
+            ):
+                same_score_states.append(scored_states[j][1])
+                j += 1
+
+            # Randomly select from ties
+            available_slots = bucket_size - len(result)
+            selected = random.sample(
+                same_score_states, min(len(same_score_states), available_slots)
+            )
+            result.extend(selected)
+
+            i = j
+
+        return result
+
+    def _bucket_h_1(self, states: List[TreeNode]) -> List[TreeNode]:
+        """Bucket: Heuristic 1 - balanced weights with success emphasis."""
+        return self._bucket_heuristic(states, "h_1")
+
+    def _bucket_h_2(self, states: List[TreeNode]) -> List[TreeNode]:
+        """Bucket: Heuristic 2 - balanced weights with clean energy emphasis."""
+        return self._bucket_heuristic(states, "h_2")
+
+    def _bucket_h_3(self, states: List[TreeNode]) -> List[TreeNode]:
+        """Bucket: Heuristic 3 - extreme success emphasis (0.8 weight)."""
+        return self._bucket_heuristic(states, "h_3")
+
+    def _bucket_h_4(self, states: List[TreeNode]) -> List[TreeNode]:
+        """Bucket: Heuristic 4 - extreme clean energy emphasis (0.8 weight)."""
+        return self._bucket_heuristic(states, "h_4")
 
     def _calculate_illogical_action_penalty(self, state: TreeNode) -> float:
         """Calculate penalty for illogical action sequences."""
@@ -1045,22 +1090,6 @@ class TreeSearch:
         # Each bucket picks from remaining states, excluding already selected ones
         remaining_states = unique_states.copy()
 
-        clean_bucket = self._bucket_clean_energy_dominant(remaining_states)
-        bucket_results.extend(clean_bucket)
-        for state in clean_bucket:
-            used_states.add(get_state_key(state))
-
-        remaining_states = [
-            s for s in unique_states if get_state_key(s) not in used_states
-        ]
-        small_miss_bucket = self._bucket_small_miss_dominant(remaining_states)
-        bucket_results.extend(small_miss_bucket)
-        for state in small_miss_bucket:
-            used_states.add(get_state_key(state))
-
-        remaining_states = [
-            s for s in unique_states if get_state_key(s) not in used_states
-        ]
         success_bucket = self._bucket_success_dominant(remaining_states)
         bucket_results.extend(success_bucket)
         for state in success_bucket:
@@ -1069,24 +1098,40 @@ class TreeSearch:
         remaining_states = [
             s for s in unique_states if get_state_key(s) not in used_states
         ]
-        large_miss_bucket = self._bucket_large_miss_dominant(remaining_states)
-        bucket_results.extend(large_miss_bucket)
-        for state in large_miss_bucket:
+        clean_energy_bucket = self._bucket_most_clean_energy_usage(remaining_states)
+        bucket_results.extend(clean_energy_bucket)
+        for state in clean_energy_bucket:
             used_states.add(get_state_key(state))
 
         remaining_states = [
             s for s in unique_states if get_state_key(s) not in used_states
         ]
-        energy_bucket = self._bucket_energy_efficient(remaining_states)
-        bucket_results.extend(energy_bucket)
-        for state in energy_bucket:
+        h_1_bucket = self._bucket_h_1(remaining_states)
+        bucket_results.extend(h_1_bucket)
+        for state in h_1_bucket:
             used_states.add(get_state_key(state))
 
         remaining_states = [
             s for s in unique_states if get_state_key(s) not in used_states
         ]
-        charge_bucket = self._bucket_charge_dominant(remaining_states)
-        bucket_results.extend(charge_bucket)
+        h_2_bucket = self._bucket_h_2(remaining_states)
+        bucket_results.extend(h_2_bucket)
+        for state in h_2_bucket:
+            used_states.add(get_state_key(state))
+
+        remaining_states = [
+            s for s in unique_states if get_state_key(s) not in used_states
+        ]
+        h_3_bucket = self._bucket_h_3(remaining_states)
+        bucket_results.extend(h_3_bucket)
+        for state in h_3_bucket:
+            used_states.add(get_state_key(state))
+
+        remaining_states = [
+            s for s in unique_states if get_state_key(s) not in used_states
+        ]
+        h_4_bucket = self._bucket_h_4(remaining_states)
+        bucket_results.extend(h_4_bucket)
 
         # Remove duplicates from merged buckets
         final_frontier = []
@@ -1245,62 +1290,67 @@ class TreeSearch:
         """Categorize results into top 5 for each category."""
         if not leaves:
             return {
-                "top_clean_energy": [],
                 "top_success": [],
-                "top_small_miss": [],
-                "top_large_miss": [],
-                "top_least_energy": [],
-                "top_charge_dominant": [],
+                "top_most_clean_energy_usage": [],
+                "top_h_1": [],
+                "top_h_2": [],
+                "top_h_3": [],
+                "top_h_4": [],
             }
 
         # Sort by different metrics
-        top_clean = sorted(leaves, key=lambda x: x.agg_clean_energy, reverse=True)[:5]
         top_success = sorted(
             leaves,
             key=lambda x: self._count_decision_outcomes(x.decision_history)["success"],
             reverse=True,
         )[:5]
-        top_small_miss = sorted(
+
+        top_clean_energy = sorted(
             leaves,
-            key=lambda x: self._count_decision_outcomes(x.decision_history)[
-                "small_miss"
-            ],
+            key=lambda x: x.get_clean_energy_percentage(),
             reverse=True,
         )[:5]
-        top_large_miss = sorted(
+
+        # Get heuristic weights from config
+        h_1_weights = self.config["beam_search"]["heuristic_weights"]["h_1"]
+        h_2_weights = self.config["beam_search"]["heuristic_weights"]["h_2"]
+        h_3_weights = self.config["beam_search"]["heuristic_weights"]["h_3"]
+        h_4_weights = self.config["beam_search"]["heuristic_weights"]["h_4"]
+
+        # Sort by heuristic scores
+        top_h_1 = sorted(
             leaves,
-            key=lambda x: self._count_decision_outcomes(x.decision_history)[
-                "large_miss"
-            ],
+            key=lambda x: self._calculate_heuristic_score(x, h_1_weights),
             reverse=True,
         )[:5]
-        top_least_energy = sorted(
+
+        top_h_2 = sorted(
             leaves,
-            key=lambda x: x.agg_clean_energy + x.agg_dirty_energy,
+            key=lambda x: self._calculate_heuristic_score(x, h_2_weights),
+            reverse=True,
         )[:5]
 
-        # Calculate total charge consumed for each leaf
-        def get_total_charge_consumed(leaf: TreeNode) -> float:
-            total_charge = 0.0
-            for decision in leaf.decision_history:
-                if decision.get("charged", False):
-                    task_interval = self.config["simulation"]["task_interval_seconds"]
-                    charge_rate_w = self.config["battery"]["charge_rate_watts"]
-                    charge_energy = charge_rate_w * (task_interval / 3600.0)
-                    total_charge += charge_energy
-            return total_charge
+        top_h_3 = sorted(
+            leaves,
+            key=lambda x: self._calculate_heuristic_score(x, h_3_weights),
+            reverse=True,
+        )[:5]
 
-        top_charge = sorted(leaves, key=get_total_charge_consumed, reverse=True)[:5]
+        top_h_4 = sorted(
+            leaves,
+            key=lambda x: self._calculate_heuristic_score(x, h_4_weights),
+            reverse=True,
+        )[:5]
 
         return {
-            "top_clean_energy": [self._serialize_leaf(leaf) for leaf in top_clean],
             "top_success": [self._serialize_leaf(leaf) for leaf in top_success],
-            "top_small_miss": [self._serialize_leaf(leaf) for leaf in top_small_miss],
-            "top_large_miss": [self._serialize_leaf(leaf) for leaf in top_large_miss],
-            "top_least_energy": [
-                self._serialize_leaf(leaf) for leaf in top_least_energy
+            "top_most_clean_energy_usage": [
+                self._serialize_leaf(leaf) for leaf in top_clean_energy
             ],
-            "top_charge_dominant": [self._serialize_leaf(leaf) for leaf in top_charge],
+            "top_h_1": [self._serialize_leaf(leaf) for leaf in top_h_1],
+            "top_h_2": [self._serialize_leaf(leaf) for leaf in top_h_2],
+            "top_h_3": [self._serialize_leaf(leaf) for leaf in top_h_3],
+            "top_h_4": [self._serialize_leaf(leaf) for leaf in top_h_4],
         }
 
     def run_search(self) -> Dict:
@@ -1334,7 +1384,7 @@ class TreeSearch:
             f"Safety limits: max_nodes={max_safe_nodes:,}, max_runtime={max_safe_runtime}s, max_depth={max_safe_depth}"
         )
         self.logger.info(
-            f"Battery: {self.config['battery']['capacity_wh']}Wh, Charge: {self.config['battery']['charge_rate_watts']}W"
+            f"Battery: {self.config['battery']['capacity_wh']}Wh, Charge: {self.config['battery']['charge_rate_hours']}h"
         )
 
         # Expand tree (beam search, parallel, or sequential)
@@ -1426,7 +1476,7 @@ def main():
         "--config", default="config.jsonc", help="Configuration file path"
     )
     parser.add_argument(
-        "--output", default="results/tree_search_results.json", help="Output file path"
+        "--output", help="Output file path (ignored - timestamp-based naming used)"
     )
     parser.add_argument(
         "--parallel", action="store_true", help="Enable parallel processing"
@@ -1438,8 +1488,10 @@ def main():
     tree_search = TreeSearch(args.config, args.location, args.season, args.parallel)
     results = tree_search.run_search()
 
-    # Save results
-    output_path = Path(args.output)
+    # Save results with timestamp
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    output_filename = f"tree-search-{timestamp}-metadata.json"
+    output_path = Path("results") / output_filename
     output_path.parent.mkdir(exist_ok=True)
 
     with open(output_path, "w") as f:
