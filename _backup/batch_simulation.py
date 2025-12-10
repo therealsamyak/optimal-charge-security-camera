@@ -12,7 +12,6 @@ Usage:
     python batch_simulation.py [--parallel] [--workers N] [--config config.jsonc]
 """
 
-import logging
 import sys
 from datetime import datetime
 from pathlib import Path
@@ -21,7 +20,7 @@ from typing import List, Dict, Any
 # Add src directory to path
 sys.path.insert(0, str(Path(__file__).parent / "src"))
 
-from src.logging_config import setup_logging, get_logger
+from src.logging_config import setup_logging
 from src.metrics_collector import JSONExporter
 from src.simulation_runner_base import SimulationRunnerBase
 
@@ -85,7 +84,7 @@ class BatchSimulationRunner(SimulationRunnerBase):
             seasons = self.config_loader.get_seasons()
             controllers = self.config_loader.get_controllers()
 
-            logger.info(f"Configuration loaded:")
+            logger.info("Configuration loaded:")
             logger.info(f"  Locations: {locations}")
             logger.info(f"  Seasons: {seasons}")
             logger.info(f"  Controllers: {controllers}")
@@ -123,7 +122,7 @@ class BatchSimulationRunner(SimulationRunnerBase):
                     battery_capacity_override=variation["battery_capacity_wh"],
                     charge_rate_override=variation["charge_rate_watts"],
                 )
-                logger.debug(f"Simulation config created with overrides")
+                logger.debug("Simulation config created with overrides")
 
                 # Run all simulations for this variation
                 variation_results = self._run_variation_simulations(

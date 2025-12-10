@@ -11,7 +11,6 @@ Usage:
     python simulation_runner.py [--parallel] [--workers N] [--config config.jsonc]
 """
 
-import logging
 import sys
 from pathlib import Path
 from datetime import datetime
@@ -19,7 +18,7 @@ from datetime import datetime
 # Add src directory to path
 sys.path.insert(0, str(Path(__file__).parent / "src"))
 
-from src.logging_config import setup_logging, get_logger
+from src.logging_config import setup_logging
 from src.metrics_collector import JSONExporter
 from src.simulation_runner_base import SimulationRunnerBase
 
@@ -40,7 +39,7 @@ class BasicSimulationRunner(SimulationRunnerBase):
         output_dir = self.config_loader.get_output_dir()
         self.exporter = JSONExporter(output_dir)
 
-        logger.info(f"BasicSimulationRunner initialized")
+        logger.info("BasicSimulationRunner initialized")
         logger.info(f"Output directory: {output_dir}")
         logger.debug(f"Exporter: {self.exporter}")
 
@@ -67,7 +66,7 @@ class BasicSimulationRunner(SimulationRunnerBase):
         seasons = self.config_loader.get_seasons()
         controllers = self.config_loader.get_controllers()
 
-        logger.info(f"Configuration loaded:")
+        logger.info("Configuration loaded:")
         logger.info(f"  Locations: {locations}")
         logger.info(f"  Seasons: {seasons}")
         logger.info(f"  Controllers: {controllers}")

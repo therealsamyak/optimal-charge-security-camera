@@ -5,13 +5,11 @@ Trains model selection and charging decisions using MIPS-generated training data
 """
 
 import json
-import logging
 from datetime import datetime
 from typing import Dict, List, Optional, Tuple
 
 import numpy as np
 import torch
-import torch.nn as nn
 import torch.optim as optim
 from pathlib import Path
 
@@ -142,7 +140,7 @@ class CustomController:
             )
 
             # Log feature extraction details for debugging
-            logger.debug(f"Extracted features for scenario:")
+            logger.debug("Extracted features for scenario:")
             logger.debug(
                 f"  Battery: {scenario['battery_level']:.1f}% -> {features[0]:.3f}"
             )
