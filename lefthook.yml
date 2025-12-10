@@ -14,8 +14,8 @@ pre-commit:
       exclude:
         - "results/**/*"
         - "logs/**/*"
-        - "config.jsonc"
-        - "**/config.jsonc"
+        - "config*.jsonc"
+        - "**/config*.jsonc"
       run: |
         if command -v bunx >/dev/null 2>&1; then
           bunx oxfmt@latest --no-error-on-unmatched-pattern {staged_files}
