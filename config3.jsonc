@@ -18,7 +18,7 @@
   // Battery configuration
   "battery": {
     // Total battery capacity in watt-hours
-    "capacity_wh": 4,
+    "capacity_wh": 1.211,
     // Hours required to charge from 0% to 100% capacity
     // Lower values indicate faster charging capability
     "charge_rate_hours": 4.45
