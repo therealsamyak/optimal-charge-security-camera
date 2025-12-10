@@ -1381,10 +1381,14 @@ class TreeResultsAnalyzer:
                                 tree_images_dir
                                 / f"{location}_{file_timestamp}_{season_display}_{chart_type}.png"
                             )
-                            figures[chart_idx].savefig(
-                                filename, dpi=300, bbox_inches="tight"
-                            )
-                            print(f"   Saved: {filename}")
+                            # Check if file already exists
+                            if filename.exists():
+                                print(f"   Skipped (already exists): {filename}")
+                            else:
+                                figures[chart_idx].savefig(
+                                    filename, dpi=300, bbox_inches="tight"
+                                )
+                                print(f"   Saved: {filename}")
                             chart_idx += 1
 
             # Show plots if requested
