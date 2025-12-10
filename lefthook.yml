@@ -14,10 +14,10 @@ pre-commit:
       glob: "**/*.{astro,html,js,jsx,md,mdx,svelte,ts,tsx,vue,json,css,yml,yaml}"
       exclude: "results/**/*"
       run: |
-        if command -v npx >/dev/null 2>&1; then
-          npx --yes prettier --write {staged_files}
+        if command -v bunx >/dev/null 2>&1; then
+          bunx --yes prettier --write {staged_files}
         else
-          echo "npx not found, skipping prettier formatting"
+          echo "bunx not found, skipping prettier formatting"
           exit 0
         fi
       stage_fixed: true
