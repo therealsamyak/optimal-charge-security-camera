@@ -1,0 +1,87 @@
+{
+  // Simulation parameters
+  "simulation": {
+    // Total duration of the simulation in days
+    "duration_days": 1,
+    // Interval between simulation task evaluations in seconds
+    "task_interval_seconds": 300,
+    // Time acceleration factor (1 = real-time)
+    // Controls the speed of the simulation relative to real time
+    // Higher values make the simulation run faster but may affect timing precision
+    // Example: If set to 2, the simulation will run twice as fast as real-time
+    "time_acceleration": 1,
+    // Minimum required accuracy percentage for tasks (0-100)
+    "user_accuracy_requirement": 90.5,
+    // Maximum allowed latency for task processing in seconds
+    "user_latency_requirement": 0.01,
+    // Number of days to offset from season start dates (Jan 1, Apr 1, Jul 1, Oct 1)
+    "offset_date": 60
+  },
+  // Battery configuration
+  "battery": {
+    // Total battery capacity in watt-hours
+    "capacity_wh": 0.06055,
+    // Hours required to charge from 0% to 100% capacity
+    // Lower values indicate faster charging capability
+    "charge_rate_hours": 4.45
+    // Note: The relationship between charge rate and model energy consumption
+    // determines the sustainability of continuous operation. The tree search
+    // algorithm will optimize the balance between model usage and charging
+    // to maximize system uptime and performance.
+  },
+  // Geographic locations for energy data
+  "locations": ["CA", "FL", "NW", "NY"],
+  // Seasons to simulate
+  "seasons": ["winter", "spring", "summer", "fall"],
+  // Controller types to test
+  "controllers": ["naive_weak", "naive_strong", "oracle", "custom"],
+  // Directory for simulation results
+  "output_dir": "results/",
+  // Batch simulation configuration
+  "batch_run": {
+    // Number of parameter variations to generate
+    "num_variations": 4,
+    // Random seed for reproducibility (null for random)
+    "random_seed": null,
+    // Output detailed CSV with all variations
+    "output_detailed_csv": true,
+    // Parameter ranges for batch simulation
+    "accuracy_range": { "min": 30, "max": 80 },
+    "latency_range": { "min": 2, "max": 15 },
+    "battery_capacity_range": { "min": 0.01, "max": 0.1 },
+    "charge_rate_range": { "min": 0.1, "max": 1.0 }
+  },
+  // Parallel processing configuration
+  "parallel": {
+    // Number of workers for parallel processing
+    "max_workers": 100,
+    // Target leaf count before switching to parallel beaming
+    "leaf_target": 100
+  },
+  // Beam search configuration for efficient tree exploration
+  "beam_search": {
+    // Enable/disable the beam search algorithm
+    "enabled": true,
+
+    // Number of states to keep per bucket during beam search
+    // Higher values provide better solution quality but increase computation time
+    "beam_width_per_bucket": 30,
+
+    // Maximum number of states to maintain in each bucket category
+    // Categories include different optimization objectives
+    "bucket_sizes": {
+      "success": 30,
+      "success_small_miss": 30,
+      "most_clean_energy": 30,
+      "least_total_energy": 30
+    },
+
+    // Maximum number of states to maintain in the search frontier
+    // This limits memory usage during the search
+    "max_frontier_size": 1000000,
+
+    // Number of iterations after which to reset the beam search
+    // Can help escape local optima when > 0, 0 disables reset
+    "beam_reset_interval": 1
+  }
+}
