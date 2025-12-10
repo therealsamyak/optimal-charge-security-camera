@@ -1381,7 +1381,7 @@ class TreeSearch:
             leaves,
             key=lambda x: self._count_decision_outcomes(x.decision_history)["success"],
             reverse=True,
-        )[:5]
+        )[:10]
 
         top_success_small_miss = sorted(
             leaves,
@@ -1390,19 +1390,19 @@ class TreeSearch:
                 + self._count_decision_outcomes(x.decision_history)["small_miss"]
             ),
             reverse=True,
-        )[:5]
+        )[:10]
 
         top_clean_energy = sorted(
             leaves,
             key=lambda x: x.get_clean_energy_percentage(),
             reverse=True,
-        )[:5]
+        )[:10]
 
         top_least_total_energy = sorted(
             leaves,
             key=lambda x: x.get_total_energy(),
             reverse=False,  # Ascending for least energy
-        )[:5]
+        )[:10]
 
         return {
             "top_success": [self._serialize_leaf(leaf) for leaf in top_success],
