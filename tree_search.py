@@ -68,7 +68,9 @@ class TreeSearch:
         # Load configuration and data
         self.config = self._load_config()
         self.models = self._load_models()
-        self.energy_data = self._load_energy_data()
+        energy_data_tuple = self._load_energy_data()
+        self.energy_data = energy_data_tuple[0]
+        self.energy_data_date = energy_data_tuple[1]
 
         # Calculate search parameters
         self.horizon = int(
@@ -147,7 +149,7 @@ class TreeSearch:
             }
         return models
 
-    def _load_energy_data(self) -> Dict[int, float]:
+    def _load_energy_data(self) -> Tuple[Dict[int, float], str]:
         """Load and interpolate energy data for location."""
         # Map location to filename
         location_files = {
@@ -177,9 +179,12 @@ class TreeSearch:
                     }
                 )
 
+        # Extract sample date from first data point
+        sample_date = energy_data[0]["timestamp"].split("T")[0] if energy_data else ""
+
         # Filter by season and interpolate
         season_data = self._filter_by_season(energy_data)
-        return self._interpolate_energy_data(season_data)
+        return self._interpolate_energy_data(season_data), sample_date
 
     def _filter_by_season(self, data: List[Dict]) -> List[Dict]:
         """Filter energy data by season."""
@@ -265,6 +270,14 @@ class TreeSearch:
             else:
                 fallback.append(model_name)
 
+        # Add debug logging for model classification
+        self.logger.debug(
+            f"Model classification: qualified={len(qualified)} {qualified}, "
+            f"fallback={len(fallback)} {fallback}, "
+            f"unavailable={len(unavailable)} {unavailable}, "
+            f"battery_level={battery_level_wh:.6f}Wh"
+        )
+
         return {
             "qualified": qualified,
             "fallback": fallback,
@@ -337,44 +350,92 @@ class TreeSearch:
         if battery_level_wh <= 0:
             return [("IDLE", True)]
 
-        # Priority 1: Use qualifying models if any are available with sufficient battery
+        # Priority 1: Find qualifying models that can run without negative battery
         qualifying_runnable = []
         for model_name in self.models.keys():
-            if self._meets_requirements(model_name) and self._has_enough_battery(
-                model_name, battery_level_wh
-            ):
-                qualifying_runnable.append(model_name)
+            if self._meets_requirements(model_name):
+                energy_needed = (
+                    self.models[model_name]["energy_per_inference_mwh"] / 1000.0
+                )
+                if (
+                    battery_level_wh >= energy_needed
+                ):  # Can run without negative battery
+                    qualifying_runnable.append(model_name)
 
         if qualifying_runnable:
-            # Select largest qualifying model (by energy consumption)
-            best_model = max(
+            # Select LOWEST energy qualifying model
+            best_model = min(
                 qualifying_runnable,
                 key=lambda x: self.models[x]["energy_per_inference_mwh"],
             )
+            self.logger.debug(
+                f"Oracle selection: {len(qualifying_runnable)} qualified models available, "
+                f"selected lowest energy: {best_model} ({self.models[best_model]['energy_per_inference_mwh']}mWh)"
+            )
             return self._generate_charging_actions(best_model, node)
 
-        # Priority 2: If no qualifying models have enough battery, use largest possible fallback model
+        # Priority 2: Find fallback models that can run without negative battery
         fallback_runnable = []
         for model_name in self.models.keys():
-            if not self._meets_requirements(model_name) and self._has_enough_battery(
-                model_name, battery_level_wh
-            ):
-                fallback_runnable.append(model_name)
+            if not self._meets_requirements(model_name):
+                energy_needed = (
+                    self.models[model_name]["energy_per_inference_mwh"] / 1000.0
+                )
+                if (
+                    battery_level_wh >= energy_needed
+                ):  # Can run without negative battery
+                    fallback_runnable.append(model_name)
 
         if fallback_runnable:
-            # Select largest fallback model (by energy consumption)
+            # Select HIGHEST energy fallback model
             best_fallback = max(
                 fallback_runnable,
                 key=lambda x: self.models[x]["energy_per_inference_mwh"],
             )
+            self.logger.debug(
+                f"Oracle selection: {len(fallback_runnable)} fallback models available, "
+                f"selected highest energy: {best_fallback} ({self.models[best_fallback]['energy_per_inference_mwh']}mWh)"
+            )
             return self._generate_charging_actions(best_fallback, node)
 
-        # Priority 3: If no models can run at all, IDLE + charge
+        # Priority 3: No models can run → IDLE + charge
         if battery_level_wh < battery_capacity_wh:
+            self.logger.debug(
+                f"Oracle selection: No models can run (battery: {battery_level_wh:.6f}Wh), "
+                f"forcing IDLE + charge"
+            )
             return [("IDLE", True)]
         else:
             # Battery full but no models can run (shouldn't happen with current models)
+            self.logger.debug(
+                f"Oracle selection: Battery full but no models can run, no actions available"
+            )
             return []
+
+    def _get_naive_action(self, node: TreeNode) -> Tuple[str, bool]:
+        """Get naive action: largest model + simple charging rule."""
+        battery_level_wh = node.battery_level_wh
+        battery_capacity_wh = self.config["battery"]["capacity_wh"]
+
+        # Pruning: battery = 0% → only idle+charging
+        if battery_level_wh <= 0:
+            return ("IDLE", True)
+
+        # Try models from largest to smallest (by energy consumption)
+        models_by_energy = sorted(
+            self.models.keys(),
+            key=lambda x: self.models[x]["energy_per_inference_mwh"],
+            reverse=True,
+        )
+
+        for model_name in models_by_energy:
+            if self._has_enough_battery(model_name, battery_level_wh):
+                meets_req = self._meets_requirements(model_name)
+                should_charge = not meets_req  # Charge ONLY when not optimal
+                return (model_name, should_charge)
+
+        # No models can run → IDLE + charge
+        return ("IDLE", True)
 
     def _apply_action(
         self, node: TreeNode, action: Tuple[str, bool], clean_pct: float
@@ -448,25 +509,31 @@ class TreeSearch:
             # Idle action (always with charging) = large miss
             decision_outcome = "large_miss"
         else:
-            # Model energy already accounted for in net calculation
-            new_dirty_energy += model_energy_wh  # Model usage is dirty energy
+            # Model energy does NOT add to dirty energy (only charging affects energy accounting)
+            # Model usage only affects battery level, not clean/dirty energy tracking
 
-            # Check if chosen model meets user requirements
-            task_req = {
-                "accuracy": self.config["simulation"]["user_accuracy_requirement"]
-                / 100.0,
-                "latency": self.config["simulation"]["user_latency_requirement"],
-            }
+            # Classify available models BEFORE determining outcome
+            classification = self._classify_models(node)
 
-            model_spec = self.models[model_name]
-            meets_accuracy = model_spec["accuracy"] >= task_req["accuracy"]
-            meets_latency = model_spec["latency"] <= task_req["latency"]
+            # Check if chosen model is in qualified list and battery >= 0
+            is_qualified = model_name in classification["qualified"]
+            is_fallback = model_name in classification["fallback"]
 
-            if meets_accuracy and meets_latency:
+            if is_qualified and net_battery_wh >= 0:
                 decision_outcome = "success"
-            else:
-                # Chosen model doesn't meet requirements = small miss
+            elif is_fallback and net_battery_wh >= 0:
                 decision_outcome = "small_miss"
+            else:
+                # Model chosen but battery would be negative or model unavailable
+                decision_outcome = "large_miss"
+
+            # Add debug logging
+            self.logger.debug(
+                f"Classification: qualified={len(classification['qualified'])}, "
+                f"fallback={len(classification['fallback'])}, "
+                f"chosen={model_name}, outcome={decision_outcome}, "
+                f"battery_after={net_battery_wh:.6f}Wh"
+            )
 
         # Create new node
         new_node = TreeNode(
@@ -483,6 +550,7 @@ class TreeSearch:
                     "charged": should_charge,
                     "outcome": decision_outcome,
                     "charge_energy_used": charge_energy_wh,
+                    "clean_energy_pct": clean_pct,
                 }
             ],
             parent=node,
@@ -583,6 +651,49 @@ class TreeSearch:
 
         # Continue expansion from this leaf node using beam search
         return worker_search._beam_search_expand(node)
+
+    def _run_naive_search_worker(self, worker_args: Tuple) -> TreeNode:
+        """Naive search worker for parallel execution."""
+        config_path, location, season = worker_args
+
+        # Create dedicated naive search instance
+        naive_search = TreeSearch(config_path, location, season, parallel=False)
+
+        # Create root node
+        current_node = TreeNode(
+            battery_level_wh=naive_search.config["battery"]["capacity_wh"],
+            timestep=0,
+            action_sequence=[],
+            agg_clean_energy=0.0,
+            agg_dirty_energy=0.0,
+            decision_history=[],
+        )
+
+        # Run naive greedy simulation for full horizon
+        for timestep in range(naive_search.horizon):
+            # Get clean energy percentage for current timestep
+            timestamp = (
+                timestep * naive_search.config["simulation"]["task_interval_seconds"]
+            )
+            clean_pct = naive_search.energy_data.get(int(timestamp % 86400), 50.0)
+
+            # Get naive action and apply it
+            action = naive_search._get_naive_action(current_node)
+            next_node = naive_search._apply_action(current_node, action, clean_pct)
+
+            if not next_node:
+                # Safety check - stop if action fails
+                naive_search.logger.warning(
+                    f"Naive search failed at timestep {timestep}"
+                )
+                break
+
+            current_node = next_node
+
+        naive_search.logger.info(
+            f"Naive search completed: {current_node.timestep} timesteps"
+        )
+        return current_node
 
     def _expand_hybrid_parallel(self, root: TreeNode) -> List[TreeNode]:
         """Hybrid parallel expansion: sequential to leaf target, then parallel beam search."""
@@ -705,17 +816,6 @@ class TreeSearch:
                     f"states_pruned={len(next_states) - len(frontier)}"
                 )
 
-            # Safety check for frontier explosion
-            # if len(frontier) > max_frontier_size * 2:
-            #     self.logger.warning(
-            #         f"Frontier size exceeded safety limit: {len(frontier)}"
-            #     )
-            #     # Emergency pruning - keep only top states by clean energy
-            #     frontier.sort(
-            #         key=lambda x: x.get_clean_energy_percentage(), reverse=True
-            #     )
-            #     frontier = frontier[:max_frontier_size]
-
         # Final bucket assignment if last reset wasn't at horizon
         if (
             self.beam_reset_interval > 0
@@ -748,9 +848,9 @@ class TreeSearch:
     def _expand_tree_fallback(self, node: TreeNode, depth: int) -> List[TreeNode]:
         """Fallback to original tree expansion for compatibility."""
         # Safety checks to prevent infinite loops
-        max_safe_nodes = 1000000  # 10M node limit
-        max_safe_runtime = 300  # 5 minute limit
-        max_safe_depth = 1000  # Prevent excessive depth
+        max_safe_nodes = float("inf")  #
+        max_safe_runtime = float("inf")  #
+        max_safe_depth = float("inf")  # Prevent excessive depth
 
         # Use BFS with explicit stack to avoid recursion
         stack = [(node, depth)]
@@ -835,93 +935,6 @@ class TreeSearch:
                 break
 
         return all_leaves
-
-        # Safety checks to prevent infinite loops
-        max_safe_nodes = 1000000  # 10M node limit
-        max_safe_runtime = 300  # 5 minute limit
-        max_safe_depth = 1000  # Prevent excessive depth
-
-        # Use BFS with explicit stack to avoid recursion
-        stack = [(node, depth)]
-        all_leaves = []
-
-        while stack:
-            current_node, current_depth = stack.pop()
-            self.nodes_explored += 1
-
-            # Safety checks
-            if self.nodes_explored >= max_safe_nodes:
-                self.logger.warning(f"SAFETY: Node limit reached ({max_safe_nodes:,})")
-                break
-            if current_depth >= max_safe_depth:
-                self.logger.warning(f"SAFETY: Depth limit reached ({max_safe_depth:,})")
-                break
-
-            # Progress logging every 10000 nodes
-            if self.nodes_explored % 10000 == 0:
-                current_time = time.time()
-                if self.last_progress_time:
-                    elapsed = current_time - self.last_progress_time
-                    rate = 10000 / elapsed if elapsed > 0 else 0
-                    progress_pct = (
-                        (current_depth / self.horizon) * 100 if self.horizon > 0 else 0
-                    )
-
-                    self.logger.info(
-                        f"[{datetime.now().strftime('%H:%M:%S')}] Progress: {self.nodes_explored:,} nodes explored, "
-                        f"{self.nodes_pruned:,} nodes pruned, "
-                        f"{len(all_leaves):,} leaves found, "
-                        f"depth: {current_depth}/{self.horizon} ({progress_pct:.1f}%), "
-                        f"stack_size: {len(stack)}, "
-                        f"rate: {rate:.0f} nodes/sec"
-                    )
-                self.last_progress_time = current_time
-
-            # Runtime safety check
-            total_runtime = time.time() - (self.start_time or 0)
-            if total_runtime >= max_safe_runtime:
-                self.logger.warning(
-                    f"SAFETY: Runtime limit reached ({max_safe_runtime}s)"
-                )
-                break
-
-            # Check if we've reached horizon
-            if current_depth >= self.horizon:
-                self.leaves_found += 1
-                all_leaves.append(current_node)
-                continue
-
-            # Get clean energy percentage for current timestep
-            timestamp = (
-                current_depth * self.config["simulation"]["task_interval_seconds"]
-            )
-            clean_pct = self.energy_data.get(int(timestamp % 86400), 50.0)
-
-            # Get valid actions (with pruning)
-            valid_actions = self._get_valid_actions(current_node)
-
-            if not valid_actions:
-                self.nodes_pruned += 1
-                continue  # No valid actions, prune this branch
-
-            # Add children to stack (reverse order for BFS-like behavior)
-            for action in reversed(valid_actions):
-                child = self._apply_action(current_node, action, clean_pct)
-                if child:
-                    self.children_found += 1
-                    stack.append((child, current_depth + 1))
-                else:
-                    self.children_pruned += 1
-
-            # Safety check after processing current node
-            if (
-                self.nodes_explored >= max_safe_nodes
-                or total_runtime >= max_safe_runtime
-            ):
-                self.logger.warning(
-                    "SAFETY: Tree expansion terminated due to safety limits"
-                )
-                break
 
     def _bucket_most_clean_energy(self, states: List[TreeNode]) -> List[TreeNode]:
         """Bucket: Most Clean Energy - highest clean energy percentage, random tiebreak."""
@@ -1131,34 +1144,6 @@ class TreeSearch:
         for state in clean_energy_bucket:
             used_states.add(get_state_key(state))
 
-        remaining_states = [
-            s for s in unique_states if get_state_key(s) not in used_states
-        ]
-        clean_energy_bucket = self._bucket_most_clean_energy(remaining_states)
-        bucket_results.extend(clean_energy_bucket)
-        for state in clean_energy_bucket:
-            used_states.add(get_state_key(state))
-
-        remaining_states = [
-            s for s in unique_states if get_state_key(s) not in used_states
-        ]
-
-        remaining_states = [
-            s for s in unique_states if get_state_key(s) not in used_states
-        ]
-
-        remaining_states = [
-            s for s in unique_states if get_state_key(s) not in used_states
-        ]
-
-        remaining_states = [
-            s for s in unique_states if get_state_key(s) not in used_states
-        ]
-
-        remaining_states = [
-            s for s in unique_states if get_state_key(s) not in used_states
-        ]
-
         # Remove duplicates from merged buckets
         final_frontier = []
         seen_final = set()
@@ -1270,9 +1255,8 @@ class TreeSearch:
                     charge_energy * ((100 - clean_pct) / 100.0)
                 )
 
-            # Model energy is always dirty energy
-            if model_name != "IDLE":
-                current_dirty = current_dirty + model_energy
+            # Model energy does NOT add to dirty energy (only charging affects energy accounting)
+            # Model usage only affects battery level, not clean/dirty energy tracking
 
             # Create detailed action record
             detailed_action = {
@@ -1288,6 +1272,7 @@ class TreeSearch:
                 "dirty_energy_after": current_dirty,
                 "charge_energy": charge_energy,
                 "model_energy": model_energy,
+                "clean_energy_pct": clean_pct,
             }
 
             detailed_action_sequence.append(detailed_action)
@@ -1387,14 +1372,45 @@ class TreeSearch:
             f"Battery: {self.config['battery']['capacity_wh']}Wh, Charge: {self.config['battery']['charge_rate_hours']}h"
         )
 
-        # Expand tree (parallel hybrid, beam search, or sequential)
-        self.logger.info("Expanding decision tree...")
-        if self.parallel:
-            leaves = self._expand_hybrid_parallel(root)
-        elif self.config.get("beam_search", {}).get("enabled", False):
-            leaves = self._beam_search_expand(root)
-        else:
-            leaves = self._expand_tree_fallback(root, 0)
+        # Expand tree (always parallel hybrid + naive search)
+        self.logger.info("Expanding decision tree and running naive search...")
+
+        # Force parallel mode for tree search
+        original_parallel = self.parallel
+        self.parallel = True  # Always use parallel
+
+        # Start naive search worker in parallel
+        naive_start_time = time.time()
+        with ProcessPoolExecutor(max_workers=2) as executor:
+            # Submit tree search (always parallel hybrid)
+            tree_future = executor.submit(self._expand_hybrid_parallel, root)
+
+            # Submit naive search
+            naive_future = executor.submit(
+                self._run_naive_search_worker,
+                (self.config_path, self.location, self.season),
+            )
+
+            # Collect results
+            try:
+                leaves = tree_future.result(timeout=600)  # 10 min timeout
+            except Exception as e:
+                self.logger.error(f"Tree search failed: {e}")
+                leaves = []
+
+            try:
+                naive_result = naive_future.result(timeout=60)  # 1 min timeout
+                naive_runtime = time.time() - naive_start_time
+                self.logger.info(
+                    f"Naive search completed in {naive_runtime:.2f} seconds"
+                )
+            except Exception as e:
+                self.logger.error(f"Naive search failed: {e}")
+                naive_result = None
+                naive_runtime = 0
+
+        # Restore original parallel setting for metadata
+        self.parallel = original_parallel
 
         total_time = time.time() - self.start_time
         self.logger.info(f"Tree expansion complete in {total_time:.1f} seconds:")
@@ -1420,34 +1436,28 @@ class TreeSearch:
         self.logger.info("Categorizing results...")
         results = self._categorize_results(leaves)
 
+        # Add naive results if available
+        if naive_result:
+            naive_serialized = self._serialize_leaf(naive_result)
+            results["naive"] = naive_serialized
+            self.logger.info("Added naive search results to output")
+        else:
+            self.logger.warning("No naive results available")
+
         # Create final output
         output = {
             "metadata": {
                 "location": self.location,
-                "season": self.season,
                 "horizon": self.horizon,
                 "total_leaves_explored": len(leaves),
-                "nodes_explored": self.nodes_explored,
-                "nodes_pruned": self.nodes_pruned,
-                "children_found": self.children_found,
-                "children_pruned": self.children_pruned,
-                "leaves_found": self.leaves_found,
-                "pruning_efficiency": round(
-                    self.nodes_pruned / (self.nodes_explored + self.nodes_pruned) * 100
-                    if (self.nodes_explored + self.nodes_pruned) > 0
-                    else 0,
-                    2,
-                ),
                 "runtime_seconds": round(total_time, 2),
+                "naive_runtime_seconds": round(naive_runtime, 2) if naive_result else 0,
                 "timestamp": datetime.now().isoformat(),
                 "safety_limits_hit": self.nodes_explored >= max_safe_nodes
                 or total_time >= max_safe_runtime,
                 "parallel_mode": self.parallel,
-                "cache_hits": getattr(self, "cache_hits", 0),
-                "beam_search_enabled": self.config.get("beam_search", {}).get(
-                    "enabled", False
-                ),
-                "beam_stats": getattr(self, "beam_stats", {}),
+                "energy_data_location": self.location,
+                "energy_data_date": getattr(self, "energy_data_date", ""),
                 "user_accuracy_requirement": self.config["simulation"][
                     "user_accuracy_requirement"
                 ],
@@ -1500,6 +1510,8 @@ def main():
 
     # Run tree search
     tree_search = TreeSearch(args.config, args.location, args.season, args.parallel)
+
+    # Run tree search (always parallel + naive)
     results = tree_search.run_search()
 
     # Save results with timestamp
@@ -1513,7 +1525,6 @@ def main():
 
     print(f"Tree search complete! Results saved to {output_path}")
     print(f"Explored {results['metadata']['total_leaves_explored']} leaf nodes")
-    print(f"Pruning efficiency: {results['metadata']['pruning_efficiency']}%")
 
 
 if __name__ == "__main__":
