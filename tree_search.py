@@ -12,7 +12,6 @@ import argparse
 import logging
 import time
 import random
-import multiprocessing as mp
 from concurrent.futures import ProcessPoolExecutor, as_completed
 from typing import Dict, List, Tuple, Optional
 from pathlib import Path
@@ -306,9 +305,35 @@ class TreeSearch:
             len(classification["qualified"]) > 0 or len(classification["fallback"]) > 0
         )
 
+    def _meets_requirements(self, model_name: str) -> bool:
+        """Check if model meets user accuracy and latency requirements."""
+        model_spec = self.models[model_name]
+        task_req = {
+            "accuracy": self.config["simulation"]["user_accuracy_requirement"] / 100.0,
+            "latency": self.config["simulation"]["user_latency_requirement"],
+        }
+        return (
+            model_spec["accuracy"] >= task_req["accuracy"]
+            and model_spec["latency"] <= task_req["latency"]
+        )
+
+    def _has_enough_battery(self, model_name: str, battery_level_wh: float) -> bool:
+        """Check if battery can run model."""
+        energy_needed_wh = self.models[model_name]["energy_per_inference_mwh"] / 1000.0
+        return battery_level_wh >= energy_needed_wh
+
+    def _generate_charging_actions(
+        self, model_name: str, node: TreeNode
+    ) -> List[Tuple[str, bool]]:
+        """Generate (model, False) and (model, True) if charging possible."""
+        actions = [(model_name, False)]  # Without charging
+        battery_capacity_wh = self.config["battery"]["capacity_wh"]
+        if node.battery_level_wh < battery_capacity_wh:
+            actions.append((model_name, True))  # With charging
+        return actions
+
     def _get_valid_actions(self, node: TreeNode) -> List[Tuple[str, bool]]:
-        """Get valid actions for current node - generate ALL possible model actions."""
-        actions = []
+        """Get valid actions for current node using priority-based model selection."""
         battery_level_wh = node.battery_level_wh
         battery_capacity_wh = self.config["battery"]["capacity_wh"]
 
@@ -316,54 +341,44 @@ class TreeSearch:
         if battery_level_wh <= 0:
             return [("IDLE", True)]
 
-        # Pruning: battery = 100% → no charging actions
-        can_charge = battery_level_wh < battery_capacity_wh
+        # Priority 1: Use qualifying models if any are available with sufficient battery
+        qualifying_runnable = []
+        for model_name in self.models.keys():
+            if self._meets_requirements(model_name) and self._has_enough_battery(
+                model_name, battery_level_wh
+            ):
+                qualifying_runnable.append(model_name)
 
-        # Get all models that can run with current battery level
-        runnable_models = []
-        for model_name, model_spec in self.models.items():
-            energy_needed_wh = model_spec["energy_per_inference_mwh"] / 1000.0
-            if battery_level_wh >= energy_needed_wh:
-                runnable_models.append(model_name)
-
-        # Log valid models at first timestep for debugging
-        if node.timestep == 0 and not hasattr(self, "_logged_models"):
-            task_req = {
-                "accuracy": self.config["simulation"]["user_accuracy_requirement"]
-                / 100.0,
-                "latency": self.config["simulation"]["user_latency_requirement"],
-            }
-            qualified_models = [
-                name
-                for name in runnable_models
-                if (
-                    self.models[name]["accuracy"] >= task_req["accuracy"]
-                    and self.models[name]["latency"] <= task_req["latency"]
-                )
-            ]
-            fallback_models = [
-                name for name in runnable_models if name not in qualified_models
-            ]
-            self.logger.info(
-                f"Models meeting requirements (accuracy>={task_req['accuracy']:.2f}, latency<={task_req['latency']:.3f}s): {qualified_models}"
+        if qualifying_runnable:
+            # Select largest qualifying model (by energy consumption)
+            best_model = max(
+                qualifying_runnable,
+                key=lambda x: self.models[x]["energy_per_inference_mwh"],
             )
-            self.logger.info(f"Fallback models available: {fallback_models}")
-            self.logger.info(
-                f"Battery capacity: {self.config['battery']['capacity_wh']}Wh, Charge rate: {self.config['battery']['charge_rate_hours']}h"
+            return self._generate_charging_actions(best_model, node)
+
+        # Priority 2: If no qualifying models have enough battery, use largest possible fallback model
+        fallback_runnable = []
+        for model_name in self.models.keys():
+            if not self._meets_requirements(model_name) and self._has_enough_battery(
+                model_name, battery_level_wh
+            ):
+                fallback_runnable.append(model_name)
+
+        if fallback_runnable:
+            # Select largest fallback model (by energy consumption)
+            best_fallback = max(
+                fallback_runnable,
+                key=lambda x: self.models[x]["energy_per_inference_mwh"],
             )
-            self._logged_models = True
+            return self._generate_charging_actions(best_fallback, node)
 
-        # Generate ALL possible actions for runnable models
-        for model_name in runnable_models:
-            actions.append((model_name, False))  # Without charging
-            if can_charge:
-                actions.append((model_name, True))  # With charging
-
-        # Add IDLE+charging ONLY if no models can run
-        if not runnable_models and can_charge:
-            actions.append(("IDLE", True))
-
-        return actions
+        # Priority 3: If no models can run at all, IDLE + charge
+        if battery_level_wh < battery_capacity_wh:
+            return [("IDLE", True)]
+        else:
+            # Battery full but no models can run (shouldn't happen with current models)
+            return []
 
     def _apply_action(
         self, node: TreeNode, action: Tuple[str, bool], clean_pct: float
