@@ -644,7 +644,6 @@ class TreeSearch:
 
         # Initialize frontier with root node
         frontier = [root]
-        max_frontier_size = self.config["beam_search"]["max_frontier_size"]
 
         # Track beam search statistics
         beam_stats = {
