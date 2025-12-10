@@ -1449,6 +1449,18 @@ class TreeSearch:
                     "enabled", False
                 ),
                 "beam_stats": getattr(self, "beam_stats", {}),
+                "user_accuracy_requirement": self.config["simulation"][
+                    "user_accuracy_requirement"
+                ],
+                "user_latency_requirement": self.config["simulation"][
+                    "user_latency_requirement"
+                ],
+                "duration_days": self.config["simulation"]["duration_days"],
+                "task_interval_seconds": self.config["simulation"][
+                    "task_interval_seconds"
+                ],
+                "battery_capacity_wh": self.config["battery"]["capacity_wh"],
+                "charge_rate_hours": self.config["battery"]["charge_rate_hours"],
             },
             "results": results,
         }
