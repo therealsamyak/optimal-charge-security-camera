@@ -101,6 +101,46 @@ class TreeResultsAnalyzer:
 
         return seasonal_files
 
+    def _validate_battery_parameters(self, seasons: List[str]) -> bool:
+        """Validate battery parameters are within 0.01 margin across seasons."""
+        if len(seasons) < 2:
+            return True  # No validation needed for single season
+
+        # Get reference values from first season
+        ref_metadata = self.seasonal_data[seasons[0]]["metadata"]
+        ref_battery_capacity = ref_metadata.get("battery_capacity_wh")
+        ref_charge_rate = ref_metadata.get("charge_rate_hours")
+
+        if ref_battery_capacity is None or ref_charge_rate is None:
+            print("⚠️  Missing battery parameters in metadata, skipping validation")
+            return True
+
+        # Validate each season against reference
+        for season in seasons[1:]:
+            metadata = self.seasonal_data[season]["metadata"]
+            battery_capacity = metadata.get("battery_capacity_wh")
+            charge_rate = metadata.get("charge_rate_hours")
+
+            if battery_capacity is None or charge_rate is None:
+                print(f"❌ Missing battery parameters for {season}")
+                return False
+
+            # Check within 0.01 margin
+            if abs(battery_capacity - ref_battery_capacity) > 0.01:
+                print(
+                    f"❌ Battery capacity mismatch for {season}: {battery_capacity} vs {ref_battery_capacity}"
+                )
+                return False
+
+            if abs(charge_rate - ref_charge_rate) > 0.01:
+                print(
+                    f"❌ Charge rate mismatch for {season}: {charge_rate} vs {ref_charge_rate}"
+                )
+                return False
+
+        print("✅ Battery parameters validated across seasons")
+        return True
+
     def load_seasonal_data(self) -> bool:
         """Load all seasonal data files."""
         if not self.aggregate_seasons:
@@ -138,6 +178,10 @@ class TreeResultsAnalyzer:
 
         seasons = list(self.seasonal_data.keys())
         print(f"📊 Aggregating data across {len(seasons)} seasons: {seasons}")
+
+        # Validate battery parameters across seasons
+        if not self._validate_battery_parameters(seasons):
+            return False
 
         # Initialize aggregated structure
         self.aggregated_data = {
