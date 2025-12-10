@@ -78,7 +78,7 @@ class TreeSearch:
             / self.config["simulation"]["task_interval_seconds"]
         )
 
-        # Setup logging
+        # Setup logging with season prefix
         logging.basicConfig(level=logging.INFO)
         self.logger = logging.getLogger(__name__)
 
@@ -105,6 +105,7 @@ class TreeSearch:
                 "success": 10,
                 "success_small_miss": 10,
                 "most_clean_energy": 10,
+                "least_total_energy": 10,
             },
         )
 
@@ -118,6 +119,18 @@ class TreeSearch:
         # Parallel configuration
         self.parallel_config = self.config.get("parallel", {})
         self.leaf_target = self.parallel_config.get("leaf_target", 100)
+
+    def _log_with_season(self, message: str, level: str = "info"):
+        """Log message with season prefix."""
+        prefixed_message = f"[{self.season.upper()}] {message}"
+        if level == "info":
+            self.logger.info(prefixed_message)
+        elif level == "warning":
+            self.logger.warning(prefixed_message)
+        elif level == "error":
+            self.logger.error(prefixed_message)
+        elif level == "debug":
+            self.logger.debug(prefixed_message)
 
     def _load_config(self) -> Dict:
         """Load configuration from JSONC file."""
@@ -271,11 +284,12 @@ class TreeSearch:
                 fallback.append(model_name)
 
         # Add debug logging for model classification
-        self.logger.debug(
+        self._log_with_season(
             f"Model classification: qualified={len(qualified)} {qualified}, "
             f"fallback={len(fallback)} {fallback}, "
             f"unavailable={len(unavailable)} {unavailable}, "
-            f"battery_level={battery_level_wh:.6f}Wh"
+            f"battery_level={battery_level_wh:.6f}Wh",
+            "debug",
         )
 
         return {
@@ -363,16 +377,15 @@ class TreeSearch:
                     qualifying_runnable.append(model_name)
 
         if qualifying_runnable:
-            # Select LOWEST energy qualifying model
-            best_model = min(
-                qualifying_runnable,
-                key=lambda x: self.models[x]["energy_per_inference_mwh"],
+            # Generate branches for ALL qualified models
+            all_actions = []
+            for model in qualifying_runnable:
+                all_actions.extend(self._generate_charging_actions(model, node))
+            self._log_with_season(
+                f"Oracle branching: {len(qualifying_runnable)} qualified models → {len(all_actions)} actions",
+                "debug",
             )
-            self.logger.debug(
-                f"Oracle selection: {len(qualifying_runnable)} qualified models available, "
-                f"selected lowest energy: {best_model} ({self.models[best_model]['energy_per_inference_mwh']}mWh)"
-            )
-            return self._generate_charging_actions(best_model, node)
+            return all_actions
 
         # Priority 2: Find fallback models that can run without negative battery
         fallback_runnable = []
@@ -387,35 +400,37 @@ class TreeSearch:
                     fallback_runnable.append(model_name)
 
         if fallback_runnable:
-            # Select HIGHEST energy fallback model
+            # Select LARGEST by ACCURACY fallback model
             best_fallback = max(
                 fallback_runnable,
-                key=lambda x: self.models[x]["energy_per_inference_mwh"],
+                key=lambda x: self.models[x]["accuracy"],
             )
-            self.logger.debug(
+            self._log_with_season(
                 f"Oracle selection: {len(fallback_runnable)} fallback models available, "
-                f"selected highest energy: {best_fallback} ({self.models[best_fallback]['energy_per_inference_mwh']}mWh)"
+                f"selected highest accuracy: {best_fallback}",
+                "debug",
             )
             return self._generate_charging_actions(best_fallback, node)
 
         # Priority 3: No models can run → IDLE + charge
         if battery_level_wh < battery_capacity_wh:
-            self.logger.debug(
+            self._log_with_season(
                 f"Oracle selection: No models can run (battery: {battery_level_wh:.6f}Wh), "
-                f"forcing IDLE + charge"
+                f"forcing IDLE + charge",
+                "debug",
             )
             return [("IDLE", True)]
         else:
             # Battery full but no models can run (shouldn't happen with current models)
-            self.logger.debug(
-                f"Oracle selection: Battery full but no models can run, no actions available"
+            self._log_with_season(
+                "Oracle selection: Battery full but no models can run, no actions available",
+                "debug",
             )
             return []
 
     def _get_naive_action(self, node: TreeNode) -> Tuple[str, bool]:
         """Get naive action: largest model + simple charging rule."""
         battery_level_wh = node.battery_level_wh
-        battery_capacity_wh = self.config["battery"]["capacity_wh"]
 
         # Pruning: battery = 0% → only idle+charging
         if battery_level_wh <= 0:
@@ -472,8 +487,9 @@ class TreeSearch:
             actual_charge = min(charge_energy_wh, space_available)
 
             # Debug logging for charging
-            self.logger.debug(
-                f"Charging: raw={charge_energy_wh:.8f}Wh, space={space_available:.8f}Wh, actual={actual_charge:.8f}Wh"
+            self._log_with_season(
+                f"Charging: raw={charge_energy_wh:.8f}Wh, space={space_available:.8f}Wh, actual={actual_charge:.8f}Wh",
+                "debug",
             )
         else:
             actual_charge = 0.0
@@ -528,11 +544,12 @@ class TreeSearch:
                 decision_outcome = "large_miss"
 
             # Add debug logging
-            self.logger.debug(
+            self._log_with_season(
                 f"Classification: qualified={len(classification['qualified'])}, "
                 f"fallback={len(classification['fallback'])}, "
                 f"chosen={model_name}, outcome={decision_outcome}, "
-                f"battery_after={net_battery_wh:.6f}Wh"
+                f"battery_after={net_battery_wh:.6f}Wh",
+                "debug",
             )
 
         # Create new node
@@ -574,7 +591,7 @@ class TreeSearch:
         current_level = [root]
         current_depth = 0
 
-        self.logger.info(
+        self._log_with_season(
             f"Starting sequential expansion to leaf target: {self.leaf_target}"
         )
 
@@ -585,7 +602,7 @@ class TreeSearch:
             )
 
             if len(current_level) + estimated_next_size > self.leaf_target:
-                self.logger.info(
+                self._log_with_season(
                     f"Stopping sequential expansion at depth {current_depth}: "
                     f"current_leaves={len(current_level)}, "
                     f"estimated_next={estimated_next_size}, "
@@ -621,12 +638,12 @@ class TreeSearch:
 
             # Progress logging
             if current_depth % 10 == 0:
-                self.logger.info(
+                self._log_with_season(
                     f"Sequential expansion progress: depth={current_depth}, "
                     f"leaves={len(current_level)}"
                 )
 
-        self.logger.info(
+        self._log_with_season(
             f"Sequential expansion complete: {len(current_level)} leaf nodes at depth {current_depth}"
         )
         return current_level
@@ -690,7 +707,7 @@ class TreeSearch:
 
             current_node = next_node
 
-        naive_search.logger.info(
+        naive_search._log_with_season(
             f"Naive search completed: {current_node.timestep} timesteps"
         )
         return current_node
@@ -710,7 +727,7 @@ class TreeSearch:
             (node, self.config_path, self.location, self.season) for node in leaf_nodes
         ]
 
-        self.logger.info(
+        self._log_with_season(
             f"Starting parallel beam processing: {len(leaf_nodes)} leaf nodes, {max_workers} workers"
         )
 
@@ -732,15 +749,15 @@ class TreeSearch:
                     self.logger.error(f"Worker failed: {e}")
                     # Continue with other workers
 
-        self.logger.info(
+        self._log_with_season(
             f"Parallel beam processing complete: {len(all_leaves)} total leaves from {len(leaf_nodes)} workers"
         )
 
         # Aggregate final beams using all worker data
-        self.logger.info("Aggregating final beams from all worker results...")
+        self._log_with_season("Aggregating final beams from all worker results...")
         aggregated_leaves = self._assign_to_buckets(all_leaves)
 
-        self.logger.info(
+        self._log_with_season(
             f"Final aggregation complete: {len(aggregated_leaves)} leaves after beam aggregation"
         )
         return aggregated_leaves
@@ -751,7 +768,7 @@ class TreeSearch:
             # Fall back to original tree search if beam search disabled
             return self._expand_tree_fallback(root, 0)
 
-        self.logger.info("Starting Pareto bucketed beam search")
+        self._log_with_season("Starting Pareto bucketed beam search")
 
         # Initialize frontier with root node
         frontier = [root]
@@ -765,12 +782,15 @@ class TreeSearch:
                 "success": 0,
                 "success_small_miss": 0,
                 "most_clean_energy": 0,
+                "least_total_energy": 0,
             },
         }
 
         for timestep in range(self.horizon):
             if not frontier:
-                self.logger.error(f"All buckets empty at timestep {timestep}")
+                self._log_with_season(
+                    f"All buckets empty at timestep {timestep}", "error"
+                )
                 break
 
             beam_stats["avg_frontier_size"] += len(frontier)
@@ -809,7 +829,7 @@ class TreeSearch:
 
             # Progress logging
             if timestep % 50 == 0 or timestep == self.horizon - 1:
-                self.logger.info(
+                self._log_with_season(
                     f"[{datetime.now().strftime('%H:%M:%S')}] Timestep {timestep}/{self.horizon}: "
                     f"frontier_size={len(frontier)}, "
                     f"states_generated={len(next_states)}, "
@@ -821,24 +841,24 @@ class TreeSearch:
             self.beam_reset_interval > 0
             and (self.horizon - 1) % self.beam_reset_interval != 0
         ):
-            self.logger.info("Applying final bucket assignment...")
+            self._log_with_season("Applying final bucket assignment...")
             frontier = self._assign_to_buckets(frontier)
 
         # Final statistics
         if self.horizon > 0:
             beam_stats["avg_frontier_size"] /= self.horizon
 
-        self.logger.info("Beam search complete:")
-        self.logger.info(
+        self._log_with_season("Beam search complete:")
+        self._log_with_season(
             f"  Average frontier size: {beam_stats['avg_frontier_size']:.1f}"
         )
-        self.logger.info(
+        self._log_with_season(
             f"  Total states generated: {beam_stats['total_states_generated']:,}"
         )
-        self.logger.info(
+        self._log_with_season(
             f"  Total states pruned: {beam_stats['total_states_pruned']:,}"
         )
-        self.logger.info(f"  Final frontier size: {len(frontier)}")
+        self._log_with_season(f"  Final frontier size: {len(frontier)}")
 
         # Store beam search metadata
         self.beam_stats = beam_stats
@@ -862,10 +882,14 @@ class TreeSearch:
 
             # Safety checks
             if self.nodes_explored >= max_safe_nodes:
-                self.logger.warning(f"SAFETY: Node limit reached ({max_safe_nodes:,})")
+                self._log_with_season(
+                    f"SAFETY: Node limit reached ({max_safe_nodes:,})", "warning"
+                )
                 break
             if current_depth >= max_safe_depth:
-                self.logger.warning(f"SAFETY: Depth limit reached ({max_safe_depth:,})")
+                self._log_with_season(
+                    f"SAFETY: Depth limit reached ({max_safe_depth:,})", "warning"
+                )
                 break
 
             # Progress logging every 10000 nodes
@@ -878,7 +902,7 @@ class TreeSearch:
                         (current_depth / self.horizon) * 100 if self.horizon > 0 else 0
                     )
 
-                    self.logger.info(
+                    self._log_with_season(
                         f"[{datetime.now().strftime('%H:%M:%S')}] Progress: {self.nodes_explored:,} nodes explored, "
                         f"{self.nodes_pruned:,} nodes pruned, "
                         f"{len(all_leaves):,} leaves found, "
@@ -891,8 +915,8 @@ class TreeSearch:
             # Runtime safety check
             total_runtime = time.time() - (self.start_time or 0)
             if total_runtime >= max_safe_runtime:
-                self.logger.warning(
-                    f"SAFETY: Runtime limit reached ({max_safe_runtime}s)"
+                self._log_with_season(
+                    f"SAFETY: Runtime limit reached ({max_safe_runtime}s)", "warning"
                 )
                 break
 
@@ -929,8 +953,8 @@ class TreeSearch:
                 self.nodes_explored >= max_safe_nodes
                 or total_runtime >= max_safe_runtime
             ):
-                self.logger.warning(
-                    "SAFETY: Tree expansion terminated due to safety limits"
+                self._log_with_season(
+                    "SAFETY: Tree expansion terminated due to safety limits", "warning"
                 )
                 break
 
@@ -1056,6 +1080,43 @@ class TreeSearch:
 
         return result
 
+    def _bucket_least_total_energy(self, states: List[TreeNode]) -> List[TreeNode]:
+        """Bucket: Least Total Energy - lowest total energy consumption, random tiebreak."""
+        bucket_size = self.config["beam_search"]["bucket_sizes"]["least_total_energy"]
+
+        # Sort by total energy (ascending for least energy)
+        sorted_states = sorted(
+            states, key=lambda x: x.get_total_energy(), reverse=False
+        )
+
+        # Group states with same total energy
+        result = []
+        i = 0
+        while i < len(sorted_states) and len(result) < bucket_size:
+            current_energy = sorted_states[i].get_total_energy()
+
+            # Find all states with same energy
+            same_energy_states = []
+            j = i
+            while (
+                j < len(sorted_states)
+                and sorted_states[j].get_total_energy() == current_energy
+            ):
+                same_energy_states.append(sorted_states[j])
+                j += 1
+
+            # Randomly select from ties
+            available_slots = bucket_size - len(result)
+            selected = random.sample(
+                same_energy_states,
+                min(len(same_energy_states), available_slots),
+            )
+            result.extend(selected)
+
+            i = j
+
+        return result
+
     def _calculate_illogical_action_penalty(self, state: TreeNode) -> float:
         """Calculate penalty for illogical action sequences."""
         if not state.action_sequence:
@@ -1142,6 +1203,14 @@ class TreeSearch:
         clean_energy_bucket = self._bucket_most_clean_energy(remaining_states)
         bucket_results.extend(clean_energy_bucket)
         for state in clean_energy_bucket:
+            used_states.add(get_state_key(state))
+
+        remaining_states = [
+            s for s in unique_states if get_state_key(s) not in used_states
+        ]
+        least_total_energy_bucket = self._bucket_least_total_energy(remaining_states)
+        bucket_results.extend(least_total_energy_bucket)
+        for state in least_total_energy_bucket:
             used_states.add(get_state_key(state))
 
         # Remove duplicates from merged buckets
@@ -1234,7 +1303,9 @@ class TreeSearch:
 
             if should_charge:
                 # Debug logging for charging (using stored value)
-                self.logger.debug(f"Charging: stored={charge_energy:.8f}Wh")
+                self._log_with_season(
+                    f"Charging: stored={charge_energy:.8f}Wh", "debug"
+                )
 
             if model_name != "IDLE":
                 model_energy = (
@@ -1304,6 +1375,7 @@ class TreeSearch:
                 "top_success": [],
                 "top_success_small_miss": [],
                 "top_most_clean_energy": [],
+                "top_least_total_energy": [],
             }
 
         # Sort by different metrics
@@ -1328,6 +1400,12 @@ class TreeSearch:
             reverse=True,
         )[:5]
 
+        top_least_total_energy = sorted(
+            leaves,
+            key=lambda x: x.get_total_energy(),
+            reverse=False,  # Ascending for least energy
+        )[:5]
+
         return {
             "top_success": [self._serialize_leaf(leaf) for leaf in top_success],
             "top_success_small_miss": [
@@ -1336,18 +1414,21 @@ class TreeSearch:
             "top_most_clean_energy": [
                 self._serialize_leaf(leaf) for leaf in top_clean_energy
             ],
+            "top_least_total_energy": [
+                self._serialize_leaf(leaf) for leaf in top_least_total_energy
+            ],
         }
 
     def run_search(self) -> Dict:
         """Run complete tree search."""
-        self.logger.info(f"Starting tree search for {self.location} {self.season}")
-        self.logger.info(f"Horizon: {self.horizon} timesteps")
-        self.logger.info(f"Parallel mode: {self.parallel}")
+        self._log_with_season(f"Starting tree search for {self.location} {self.season}")
+        self._log_with_season(f"Horizon: {self.horizon} timesteps")
+        self._log_with_season(f"Parallel mode: {self.parallel}")
 
         # Safety checks to prevent infinite loops
-        max_safe_nodes = 20000000  # 20M node limit
-        max_safe_runtime = 300  # 5 minute limit for workers
-        max_safe_depth = 1000  # Prevent excessive depth
+        max_safe_nodes = float("inf")  # 20M node limit
+        max_safe_runtime = float("inf")  # 5 minute limit for workers
+        max_safe_depth = float("inf")  # Prevent excessive depth
 
         # Initialize timing
         self.start_time = time.time()
@@ -1365,15 +1446,15 @@ class TreeSearch:
             decision_history=[],
         )
 
-        self.logger.info(
+        self._log_with_season(
             f"Safety limits: max_nodes={max_safe_nodes:,}, max_runtime={max_safe_runtime}s, max_depth={max_safe_depth}"
         )
-        self.logger.info(
+        self._log_with_season(
             f"Battery: {self.config['battery']['capacity_wh']}Wh, Charge: {self.config['battery']['charge_rate_hours']}h"
         )
 
         # Expand tree (always parallel hybrid + naive search)
-        self.logger.info("Expanding decision tree and running naive search...")
+        self._log_with_season("Expanding decision tree and running naive search...")
 
         # Force parallel mode for tree search
         original_parallel = self.parallel
@@ -1395,17 +1476,17 @@ class TreeSearch:
             try:
                 leaves = tree_future.result(timeout=600)  # 10 min timeout
             except Exception as e:
-                self.logger.error(f"Tree search failed: {e}")
+                self._log_with_season(f"Tree search failed: {e}", "error")
                 leaves = []
 
             try:
                 naive_result = naive_future.result(timeout=60)  # 1 min timeout
                 naive_runtime = time.time() - naive_start_time
-                self.logger.info(
+                self._log_with_season(
                     f"Naive search completed in {naive_runtime:.2f} seconds"
                 )
             except Exception as e:
-                self.logger.error(f"Naive search failed: {e}")
+                self._log_with_season(f"Naive search failed: {e}", "error")
                 naive_result = None
                 naive_runtime = 0
 
@@ -1413,36 +1494,36 @@ class TreeSearch:
         self.parallel = original_parallel
 
         total_time = time.time() - self.start_time
-        self.logger.info(f"Tree expansion complete in {total_time:.1f} seconds:")
-        self.logger.info(f"  Nodes explored: {self.nodes_explored:,}")
-        self.logger.info(f"  Nodes pruned: {self.nodes_pruned:,}")
-        self.logger.info(f"  Children found: {self.children_found:,}")
-        self.logger.info(f"  Children pruned: {self.children_pruned:,}")
-        self.logger.info(f"  Leaf nodes: {len(leaves):,}")
-        self.logger.info(f"  Leaves found: {self.leaves_found:,}")
+        self._log_with_season(f"Tree expansion complete in {total_time:.1f} seconds:")
+        self._log_with_season(f"  Nodes explored: {self.nodes_explored:,}")
+        self._log_with_season(f"  Nodes pruned: {self.nodes_pruned:,}")
+        self._log_with_season(f"  Children found: {self.children_found:,}")
+        self._log_with_season(f"  Children pruned: {self.children_pruned:,}")
+        self._log_with_season(f"  Leaf nodes: {len(leaves):,}")
+        self._log_with_season(f"  Leaves found: {self.leaves_found:,}")
         if self.nodes_explored + self.nodes_pruned > 0:
-            self.logger.info(
+            self._log_with_season(
                 f"  Pruning efficiency: {self.nodes_pruned / (self.nodes_explored + self.nodes_pruned) * 100:.1f}%"
             )
         else:
-            self.logger.info("  Pruning efficiency: N/A (no nodes processed)")
-        self.logger.info(
+            self._log_with_season("  Pruning efficiency: N/A (no nodes processed)")
+        self._log_with_season(
             f"  Average rate: {self.nodes_explored / total_time:.0f} nodes/sec"
         )
         if hasattr(self, "cache_hits"):
-            self.logger.info(f"  Cache hits: {self.cache_hits:,}")
+            self._log_with_season(f"  Cache hits: {self.cache_hits:,}")
 
         # Categorize results
-        self.logger.info("Categorizing results...")
+        self._log_with_season("Categorizing results...")
         results = self._categorize_results(leaves)
 
         # Add naive results if available
         if naive_result:
             naive_serialized = self._serialize_leaf(naive_result)
             results["naive"] = naive_serialized
-            self.logger.info("Added naive search results to output")
+            self._log_with_season("Added naive search results to output")
         else:
-            self.logger.warning("No naive results available")
+            self._log_with_season("No naive results available", "warning")
 
         # Create final output
         output = {
@@ -1477,6 +1558,15 @@ class TreeSearch:
         return output
 
 
+def _run_season_worker(
+    config_path: str, location: str, season: str
+) -> Tuple[str, Dict]:
+    """Worker function for running tree search for a single season."""
+    tree_search = TreeSearch(config_path, location, season, parallel=True)
+    results = tree_search.run_search()
+    return season, results
+
+
 def main():
     """Main entry point."""
     parser = argparse.ArgumentParser(
@@ -1487,12 +1577,6 @@ def main():
         default="CA",
         choices=["CA", "FL", "NW", "NY"],
         help="Geographic location for energy data",
-    )
-    parser.add_argument(
-        "--season",
-        default="winter",
-        choices=["winter", "spring", "summer", "fall"],
-        help="Season for energy data",
     )
     parser.add_argument(
         "--config", default="config.jsonc", help="Configuration file path"
@@ -1508,23 +1592,63 @@ def main():
 
     args = parser.parse_args()
 
-    # Run tree search
-    tree_search = TreeSearch(args.config, args.location, args.season, args.parallel)
+    # Define all seasons to run
+    seasons = ["winter", "spring", "summer", "fall"]
 
-    # Run tree search (always parallel + naive)
-    results = tree_search.run_search()
-
-    # Save results with timestamp
+    # Generate timestamp for this run
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    output_filename = f"tree-search-{timestamp}-metadata.json"
-    output_path = Path("results") / output_filename
-    output_path.parent.mkdir(exist_ok=True)
 
-    with open(output_path, "w") as f:
-        json.dump(results, f, indent=2)
+    print("Starting tree search for all 4 seasons in parallel...")
+    print(f"Location: {args.location}")
+    print(f"Timestamp: {timestamp}")
 
-    print(f"Tree search complete! Results saved to {output_path}")
-    print(f"Explored {results['metadata']['total_leaves_explored']} leaf nodes")
+    # Run all seasons in parallel with 4 workers (1 per season)
+    all_results = {}
+    with ProcessPoolExecutor(max_workers=4) as executor:
+        # Submit all seasons as separate tasks
+        future_to_season = {
+            executor.submit(
+                _run_season_worker, args.config, args.location, season
+            ): season
+            for season in seasons
+        }
+
+        # Collect results as they complete
+        for future in as_completed(
+            future_to_season, timeout=600
+        ):  # 10 min timeout per season
+            season = future_to_season[future]
+            try:
+                season_result = future.result()
+                season, results = season_result
+                all_results[season] = results
+                print(f"[{season.upper()}] Completed successfully!")
+            except Exception as e:
+                print(f"[{season.upper()}] Failed: {e}")
+                # Cancel remaining futures and exit
+                for remaining_future in future_to_season:
+                    remaining_future.cancel()
+                print("Tree search failed - exiting without saving results")
+                return 1
+
+    # Save results for each season with season-specific filename
+    results_dir = Path("results")
+    results_dir.mkdir(exist_ok=True)
+
+    for season, results in all_results.items():
+        output_filename = f"tree-search-{season}-{timestamp}-metadata.json"
+        output_path = results_dir / output_filename
+
+        with open(output_path, "w") as f:
+            json.dump(results, f, indent=2)
+
+        print(f"[{season.upper()}] Results saved to {output_path}")
+        print(
+            f"[{season.upper()}] Explored {results['metadata']['total_leaves_explored']} leaf nodes"
+        )
+
+    print("All seasons completed successfully!")
+    return 0
 
 
 if __name__ == "__main__":

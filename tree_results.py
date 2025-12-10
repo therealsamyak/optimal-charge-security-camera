@@ -28,8 +28,9 @@ class TreeResultsAnalyzer:
         self.results: Optional[Dict] = None
         self.base_categories = [
             "top_most_clean_energy",
-            "top_success", 
+            "top_success",
             "top_success_small_miss",
+            "top_least_total_energy",
             "naive",
         ]
 
@@ -37,6 +38,7 @@ class TreeResultsAnalyzer:
             "top_most_clean_energy": "#2E8B57",  # Sea Green
             "top_success": "#4169E1",  # Royal Blue
             "top_success_small_miss": "#FFD700",  # Gold
+            "top_least_total_energy": "#9370DB",  # Medium Purple
             "naive": "#808080",  # Gray
         }
         # Distinct colors for different models
@@ -187,7 +189,7 @@ class TreeResultsAnalyzer:
                 result = self.results[cat]
             else:
                 result = self.results[cat][0]  # Best result from list
-                
+
             decision_counts = result.get("decision_counts", {})
             success_counts.append(decision_counts.get("success", 0))
             small_miss_counts.append(decision_counts.get("small_miss", 0))
@@ -196,19 +198,32 @@ class TreeResultsAnalyzer:
         # Create stacked bars
         width = 0.6
         x = np.arange(len(categories))
-        
+
         bars1 = ax.bar(x, success_counts, width, label="Success", color="#2E8B57")
-        bars2 = ax.bar(x, small_miss_counts, width, bottom=success_counts, 
-                      label="Small Miss", color="#FF8C00")
-        bars3 = ax.bar(x, large_miss_counts, width, 
-                      bottom=np.array(success_counts) + np.array(small_miss_counts), 
-                      label="Large Miss", color="#DC143C")
+        bars2 = ax.bar(
+            x,
+            small_miss_counts,
+            width,
+            bottom=success_counts,
+            label="Small Miss",
+            color="#FF8C00",
+        )
+        bars3 = ax.bar(
+            x,
+            large_miss_counts,
+            width,
+            bottom=np.array(success_counts) + np.array(small_miss_counts),
+            label="Large Miss",
+            color="#DC143C",
+        )
 
         ax.set_xlabel("Category")
         ax.set_ylabel("Count")
         ax.set_title("Decision Outcomes")
         ax.set_xticks(x)
-        ax.set_xticklabels([cat.replace("top_", "").replace("_", " ").title() for cat in categories])
+        ax.set_xticklabels(
+            [cat.replace("top_", "").replace("_", " ").title() for cat in categories]
+        )
         ax.legend()
         ax.grid(True, alpha=0.3)
 
@@ -232,26 +247,36 @@ class TreeResultsAnalyzer:
                 result = self.results[cat]
             else:
                 result = self.results[cat][0]
-                
+
             clean_pcts.append(result.get("clean_energy_percentage", 0))
-            
+
             decision_counts = result.get("decision_counts", {})
             total_decisions = result.get("total_decisions", 1)
             successes = decision_counts.get("success", 0)
-            success_pct = (successes / total_decisions * 100) if total_decisions > 0 else 0
+            success_pct = (
+                (successes / total_decisions * 100) if total_decisions > 0 else 0
+            )
             success_pcts.append(success_pct)
 
         # Filter categories that have results
-        valid_cats = [c for c in self.categories if self.results and self.results.get(c)]
+        valid_cats = [
+            c for c in self.categories if self.results and self.results.get(c)
+        ]
         colors = [self.colors.get(cat, "#808080") for cat in valid_cats]
 
-        scatter = ax.scatter(clean_pcts, success_pcts, c=colors, s=100, alpha=0.8, edgecolors="black")
-        
+        scatter = ax.scatter(
+            clean_pcts, success_pcts, c=colors, s=100, alpha=0.8, edgecolors="black"
+        )
+
         # Add category labels
         for i, cat in enumerate(valid_cats):
-            ax.annotate(cat.replace("top_", "").replace("_", " ").title(), 
-                       (clean_pcts[i], success_pcts[i]), 
-                       xytext=(5, 5), textcoords="offset points", fontsize=9)
+            ax.annotate(
+                cat.replace("top_", "").replace("_", " ").title(),
+                (clean_pcts[i], success_pcts[i]),
+                xytext=(5, 5),
+                textcoords="offset points",
+                fontsize=9,
+            )
 
         ax.set_xlabel("Clean Energy %")
         ax.set_ylabel("Success %")
@@ -264,7 +289,9 @@ class TreeResultsAnalyzer:
     def plot_clean_energy_bars(self):
         """Chart 3: Simple bar chart of clean energy percentage."""
         fig, ax = plt.subplots(figsize=(10, 6))
-        fig.suptitle("Clean Energy Percentage by Category", fontsize=14, fontweight="bold")
+        fig.suptitle(
+            "Clean Energy Percentage by Category", fontsize=14, fontweight="bold"
+        )
 
         clean_pcts = []
         cat_labels = []
@@ -272,24 +299,33 @@ class TreeResultsAnalyzer:
         for cat in self.categories:
             if self.results is None or not self.results.get(cat):
                 continue
-            
+
             # Handle both list (top_*) and dict (naive) result types
             if cat == "naive":
                 result = self.results[cat]
             else:
                 result = self.results[cat][0]
-                
+
             clean_pcts.append(result.get("clean_energy_percentage", 0))
             cat_labels.append(cat.replace("top_", "").replace("_", " ").title())
 
-        colors = [self.colors.get(cat, "#808080") for cat in self.categories if self.results and self.results.get(cat)]
+        colors = [
+            self.colors.get(cat, "#808080")
+            for cat in self.categories
+            if self.results and self.results.get(cat)
+        ]
 
         bars = ax.bar(cat_labels, clean_pcts, color=colors)
-        
+
         # Add percentage labels on bars
         for bar, val in zip(bars, clean_pcts):
-            ax.text(bar.get_x() + bar.get_width()/2, bar.get_height() + 0.5, 
-                   f"{val:.1f}%", ha="center", va="bottom")
+            ax.text(
+                bar.get_x() + bar.get_width() / 2,
+                bar.get_height() + 0.5,
+                f"{val:.1f}%",
+                ha="center",
+                va="bottom",
+            )
 
         ax.set_ylabel("Clean Energy %")
         ax.set_title("Clean Energy %")
@@ -313,12 +349,16 @@ class TreeResultsAnalyzer:
                 result = self.results[cat]
             else:
                 result = self.results[cat][0]
-                
+
             ts_data = self.extract_time_series(result)
-            
-            ax.plot(ts_data["timesteps"], ts_data["battery_levels"], 
-                   label=cat.replace("top_", "").replace("_", " ").title(), 
-                   color=self.colors[cat], linewidth=2)
+
+            ax.plot(
+                ts_data["timesteps"],
+                ts_data["battery_levels"],
+                label=cat.replace("top_", "").replace("_", " ").title(),
+                color=self.colors[cat],
+                linewidth=2,
+            )
 
         ax.set_xlabel("Timestep")
         ax.set_ylabel("Battery Level (Wh)")
@@ -339,63 +379,70 @@ class TreeResultsAnalyzer:
         for cat in self.categories:
             if self.results is None or not self.results.get(cat):
                 continue
-            
+
             # Handle both list (top_*) and dict (naive) result types
             if cat == "naive":
                 result = self.results[cat]
             else:
                 result = self.results[cat][0]
-                
+
             ts_data = self.extract_time_series(result)
             all_models.update(ts_data["models"])
-        
+
         all_models = sorted(list(all_models))
-        
+
         # Create usage matrix
         usage_matrix = []
         cat_labels = []
-        
+
         for cat in self.categories:
             if self.results is None or not self.results.get(cat):
                 continue
-                
+
             cat_labels.append(cat.replace("top_", "").replace("_", " ").title())
-            
+
             # Handle both list (top_*) and dict (naive) result types
             if cat == "naive":
                 result = self.results[cat]
             else:
                 result = self.results[cat][0]
-                
+
             ts_data = self.extract_time_series(result)
-            
+
             # Count model usage
             model_counts = {model: 0 for model in all_models}
             for model in ts_data["models"]:
                 if model in model_counts:
                     model_counts[model] += 1
-            
+
             usage_matrix.append([model_counts[model] for model in all_models])
 
         # Create heatmap
         im = ax.imshow(usage_matrix, cmap="YlOrRd", aspect="auto")
-        
+
         # Set ticks and labels
         ax.set_xticks(np.arange(len(all_models)))
         ax.set_xticklabels(all_models, rotation=45, ha="right")
         ax.set_yticks(np.arange(len(cat_labels)))
         ax.set_yticklabels(cat_labels)
-        
+
         # Add text annotations
         for i in range(len(cat_labels)):
             for j in range(len(all_models)):
-                text = ax.text(j, i, usage_matrix[i][j], 
-                             ha="center", va="center", color="black", fontsize=8)
-        
+                text = ax.text(
+                    j,
+                    i,
+                    usage_matrix[i][j],
+                    ha="center",
+                    va="center",
+                    color="black",
+                    fontsize=8,
+                )
+
         ax.set_xlabel("Model")
         ax.set_ylabel("Category")
         ax.set_title("Model Usage Heatmap")
-        
+
         # Add colorbar
         cbar = plt.colorbar(im, ax=ax)
         cbar.set_label("Usage Count", rotation=270, labelpad=15)
@@ -491,15 +538,13 @@ class TreeResultsAnalyzer:
         # Category comparison table
         print(f"\n📈 CATEGORY PERFORMANCE")
         print("-" * 60)
-        print(
-            f"{'Category':<20} {'Clean %':<8} {'Success %':<10} {'Battery':<8}"
-        )
+        print(f"{'Category':<20} {'Clean %':<8} {'Success %':<10} {'Battery':<8}")
         print("-" * 60)
 
         for cat in self.categories:
             if self.results is None or not self.results[cat]:
                 continue
-                
+
             summary = self.get_category_summary(cat)
             decision_counts = summary.get("decision_counts", {})
             total = summary.get("total_decisions", 1)
@@ -520,12 +565,16 @@ class TreeResultsAnalyzer:
         # Best performers
         best_clean = max(
             [c for c in self.categories if self.results and self.results.get(c)],
-            key=lambda x: self.get_category_summary(x).get("clean_energy_percentage", 0),
+            key=lambda x: self.get_category_summary(x).get(
+                "clean_energy_percentage", 0
+            ),
             default=None,
         )
         best_success = max(
             [c for c in self.categories if self.results and self.results.get(c)],
-            key=lambda x: self.get_category_summary(x).get("decision_counts", {}).get("success", 0),
+            key=lambda x: self.get_category_summary(x)
+            .get("decision_counts", {})
+            .get("success", 0),
             default=None,
         )
 
@@ -539,68 +588,6 @@ class TreeResultsAnalyzer:
             )
 
         print("\n" + "=" * 60)
-
-    def run_analysis(
-        self,
-        show_plots: bool = True,
-        save_plots: bool = False,
-        timestamp: Optional[str] = None,
-    ):
-        """Run complete analysis with new visualizations."""
-        if not self.load_data():
-            return False
-
-        print("\n🎨 Generating new visualizations...")
-
-        # Create all visualization windows
-        figures = []
-
-        try:
-            figures.append(self.plot_decision_outcomes_stacked())
-            figures.append(self.plot_clean_vs_success_scatter())
-            figures.append(self.plot_clean_energy_bars())
-            figures.append(self.plot_battery_decay_lines())
-            figures.append(self.plot_model_usage_heatmap())
-
-            # Save plots if requested
-            if save_plots:
-                print("💾 Saving plots to files...")
-                # Create tree_images directory
-                tree_images_dir = Path("tree_images")
-                tree_images_dir.mkdir(exist_ok=True)
-
-                # Use provided timestamp or extract from filename
-                if timestamp:
-                    file_timestamp = timestamp
-                else:
-                    # Extract timestamp from results filename
-                    import re
-
-                    match = re.search(
-                        r"tree-search-(\d{8}_\d{6})-metadata", str(self.results_file)
-                    )
-                    file_timestamp = match.group(1) if match else "unknown"
-
-                for i, fig in enumerate(figures):
-                    filename = (
-                        tree_images_dir
-                        / f"tree_results_{file_timestamp}_window_{i + 1}.png"
-                    )
-                    fig.savefig(filename, dpi=300, bbox_inches="tight")
-                    print(f"   Saved: {filename}")
-
-            # Show plots if requested
-            if show_plots:
-                print("🖼️  Displaying plots (close windows to continue)...")
-                plt.show()
-
-            print("✅ Visualization complete!")
-
-        except Exception as e:
-            print(f"❌ Error creating visualizations: {e}")
-            return False
-
-        return True
 
 
 def main():
