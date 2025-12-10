@@ -15,7 +15,7 @@ pre-commit:
       exclude: "results/**/*"
       run: |
         if command -v bunx >/dev/null 2>&1; then
-          bunx --yes prettier --write {staged_files}
+          bunx --yes oxfmt@latest --write {staged_files}
         else
           echo "bunx not found, skipping prettier formatting"
           exit 0
