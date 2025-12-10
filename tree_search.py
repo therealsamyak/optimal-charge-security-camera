@@ -740,9 +740,7 @@ class TreeSearch:
 
             for future in as_completed(future_to_args):
                 try:
-                    worker_leaves = future.result(
-                        timeout=300
-                    )  # 5min timeout per worker
+                    worker_leaves = future.result()  # No timeout
                     all_leaves.extend(worker_leaves)
                     self.leaves_found += len(worker_leaves)
                 except Exception as e:
@@ -1474,13 +1472,13 @@ class TreeSearch:
 
             # Collect results
             try:
-                leaves = tree_future.result(timeout=600)  # 10 min timeout
+                leaves = tree_future.result()  # No timeout
             except Exception as e:
                 self._log_with_season(f"Tree search failed: {e}", "error")
                 leaves = []
 
             try:
-                naive_result = naive_future.result(timeout=60)  # 1 min timeout
+                naive_result = naive_future.result()  # No timeout
                 naive_runtime = time.time() - naive_start_time
                 self._log_with_season(
                     f"Naive search completed in {naive_runtime:.2f} seconds"
@@ -1614,9 +1612,7 @@ def main():
         }
 
         # Collect results as they complete
-        for future in as_completed(
-            future_to_season, timeout=600
-        ):  # 10 min timeout per season
+        for future in as_completed(future_to_season):  # No timeout
             season = future_to_season[future]
             try:
                 season_result = future.result()

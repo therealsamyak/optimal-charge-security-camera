@@ -4,7 +4,7 @@
     // Total duration of the simulation in days
     "duration_days": 1,
     // Interval between simulation task evaluations in seconds
-    "task_interval_seconds": 15,
+    "task_interval_seconds": 300,
     // Time acceleration factor (1 = real-time)
     // Controls the speed of the simulation relative to real time
     // Higher values make the simulation run faster but may affect timing precision
