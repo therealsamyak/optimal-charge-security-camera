@@ -643,7 +643,7 @@ class TreeSearch:
             # Progress logging
             if timestep % 50 == 0 or timestep == self.horizon - 1:
                 self.logger.info(
-                    f"Timestep {timestep}/{self.horizon}: "
+                    f"[{datetime.now().strftime('%H:%M:%S')}] Timestep {timestep}/{self.horizon}: "
                     f"frontier_size={len(frontier)}, "
                     f"states_generated={len(next_states)}, "
                     f"states_pruned={len(next_states) - len(frontier)}"
@@ -715,7 +715,7 @@ class TreeSearch:
                     )
 
                     self.logger.info(
-                        f"Progress: {self.nodes_explored:,} nodes explored, "
+                        f"[{datetime.now().strftime('%H:%M:%S')}] Progress: {self.nodes_explored:,} nodes explored, "
                         f"{self.nodes_pruned:,} nodes pruned, "
                         f"{len(all_leaves):,} leaves found, "
                         f"depth: {current_depth}/{self.horizon} ({progress_pct:.1f}%), "
@@ -804,7 +804,7 @@ class TreeSearch:
                     )
 
                     self.logger.info(
-                        f"Progress: {self.nodes_explored:,} nodes explored, "
+                        f"[{datetime.now().strftime('%H:%M:%S')}] Progress: {self.nodes_explored:,} nodes explored, "
                         f"{self.nodes_pruned:,} nodes pruned, "
                         f"{len(all_leaves):,} leaves found, "
                         f"depth: {current_depth}/{self.horizon} ({progress_pct:.1f}%), "
