@@ -15,7 +15,7 @@ import random
 from concurrent.futures import ProcessPoolExecutor, as_completed
 from typing import Dict, List, Tuple, Optional
 from pathlib import Path
-from datetime import datetime
+from datetime import datetime, timedelta
 import hashlib
 
 
@@ -192,29 +192,50 @@ class TreeSearch:
                     }
                 )
 
-        # Extract sample date from first data point
-        sample_date = energy_data[0]["timestamp"].split("T")[0] if energy_data else ""
+        # Calculate simulation date and use it for energy_data_date
+        simulation_date = self._calculate_simulation_date()
+        simulation_date_str = simulation_date.strftime("%Y-%m-%d")
 
-        # Filter by season and interpolate
-        season_data = self._filter_by_season(energy_data)
-        return self._interpolate_energy_data(season_data), sample_date
+        # Filter by specific date and interpolate
+        date_data = self._filter_by_specific_date(energy_data)
+        return self._interpolate_energy_data(date_data), simulation_date_str
 
-    def _filter_by_season(self, data: List[Dict]) -> List[Dict]:
-        """Filter energy data by season."""
-        season_months = {
-            "winter": [12, 1, 2],
-            "spring": [3, 4, 5],
-            "summer": [6, 7, 8],
-            "fall": [9, 10, 11],
+    def _calculate_simulation_date(self) -> datetime:
+        """Calculate the specific simulation date based on season and offset."""
+        # Define season start dates
+        season_start_dates = {
+            "winter": (1, 1),  # January 1
+            "spring": (4, 1),  # April 1
+            "summer": (7, 1),  # July 1
+            "fall": (10, 1),  # October 1
         }
 
-        months = season_months.get(self.season, [1, 2, 3])
+        # Get season start month and day
+        start_month, start_day = season_start_dates.get(self.season, (1, 1))
+
+        # Get offset from config
+        offset_days = self.config["simulation"]["offset_date"]
+
+        # Create the simulation date
+        simulation_date = datetime(2024, start_month, start_day) + timedelta(
+            days=offset_days
+        )
+
+        return simulation_date
+
+    def _filter_by_specific_date(self, data: List[Dict]) -> List[Dict]:
+        """Filter energy data for the specific simulation date."""
+        simulation_date = self._calculate_simulation_date()
+        target_date_str = simulation_date.strftime("%Y-%m-%d")
+
         filtered = []
 
         for entry in data:
             try:
-                month = datetime.fromisoformat(entry["timestamp"]).month
-                if month in months:
+                entry_date = datetime.fromisoformat(entry["timestamp"]).strftime(
+                    "%Y-%m-%d"
+                )
+                if entry_date == target_date_str:
                     filtered.append(entry)
             except (KeyError, ValueError):
                 continue
