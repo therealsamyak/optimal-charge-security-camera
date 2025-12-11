@@ -13,7 +13,7 @@
     // Minimum required accuracy percentage for tasks (0-100)
     "user_accuracy_requirement": 90.5,
     // Maximum allowed latency for task processing in seconds
-    "user_latency_requirement": 0.5,
+    "user_latency_requirement": 0.0055,
     // Number of days to offset from season start dates (Jan 1, Apr 1, Jul 1, Oct 1)
     "offset_date": 0
   },

@@ -11,9 +11,9 @@
     // Example: If set to 2, the simulation will run twice as fast as real-time
     "time_acceleration": 1,
     // Minimum required accuracy percentage for tasks (0-100)
-    "user_accuracy_requirement": 95.0,
+    "user_accuracy_requirement": 70.0,
     // Maximum allowed latency for task processing in seconds
-    "user_latency_requirement": 0.005,
+    "user_latency_requirement": 0.0016,
     // Number of days to offset from season start dates (Jan 1, Apr 1, Jul 1, Oct 1)
     "offset_date": 0
   },
