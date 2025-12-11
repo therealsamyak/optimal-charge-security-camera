@@ -11,8 +11,7 @@ import sys
 import glob
 import re
 from pathlib import Path
-from typing import Dict, List, Tuple, Any, Optional
-from datetime import datetime
+from typing import Dict, List, Tuple, Optional
 import numpy as np
 
 import matplotlib.pyplot as plt
@@ -345,7 +344,7 @@ class TreeResultsAnalyzer:
         try:
             if not self.results_file.exists():
                 print(f"❌ Error: Results file not found: {self.results_file}")
-                print(f"💡 Tip: Use --timestamp 20251209_230426 to specify timestamp")
+                print("💡 Tip: Use --timestamp 20251209_230426 to specify timestamp")
                 return False
 
             print(f"📊 Loading tree search results from {self.results_file}...")
@@ -1435,7 +1434,7 @@ class TreeResultsAnalyzer:
         )
 
         # Category comparison table
-        print(f"\n📈 CATEGORY PERFORMANCE")
+        print("\n📈 CATEGORY PERFORMANCE")
         print("-" * 60)
         print(f"{'Category':<20} {'Clean %':<8} {'Success %':<10} {'Battery':<8}")
         print("-" * 60)
@@ -1458,7 +1457,7 @@ class TreeResultsAnalyzer:
             )
 
         # Key insights
-        print(f"\n💡 KEY INSIGHTS")
+        print("\n💡 KEY INSIGHTS")
         print("-" * 30)
 
         # Best performers
@@ -1508,7 +1507,7 @@ class TreeResultsAnalyzer:
         )
 
         # Seasonal comparison table
-        print(f"\n📈 SEASONAL PERFORMANCE COMPARISON")
+        print("\n📈 SEASONAL PERFORMANCE COMPARISON")
         print("-" * 80)
         print(
             f"{'Season':<12} {'Category':<20} {'Clean %':<8} {'Success %':<10} {'Battery':<8}"
@@ -1547,7 +1546,7 @@ class TreeResultsAnalyzer:
                 )
 
         # Key insights
-        print(f"\n💡 SEASONAL INSIGHTS")
+        print("\n💡 SEASONAL INSIGHTS")
         print("-" * 40)
 
         # Best performers by season
