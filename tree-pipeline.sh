@@ -7,7 +7,7 @@ if [ -z "$LOCATION" ]; then
     exit 1
 fi
 
-for config in config/config*.jsonc; do
+for config in config2/config*.jsonc; do
     echo "Running tree_search for $LOCATION with $config..."
     uv run tree_search.py --location "$LOCATION" --parallel --config "$config"
 done
