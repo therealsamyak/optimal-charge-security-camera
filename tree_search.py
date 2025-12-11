@@ -12,11 +12,20 @@ import argparse
 import logging
 import time
 import random
+import sys
 from concurrent.futures import ProcessPoolExecutor, as_completed
 from typing import Dict, List, Tuple, Optional
 from pathlib import Path
 from datetime import datetime, timedelta
 import hashlib
+
+# Import custom controller functions
+sys.path.append(str(Path(__file__).parent))
+from load_controller import load_controller, predict_with_controller
+
+# Import custom controller functions
+sys.path.append(str(Path(__file__).parent))
+from load_controller import load_controller, predict_with_controller
 
 
 @dataclasses.dataclass
@@ -730,6 +739,126 @@ class TreeSearch:
 
         naive_search._log_with_season(
             f"Naive search completed: {current_node.timestep} timesteps"
+        )
+        return current_node
+
+    def _run_custom_controller_worker(self, worker_args: Tuple) -> Optional[TreeNode]:
+        """Custom controller worker for parallel execution."""
+        config_path, location, season = worker_args
+
+        # Create dedicated controller search instance
+        controller_search = TreeSearch(config_path, location, season, parallel=False)
+
+        # Load trained controller
+        try:
+            model, controller_data = load_controller()
+            controller_search._log_with_season("Custom controller loaded successfully")
+        except Exception as e:
+            controller_search._log_with_season(
+                f"Failed to load custom controller: {e}", "error"
+            )
+            # Return empty result if controller fails to load
+            return None
+
+        # Create root node
+        current_node = TreeNode(
+            battery_level_wh=controller_search.config["battery"]["capacity_wh"],
+            timestep=0,
+            action_sequence=[],
+            agg_clean_energy=0.0,
+            agg_dirty_energy=0.0,
+            decision_history=[],
+        )
+
+        # Run custom controller simulation for full horizon
+        for timestep in range(controller_search.horizon):
+            # Get clean energy percentage for current timestep
+            timestamp = (
+                timestep
+                * controller_search.config["simulation"]["task_interval_seconds"]
+            )
+            clean_pct = controller_search.energy_data.get(int(timestamp % 86400), 50.0)
+
+            # Extract features for controller input (same format as training data)
+            input_features = [
+                current_node.battery_level_wh,  # battery_level
+                clean_pct,  # clean_energy_percentage
+                controller_search.config["battery"][
+                    "capacity_wh"
+                ],  # battery_capacity_wh
+                controller_search.config["battery"][
+                    "charge_rate_hours"
+                ],  # charge_rate_hours
+                controller_search.config["simulation"][
+                    "task_interval_seconds"
+                ],  # task_interval_seconds
+                controller_search.config["simulation"][
+                    "user_accuracy_requirement"
+                ],  # user_accuracy_requirement
+                controller_search.config["simulation"][
+                    "user_latency_requirement"
+                ],  # user_latency_requirement
+            ]
+
+            # Get controller prediction
+            try:
+                selected_model, should_charge, model_probs, charge_prob = (
+                    predict_with_controller(model, controller_data, input_features)
+                )
+            except Exception as e:
+                controller_search._log_with_season(
+                    f"Controller prediction failed: {e}", "error"
+                )
+                break
+
+            # Check if selected model has enough battery
+            if selected_model != "IDLE" and not controller_search._has_enough_battery(
+                selected_model, current_node.battery_level_wh
+            ):
+                # Fallback: find largest runnable model and force charging
+                models_by_energy = sorted(
+                    controller_search.models.keys(),
+                    key=lambda x: controller_search.models[x][
+                        "energy_per_inference_mwh"
+                    ],
+                    reverse=True,
+                )
+                fallback_model = None
+                for model_name in models_by_energy:
+                    if controller_search._has_enough_battery(
+                        model_name, current_node.battery_level_wh
+                    ):
+                        fallback_model = model_name
+                        break
+
+                if fallback_model:
+                    action = (fallback_model, True)  # Force charging
+                    controller_search._log_with_season(
+                        f"Controller fallback: {selected_model} → {fallback_model} + charge",
+                        "debug",
+                    )
+                else:
+                    action = ("IDLE", True)  # No models can run
+                    controller_search._log_with_season(
+                        "Controller fallback: IDLE + charge", "debug"
+                    )
+            else:
+                action = (selected_model, should_charge)
+
+            # Apply action
+            next_node = controller_search._apply_action(current_node, action, clean_pct)
+
+            if not next_node:
+                # Safety check - stop if action fails
+                controller_search.logger.warning(
+                    f"Custom controller failed at timestep {timestep}"
+                )
+                break
+
+            current_node = next_node
+
+        controller_search._log_with_season(
+            f"Custom controller completed: {current_node.timestep} timesteps"
         )
         return current_node
 
@@ -1479,15 +1608,21 @@ class TreeSearch:
         original_parallel = self.parallel
         self.parallel = True  # Always use parallel
 
-        # Start naive search worker in parallel
+        # Start naive and custom controller workers in parallel
         naive_start_time = time.time()
-        with ProcessPoolExecutor(max_workers=2) as executor:
+        with ProcessPoolExecutor(max_workers=3) as executor:
             # Submit tree search (always parallel hybrid)
             tree_future = executor.submit(self._expand_hybrid_parallel, root)
 
             # Submit naive search
             naive_future = executor.submit(
                 self._run_naive_search_worker,
+                (self.config_path, self.location, self.season),
+            )
+
+            # Submit custom controller search
+            custom_controller_future = executor.submit(
+                self._run_custom_controller_worker,
                 (self.config_path, self.location, self.season),
             )
 
@@ -1508,6 +1643,19 @@ class TreeSearch:
                 self._log_with_season(f"Naive search failed: {e}", "error")
                 naive_result = None
                 naive_runtime = 0
+
+            try:
+                custom_controller_result = (
+                    custom_controller_future.result()
+                )  # No timeout
+                custom_controller_runtime = time.time() - naive_start_time
+                self._log_with_season(
+                    f"Custom controller completed in {custom_controller_runtime:.2f} seconds"
+                )
+            except Exception as e:
+                self._log_with_season(f"Custom controller failed: {e}", "error")
+                custom_controller_result = None
+                custom_controller_runtime = 0
 
         # Restore original parallel setting for metadata
         self.parallel = original_parallel
@@ -1544,6 +1692,16 @@ class TreeSearch:
         else:
             self._log_with_season("No naive results available", "warning")
 
+        # Add custom controller results if available
+        if custom_controller_result:
+            custom_controller_serialized = self._serialize_leaf(
+                custom_controller_result
+            )
+            results["custom_controller"] = custom_controller_serialized
+            self._log_with_season("Added custom controller results to output")
+        else:
+            self._log_with_season("No custom controller results available", "warning")
+
         # Create final output
         output = {
             "metadata": {
@@ -1552,6 +1710,9 @@ class TreeSearch:
                 "total_leaves_explored": len(leaves),
                 "runtime_seconds": round(total_time, 2),
                 "naive_runtime_seconds": round(naive_runtime, 2) if naive_result else 0,
+                "custom_controller_runtime_seconds": round(custom_controller_runtime, 2)
+                if custom_controller_result
+                else 0,
                 "timestamp": datetime.now().isoformat(),
                 "safety_limits_hit": self.nodes_explored >= max_safe_nodes
                 or total_time >= max_safe_runtime,
@@ -1601,7 +1762,7 @@ def main():
         "--config", default="config.jsonc", help="Configuration file path"
     )
     parser.add_argument(
-        "--output", help="Output file path (ignored - timestamp-based naming used)"
+        "--output", default="results", help="Output directory path (default: results/)"
     )
     parser.add_argument(
         "--parallel",
@@ -1649,7 +1810,7 @@ def main():
                 return 1
 
     # Save results for each season with season-specific filename
-    results_dir = Path("results")
+    results_dir = Path(args.output)
     results_dir.mkdir(exist_ok=True)
 
     for season, results in all_results.items():
