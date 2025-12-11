@@ -68,19 +68,32 @@ def test_custom_controller(
         timestamp = timestep * tree_search.config["simulation"]["task_interval_seconds"]
         clean_pct = tree_search.energy_data.get(int(timestamp % 86400), 50.0)
 
-        # Extract features for controller input (6 features - removed task_interval_seconds)
-        input_features = [
-            current_node.battery_level_wh
-            / tree_search.config["battery"]["capacity_wh"],  # battery_level normalized
+        # Extract features for controller input (7 features with normalization)
+        raw_features = [
+            current_node.battery_level_wh,  # battery_level (raw Wh)
             clean_pct,  # clean_energy_percentage
             tree_search.config["battery"]["capacity_wh"],  # battery_capacity_wh
             tree_search.config["battery"]["charge_rate_hours"],  # charge_rate_hours
+            tree_search.config["simulation"][
+                "task_interval_seconds"
+            ],  # task_interval_seconds
             tree_search.config["simulation"][
                 "user_accuracy_requirement"
             ],  # user_accuracy_requirement
             tree_search.config["simulation"][
                 "user_latency_requirement"
             ],  # user_latency_requirement
+        ]
+
+        # Apply same normalization as training
+        input_features = [
+            raw_features[0] / raw_features[2],  # battery_level / battery_capacity_wh
+            raw_features[1] / 100.0,  # clean_energy_percentage / 100.0
+            raw_features[2] / 4.0,  # battery_capacity_wh / 4.0
+            raw_features[3] / 4.45,  # charge_rate_hours / 4.45
+            raw_features[4] / 600.0,  # task_interval_seconds / 600.0
+            raw_features[5] / 100.0,  # user_accuracy_requirement / 100.0
+            raw_features[6] / 0.5,  # user_latency_requirement / 0.5
         ]
 
         # Get controller prediction

@@ -780,7 +780,7 @@ class TreeSearch:
             clean_pct = controller_search.energy_data.get(int(timestamp % 86400), 50.0)
 
             # Extract features for controller input (same format as training data)
-            input_features = [
+            raw_features = [
                 current_node.battery_level_wh,  # battery_level
                 clean_pct,  # clean_energy_percentage
                 controller_search.config["battery"][
@@ -798,6 +798,18 @@ class TreeSearch:
                 controller_search.config["simulation"][
                     "user_latency_requirement"
                 ],  # user_latency_requirement
+            ]
+
+            # Apply same normalization as training
+            input_features = [
+                raw_features[0]
+                / raw_features[2],  # battery_level / battery_capacity_wh
+                raw_features[1] / 100.0,  # clean_energy_percentage / 100.0
+                raw_features[2] / 4.0,  # battery_capacity_wh / 4.0
+                raw_features[3] / 4.45,  # charge_rate_hours / 4.45
+                raw_features[4] / 600.0,  # task_interval_seconds / 600.0
+                raw_features[5] / 100.0,  # user_accuracy_requirement / 100.0
+                raw_features[6] / 0.5,  # user_latency_requirement / 0.5
             ]
 
             # Get controller prediction

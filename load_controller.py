@@ -47,8 +47,19 @@ def load_controller(controller_path: str = "controller-unified.json"):
 
 def predict_with_controller(model, controller_data, input_features):
     """Make prediction with loaded controller."""
+    # Apply same normalization as training
+    normalized_features = [
+        input_features[0] / input_features[2],  # battery_level / battery_capacity_wh
+        input_features[1] / 100.0,  # clean_energy_percentage / 100.0
+        input_features[2] / 4.0,  # battery_capacity_wh / 4.0
+        input_features[3] / 4.45,  # charge_rate_hours / 4.45
+        input_features[4] / 600.0,  # task_interval_seconds / 600.0
+        input_features[5] / 100.0,  # user_accuracy_requirement / 100.0
+        input_features[6] / 0.5,  # user_latency_requirement / 0.5
+    ]
+
     # Convert to tensor
-    x = torch.tensor(input_features, dtype=torch.float32).unsqueeze(0)
+    x = torch.tensor(normalized_features, dtype=torch.float32).unsqueeze(0)
 
     # Forward pass
     with torch.no_grad():
@@ -74,15 +85,15 @@ def main():
         f"✅ Loaded {controller_data['model_type']} with {controller_data['input_features']} inputs"
     )
 
-    # Test with sample input
+    # Test with sample input (raw values matching training data format)
     sample_input = [
-        0.5,  # battery_level (50%)
-        0.8,  # clean_energy_percentage (80%)
-        0.75,  # battery_capacity_wh (3Wh)
-        0.5,  # charge_rate_hours (2.2 hours)
-        0.33,  # task_interval_seconds (100 seconds)
-        0.9,  # user_accuracy_requirement (90%)
-        0.05,  # user_latency_requirement (50ms)
+        0.030275,  # battery_level (raw Wh)
+        21.29,  # clean_energy_percentage
+        0.06055,  # battery_capacity_wh
+        1.0,  # charge_rate_hours
+        300,  # task_interval_seconds
+        90.5,  # user_accuracy_requirement
+        0.01,  # user_latency_requirement
     ]
 
     print(f"\n🎯 Testing with sample input: {sample_input}")

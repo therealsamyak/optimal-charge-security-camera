@@ -5,22 +5,23 @@
 ### Neural Network Specification
 
 ```
-Input: 6 features
+Input: 7 features
 ├── battery_level_normalized (0-1): battery_level / battery_capacity_wh
 ├── clean_energy_percentage (0-100): Grid carbon intensity
 ├── battery_capacity_wh (0-4): Physical battery size
 ├── charge_rate_hours (0-4.45): Charging speed
+├── task_interval_seconds (0-600): Task frequency (NEW)
 ├── user_accuracy_requirement (0-100): Performance constraint
 └── user_latency_requirement (0-0.5): Timing constraint
 
-Network: 6 → 128 → 64 → {6, 1}
-├── Hidden Layer 1: Linear(6, 128) + ReLU
+Network: 7 → 128 → 64 → {6, 1}
+├── Hidden Layer 1: Linear(7, 128) + ReLU
 ├── Hidden Layer 2: Linear(128, 64) + ReLU
 ├── Model Head: Linear(64, 6) + Softmax (YOLOv10 variants)
 └── Charge Head: Linear(64, 1) + Sigmoid (binary charging)
 
-Parameters: 8,899 total
-├── Layer 1: (6×128) + 128 = 896
+Parameters: 9,027 total
+├── Layer 1: (7×128) + 128 = 1,024
 ├── Layer 2: (128×64) + 64 = 8,256
 ├── Model Head: (64×6) + 6 = 390
 └── Charge Head: (64×1) + 1 = 65
@@ -53,10 +54,11 @@ Data Cleaning:
 ├── Removed: battery_percentage (redundant with battery_level)
 ├── Removed: energy_efficiency_score (not used in training)
 ├── Removed: time_to_full_charge (not used in training)
-└── Removed: task_interval_seconds (constant 300s, zero variance)
+└── KEPT: task_interval_seconds (now included as 5th feature)
 
 Feature Engineering:
 ├── battery_level_normalized = battery_level / battery_capacity_wh
+├── task_interval_seconds normalized by 600.0 (10-minute max)
 ├── user_latency_requirement normalized by 0.5 (actual max, not 0.1)
 └── All features scaled to [0,1] range
 ```
@@ -80,14 +82,26 @@ Class Distribution (success bucket):
 ### Input Processing
 
 ```python
-def preprocess_controller_input(battery_level, clean_pct, config):
+def preprocess_controller_input(raw_features):
+    """
+    raw_features = [
+        battery_level,           # raw Wh
+        clean_pct,             # 0-100 percentage
+        battery_capacity_wh,     # raw Wh
+        charge_rate_hours,      # raw hours
+        task_interval_seconds,   # raw seconds
+        user_accuracy_req,      # 0-100 percentage
+        user_latency_req        # raw seconds
+    ]
+    """
     return [
-        battery_level / config["battery"]["capacity_wh"],      # 0-1 normalized
-        clean_pct,                                           # 0-100 percentage
-        config["battery"]["capacity_wh"],                       # 0-4 Wh normalized
-        config["battery"]["charge_rate_hours"],                   # 0-4.45 normalized
-        config["simulation"]["user_accuracy_requirement"],        # 0-100 normalized
-        config["simulation"]["user_latency_requirement"] / 0.5    # 0-1 normalized
+        raw_features[0] / raw_features[2],  # battery_level / battery_capacity_wh
+        raw_features[1] / 100.0,            # clean_energy_percentage / 100.0
+        raw_features[2] / 4.0,               # battery_capacity_wh / 4.0
+        raw_features[3] / 4.45,              # charge_rate_hours / 4.45
+        raw_features[4] / 600.0,              # task_interval_seconds / 600.0
+        raw_features[5] / 100.0,            # user_accuracy_requirement / 100.0
+        raw_features[6] / 0.5,                # user_latency_requirement / 0.5
     ]
 ```
 
@@ -131,7 +145,7 @@ Hardware: Apple Silicon M1 Pro (MPS acceleration)
 
 1. **Class Imbalance Resolution**: Weighted BCE eliminated pathological always-charge behavior
 2. **Feature Optimization**: Reduced from 7 to 6 inputs, removed constant/redundant features
-3. **Parameter Efficiency**: 8,899 parameters (13.7% reduction from original)
+3. **Parameter Efficiency**: 9,027 parameters (updated for 7-input architecture)
 4. **Numerical Stability**: Zero NaN/Inf across 1,152 test predictions
 5. **Hardware Optimization**: Apple Silicon MPS acceleration for production deployment
 
@@ -151,21 +165,24 @@ pip install torch torchvision torchaudio
 ### Training Command
 
 ```bash
-# Preprocess data (removes redundant features)
+# Preprocess data (extracts 7 features from existing results)
 python preprocess_data.py
 
-# Train controller with class-aware loss
+# Train controller with updated 7-input architecture
 python train_controller.py
 
-# Test controller performance
+# Test controller performance with consistent features
 python tests/test_custom_controller.py --config config/config1.jsonc
+
+# Run tree search with fixed dimension matching
+python tree_search.py --location CA --config config/config1.jsonc
 ```
 
 ### Expected Outputs
 
 ```
 controller-unified.json          # Trained model + metadata
-├── model_state_dict            # PyTorch weights (8,899 parameters)
+├── model_state_dict            # PyTorch weights (9,027 parameters)
 ├── model_mappings              # YOLOv10 variant index mapping
 └── training_info               # Complete training specifications
 
@@ -189,10 +206,10 @@ Convergence: Monotonic decrease, stable training
 ### Ablation Study Results
 
 ```
-Feature Reduction Impact:
-├── 7-input (original): Pathological always-charge (100%)
-├── 6-input (optimized): Balanced decisions (76.7% charge)
-└── 6-input + weighted BCE: Optimal performance (56.6% success)
+Feature Evolution Impact:
+├── 6-input (original): Matrix dimension mismatch errors
+├── 7-input (updated): Consistent features across all components
+└── 7-input + normalization: Optimal performance (ready for training)
 
 Class Imbalance Solutions:
 ├── Standard BCE: 100% charging (degenerate solution)
@@ -200,4 +217,4 @@ Class Imbalance Solutions:
 └── Result: 56.6% success rate across all test configurations
 ```
 
-This implementation provides a complete, reproducible methodology for training class-aware neural controllers for sustainable edge AI systems.
+This implementation provides a complete, reproducible methodology for training 7-feature neural controllers for sustainable edge AI systems with consistent feature handling across training, testing, and tree search components.

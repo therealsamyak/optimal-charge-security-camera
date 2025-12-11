@@ -146,6 +146,7 @@ def train_unified_controller(
                 sample["clean_energy_percentage"] / 100.0,  # Normalize to 0-1
                 sample["battery_capacity_wh"] / 4.0,  # Normalize by max capacity
                 sample["charge_rate_hours"] / 4.45,  # Normalize by max rate
+                sample["task_interval_seconds"] / 600.0,  # Normalize by 10min max
                 sample["user_accuracy_requirement"]
                 / 100.0,  # Normalize percentage to 0-1
                 sample["user_latency_requirement"] / 0.5,  # Normalize by actual max 0.5
@@ -182,7 +183,7 @@ def train_unified_controller(
     optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
 
     # Training parameters - increased for larger dataset
-    epochs = 200
+    epochs = 500
     batch_size = 1024  # Increased for Apple Silicon efficiency
     patience = 15  # Early stopping patience
     min_delta = 1e-6  # Minimum improvement threshold
@@ -286,7 +287,7 @@ def save_controller(
             "network_architecture": "7-input Multilayer Perceptron with dual heads",
             "loss_function": "Combined Cross-Entropy (0.5) + Binary Cross-Entropy (0.5)",
             "optimization": "Adam with learning rate 0.0005",
-            "epochs": 200,
+            "epochs": 500,
             "batch_size": 1024,
             "device": "mps",
             "apple_silicon_optimized": True,
@@ -315,7 +316,7 @@ def main():
         help="Output controller file",
     )
     parser.add_argument(
-        "--epochs", type=int, default=200, help="Number of training epochs"
+        "--epochs", type=int, default=500, help="Number of training epochs"
     )
     parser.add_argument(
         "--batch-size", type=int, default=1024, help="Batch size for training"

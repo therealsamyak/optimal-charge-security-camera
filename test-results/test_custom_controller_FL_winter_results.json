@@ -4,2908 +4,3593 @@
     "location": "FL",
     "season": "winter",
     "horizon": 288,
-    "runtime_seconds": 0.013333797454833984,
-    "timestamp": "2025-12-11T00:50:36.231591"
+    "runtime_seconds": 0.012247085571289062,
+    "timestamp": "2025-12-11T01:37:01.641136"
   },
   "final_state": {
-    "battery_level_wh": 0.006064658293502101,
-    "agg_clean_energy": 0.22306165875,
-    "agg_dirty_energy": 0.8920675079166684,
-    "total_energy": 1.1151291666666685,
-    "clean_energy_percentage": 20.003212669683226
+    "battery_level_wh": 0.005581426972070279,
+    "agg_clean_energy": 0.13983366541666653,
+    "agg_dirty_energy": 0.5514455012500005,
+    "total_energy": 0.691279166666667,
+    "clean_energy_percentage": 20.228248175182454
   },
   "statistics": {
     "total_decisions": 288,
-    "charging_decisions": 221,
-    "success_count": 163,
-    "small_miss_count": 67,
-    "large_miss_count": 58,
+    "charging_decisions": 137,
+    "success_count": 151,
+    "small_miss_count": 137,
+    "large_miss_count": 0,
     "model_usage": {
-      "YOLOv10_X": 67,
-      "YOLOv10_L": 163,
-      "IDLE": 58
+      "YOLOv10_B": 151,
+      "YOLOv10_S": 20,
+      "YOLOv10_N": 117
     }
   },
   "detailed_decisions": [
     {
       "timestep": 0,
-      "model": "YOLOv10_X",
+      "model": "YOLOv10_B",
       "should_charge": false,
       "battery_before": 0.06055,
-      "battery_after": 0.05449477532134536,
+      "battery_after": 0.056661902725790934,
       "clean_energy_pct": 13.16,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
+      "model_probs": [1.0, 1.1874442653936427e-36, 0.0, 0.0, 0.0, 5.370031204287996e-19, 0.0],
       "charge_prob": 0.0
     },
     {
       "timestep": 1,
-      "model": "YOLOv10_X",
+      "model": "YOLOv10_B",
       "should_charge": false,
-      "battery_before": 0.05449477532134536,
-      "battery_after": 0.048439550642690725,
+      "battery_before": 0.056661902725790934,
+      "battery_after": 0.05277380545158187,
       "clean_energy_pct": 13.16,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
+      "model_probs": [1.0, 1.4968174535351128e-34, 0.0, 0.0, 0.0, 1.2114617125282856e-19, 0.0],
       "charge_prob": 0.0
     },
     {
       "timestep": 2,
-      "model": "YOLOv10_X",
+      "model": "YOLOv10_B",
       "should_charge": false,
-      "battery_before": 0.048439550642690725,
-      "battery_after": 0.04238432596403609,
+      "battery_before": 0.05277380545158187,
+      "battery_after": 0.048885708177372804,
       "clean_energy_pct": 13.16,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
+      "model_probs": [1.0, 1.8867795172859242e-32, 0.0, 0.0, 0.0, 2.733018637924555e-20, 0.0],
       "charge_prob": 0.0
     },
     {
       "timestep": 3,
-      "model": "YOLOv10_X",
+      "model": "YOLOv10_B",
       "should_charge": false,
-      "battery_before": 0.04238432596403609,
-      "battery_after": 0.03632910128538145,
+      "battery_before": 0.048885708177372804,
+      "battery_after": 0.04499761090316374,
       "clean_energy_pct": 13.16,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
+      "model_probs": [1.0, 2.3783737703577156e-30, 0.0, 0.0, 0.0, 6.16574289365918e-21, 0.0],
       "charge_prob": 0.0
     },
     {
       "timestep": 4,
-      "model": "YOLOv10_X",
+      "model": "YOLOv10_B",
       "should_charge": false,
-      "battery_before": 0.03632910128538145,
-      "battery_after": 0.030273876606726813,
+      "battery_before": 0.04499761090316374,
+      "battery_after": 0.04110951362895467,
       "clean_energy_pct": 13.16,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
+      "model_probs": [1.0, 2.998005347943953e-28, 0.0, 0.0, 0.0, 1.3909399448732534e-21, 0.0],
       "charge_prob": 0.0
     },
     {
       "timestep": 5,
-      "model": "YOLOv10_X",
+      "model": "YOLOv10_B",
       "should_charge": false,
-      "battery_before": 0.030273876606726813,
-      "battery_after": 0.024218651928072175,
+      "battery_before": 0.04110951362895467,
+      "battery_after": 0.03722141635474561,
       "clean_energy_pct": 13.16,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
+      "model_probs": [1.0, 3.7790393990564215e-26, 0.0, 0.0, 0.0, 3.137795855801167e-22, 0.0],
       "charge_prob": 0.0
     },
     {
       "timestep": 6,
-      "model": "YOLOv10_X",
+      "model": "YOLOv10_B",
       "should_charge": false,
-      "battery_before": 0.024218651928072175,
-      "battery_after": 0.018163427249417538,
+      "battery_before": 0.03722141635474561,
+      "battery_after": 0.03333331908053654,
       "clean_energy_pct": 13.16,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
+      "model_probs": [1.0, 4.763582724540035e-24, 0.0, 0.0, 0.0, 7.078928529978513e-23, 0.0],
       "charge_prob": 0.0
     },
     {
       "timestep": 7,
-      "model": "YOLOv10_X",
+      "model": "YOLOv10_B",
       "should_charge": false,
-      "battery_before": 0.018163427249417538,
-      "battery_after": 0.0121082025707629,
+      "battery_before": 0.03333331908053654,
+      "battery_after": 0.02944522180632748,
       "clean_energy_pct": 13.16,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
+      "model_probs": [1.0, 6.0047642770251805e-22, 0.0, 0.0, 0.0, 1.596940828675923e-23, 0.0],
       "charge_prob": 0.0
     },
     {
       "timestep": 8,
-      "model": "YOLOv10_X",
+      "model": "YOLOv10_B",
       "should_charge": false,
-      "battery_before": 0.0121082025707629,
-      "battery_after": 0.0060529778921082624,
+      "battery_before": 0.02944522180632748,
+      "battery_after": 0.02555712453211842,
       "clean_energy_pct": 13.16,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
+      "model_probs": [1.0, 7.569227993796145e-20, 0.0, 0.0, 0.0, 3.6025782650028215e-24, 0.0],
       "charge_prob": 0.0
     },
     {
       "timestep": 9,
-      "model": "YOLOv10_L",
-      "should_charge": true,
-      "battery_before": 0.0060529778921082624,
-      "battery_after": 0.006412219477568567,
+      "model": "YOLOv10_B",
+      "should_charge": false,
+      "battery_before": 0.02555712453211842,
+      "battery_after": 0.021669027257909357,
       "clean_energy_pct": 13.16,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
+      "model_probs": [1.0, 9.541292619324597e-18, 0.0, 0.0, 0.0, 8.127362735555915e-25, 0.0],
       "charge_prob": 0.0
     },
     {
       "timestep": 10,
-      "model": "YOLOv10_X",
+      "model": "YOLOv10_B",
       "should_charge": false,
-      "battery_before": 0.006412219477568567,
-      "battery_after": 0.00035699479891392917,
+      "battery_before": 0.021669027257909357,
+      "battery_after": 0.017780929983700296,
       "clean_energy_pct": 13.16,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
+      "model_probs": [1.0, 1.2026969996086975e-15, 0.0, 0.0, 0.0, 1.833450794392045e-25, 0.0],
       "charge_prob": 0.0
     },
     {
       "timestep": 11,
-      "model": "IDLE",
-      "should_charge": true,
-      "battery_before": 0.00035699479891392917,
-      "battery_after": 0.005402828132247262,
+      "model": "YOLOv10_B",
+      "should_charge": false,
+      "battery_before": 0.017780929983700296,
+      "battery_after": 0.013892832709491234,
       "clean_energy_pct": 13.16,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
+      "model_probs": [1.0, 1.5160499266565763e-13, 0.0, 0.0, 0.0, 4.136063978063852e-26, 0.0],
       "charge_prob": 0.0
     },
     {
       "timestep": 12,
-      "model": "YOLOv10_L",
-      "should_charge": true,
-      "battery_before": 0.005402828132247262,
-      "battery_after": 0.005762069717707566,
+      "model": "YOLOv10_B",
+      "should_charge": false,
+      "battery_before": 0.013892832709491234,
+      "battery_after": 0.010004735435282172,
       "clean_energy_pct": 13.79,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
+      "model_probs": [1.0, 1.9113396629300006e-11, 0.0, 0.0, 0.0, 9.331645959409276e-27, 0.0],
       "charge_prob": 0.0
     },
     {
       "timestep": 13,
-      "model": "YOLOv10_L",
-      "should_charge": true,
-      "battery_before": 0.005762069717707566,
-      "battery_after": 0.006121311303167869,
+      "model": "YOLOv10_B",
+      "should_charge": false,
+      "battery_before": 0.010004735435282172,
+      "battery_after": 0.00611663816107311,
       "clean_energy_pct": 13.79,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
+      "model_probs": [1.0, 2.4093007588987803e-9, 0.0, 0.0, 0.0, 2.105156985011912e-27, 0.0],
       "charge_prob": 0.0
     },
     {
       "timestep": 14,
-      "model": "YOLOv10_X",
+      "model": "YOLOv10_B",
       "should_charge": false,
-      "battery_before": 0.006121311303167869,
-      "battery_after": 6.608662451323098e-5,
+      "battery_before": 0.00611663816107311,
+      "battery_after": 0.002228540886864048,
       "clean_energy_pct": 13.79,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
+      "model_probs": [
+        0.9999995231628418, 5.196549182073795e-7, 0.0, 0.0, 0.0, 8.447892698565316e-25, 0.0
+      ],
       "charge_prob": 0.0
     },
     {
       "timestep": 15,
-      "model": "IDLE",
+      "model": "YOLOv10_S",
       "should_charge": true,
-      "battery_before": 6.608662451323098e-5,
-      "battery_after": 0.005111919957846564,
+      "battery_before": 0.002228540886864048,
+      "battery_after": 0.005280438892724098,
       "clean_energy_pct": 13.79,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
-      "charge_prob": 0.0
+      "model_probs": [
+        0.9998908042907715, 0.00010917055624304339, 2.0346809511903536e-32, 0.0, 0.0,
+        3.5110896829131514e-21, 1.0920007463071037e-35
+      ],
+      "charge_prob": 2.9589425850661707e-21
     },
     {
       "timestep": 16,
-      "model": "YOLOv10_L",
-      "should_charge": true,
-      "battery_before": 0.005111919957846564,
-      "battery_after": 0.005471161543306868,
+      "model": "YOLOv10_B",
+      "should_charge": false,
+      "battery_before": 0.005280438892724098,
+      "battery_after": 0.0013923416185150357,
       "clean_energy_pct": 13.79,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
+      "model_probs": [
+        0.9999983310699463, 1.7093868791562272e-6, 0.0, 0.0, 0.0, 4.858825057070989e-24, 0.0
+      ],
       "charge_prob": 0.0
     },
     {
       "timestep": 17,
-      "model": "YOLOv10_L",
+      "model": "YOLOv10_N",
       "should_charge": true,
-      "battery_before": 0.005471161543306868,
-      "battery_after": 0.005830403128767171,
+      "battery_before": 0.0013923416185150357,
+      "battery_after": 0.005418804483988862,
       "clean_energy_pct": 13.79,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
-      "charge_prob": 0.0
+      "model_probs": [
+        0.9995033740997314, 0.0004965723492205143, 4.022126601038198e-22, 0.0,
+        2.811686243566938e-33, 7.615678062600119e-20, 1.7209345774042407e-25
+      ],
+      "charge_prob": 3.554172608348852e-14
     },
     {
       "timestep": 18,
-      "model": "YOLOv10_L",
-      "should_charge": true,
-      "battery_before": 0.005830403128767171,
-      "battery_after": 0.006189644714227476,
+      "model": "YOLOv10_B",
+      "should_charge": false,
+      "battery_before": 0.005418804483988862,
+      "battery_after": 0.0015307072097798,
       "clean_energy_pct": 13.79,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
+      "model_probs": [
+        0.9999985694885254, 1.4036945685802493e-6, 0.0, 0.0, 0.0, 3.6375662183016365e-24, 0.0
+      ],
       "charge_prob": 0.0
     },
     {
       "timestep": 19,
-      "model": "YOLOv10_X",
-      "should_charge": false,
-      "battery_before": 0.006189644714227476,
-      "battery_after": 0.00013442003557283776,
+      "model": "YOLOv10_N",
+      "should_charge": true,
+      "battery_before": 0.0015307072097798,
+      "battery_after": 0.005557170075253626,
       "clean_energy_pct": 13.79,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
-      "charge_prob": 0.0
+      "model_probs": [
+        0.999629020690918, 0.00037092011189088225, 7.759026026753083e-24, 0.0,
+        1.0184989155203907e-35, 4.702328235025322e-20, 3.958429296317195e-27
+      ],
+      "charge_prob": 1.6642787103689823e-15
     },
     {
       "timestep": 20,
-      "model": "IDLE",
-      "should_charge": true,
-      "battery_before": 0.00013442003557283776,
-      "battery_after": 0.0051802533689061705,
+      "model": "YOLOv10_B",
+      "should_charge": false,
+      "battery_before": 0.005557170075253626,
+      "battery_after": 0.0016690728010445642,
       "clean_energy_pct": 13.79,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
+      "model_probs": [
+        0.9999988079071045, 1.1526653906912543e-6, 0.0, 0.0, 0.0, 2.723248030157896e-24, 0.0
+      ],
       "charge_prob": 0.0
     },
     {
       "timestep": 21,
-      "model": "YOLOv10_L",
+      "model": "YOLOv10_N",
       "should_charge": true,
-      "battery_before": 0.0051802533689061705,
-      "battery_after": 0.005539494954366475,
+      "battery_before": 0.0016690728010445642,
+      "battery_after": 0.005695535666518391,
       "clean_energy_pct": 13.79,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
-      "charge_prob": 0.0
+      "model_probs": [
+        0.999715268611908, 0.00028468805248849094, 1.5482869448778988e-25, 0.0,
+        4.240819887769103e-38, 3.715899844919351e-20, 9.32641686701727e-29
+      ],
+      "charge_prob": 8.847582727126798e-17
     },
     {
       "timestep": 22,
-      "model": "YOLOv10_L",
-      "should_charge": true,
-      "battery_before": 0.005539494954366475,
-      "battery_after": 0.005898736539826778,
+      "model": "YOLOv10_B",
+      "should_charge": false,
+      "battery_before": 0.005695535666518391,
+      "battery_after": 0.0018074383923093284,
       "clean_energy_pct": 13.79,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
+      "model_probs": [
+        0.9999990463256836, 9.465315997658763e-7, 0.0, 0.0, 0.0, 2.038763283458939e-24, 0.0
+      ],
       "charge_prob": 0.0
     },
     {
       "timestep": 23,
-      "model": "YOLOv10_L",
+      "model": "YOLOv10_N",
       "should_charge": true,
-      "battery_before": 0.005898736539826778,
-      "battery_after": 0.006257978125287083,
+      "battery_before": 0.0018074383923093284,
+      "battery_after": 0.005833901257783155,
       "clean_energy_pct": 13.79,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
-      "charge_prob": 0.0
+      "model_probs": [
+        0.9997778534889221, 0.00022213828924577683, 3.1414979621567392e-27, 0.0,
+        1.637038904978181e-40, 2.0677789866766695e-20, 1.8905836756139423e-30
+      ],
+      "charge_prob": 5.975618919532076e-18
     },
     {
       "timestep": 24,
-      "model": "YOLOv10_X",
+      "model": "YOLOv10_B",
       "should_charge": false,
-      "battery_before": 0.006257978125287083,
-      "battery_after": 0.00020275344663244453,
+      "battery_before": 0.005833901257783155,
+      "battery_after": 0.0019458039835740927,
       "clean_energy_pct": 14.83,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
+      "model_probs": [
+        0.9999991655349731, 7.774701771268155e-7, 0.0, 0.0, 0.0, 1.5270040693007149e-24, 0.0
+      ],
       "charge_prob": 0.0
     },
     {
       "timestep": 25,
-      "model": "IDLE",
+      "model": "YOLOv10_N",
       "should_charge": true,
-      "battery_before": 0.00020275344663244453,
-      "battery_after": 0.005248586779965777,
+      "battery_before": 0.0019458039835740927,
+      "battery_after": 0.005972266849047919,
       "clean_energy_pct": 14.83,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
-      "charge_prob": 0.0
+      "model_probs": [
+        0.9998230338096619, 0.000177053312654607, 6.470783362429091e-29, 0.0, 6.05360936588321e-43,
+        1.151488969387303e-20, 3.631422665774233e-32
+      ],
+      "charge_prob": 5.32488885633368e-19
     },
     {
       "timestep": 26,
-      "model": "YOLOv10_L",
-      "should_charge": true,
-      "battery_before": 0.005248586779965777,
-      "battery_after": 0.005607828365426081,
+      "model": "YOLOv10_B",
+      "should_charge": false,
+      "battery_before": 0.005972266849047919,
+      "battery_after": 0.002084169574838857,
       "clean_energy_pct": 14.83,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
+      "model_probs": [
+        0.9999994039535522, 6.384321409313998e-7, 0.0, 0.0, 0.0, 1.1431849791567894e-24, 0.0
+      ],
       "charge_prob": 0.0
     },
     {
       "timestep": 27,
-      "model": "YOLOv10_L",
+      "model": "YOLOv10_S",
       "should_charge": true,
-      "battery_before": 0.005607828365426081,
-      "battery_after": 0.005967069950886385,
+      "battery_before": 0.002084169574838857,
+      "battery_after": 0.005136067580698907,
       "clean_energy_pct": 14.83,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
-      "charge_prob": 0.0
+      "model_probs": [
+        0.9998610019683838, 0.00013894925359636545, 1.2402243108237637e-30, 0.0,
+        1.401298464324817e-45, 6.3990328679997095e-21, 6.811716093236605e-34
+      ],
+      "charge_prob": 4.173146223610485e-20
     },
     {
       "timestep": 28,
-      "model": "YOLOv10_L",
-      "should_charge": true,
-      "battery_before": 0.005967069950886385,
-      "battery_after": 0.0063263115363466895,
+      "model": "YOLOv10_B",
+      "should_charge": false,
+      "battery_before": 0.005136067580698907,
+      "battery_after": 0.0012479703064898445,
       "clean_energy_pct": 14.83,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
+      "model_probs": [
+        0.9999978542327881, 2.1000957985961577e-6, 0.0, 0.0, 0.0, 6.5749773624525534e-24, 0.0
+      ],
       "charge_prob": 0.0
     },
     {
       "timestep": 29,
-      "model": "YOLOv10_X",
-      "should_charge": false,
-      "battery_before": 0.0063263115363466895,
-      "battery_after": 0.0002710868576920513,
+      "model": "YOLOv10_N",
+      "should_charge": true,
+      "battery_before": 0.0012479703064898445,
+      "battery_after": 0.005274433171963671,
       "clean_energy_pct": 14.83,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
-      "charge_prob": 0.0
+      "model_probs": [
+        0.9993336796760559, 0.0006662626983597875, 2.2544342306038208e-20, 0.0,
+        9.745618352215422e-31, 1.521655346964466e-19, 7.445534280740064e-24
+      ],
+      "charge_prob": 9.375993904880975e-13
     },
     {
       "timestep": 30,
-      "model": "IDLE",
-      "should_charge": true,
-      "battery_before": 0.0002710868576920513,
-      "battery_after": 0.005316920191025384,
+      "model": "YOLOv10_B",
+      "should_charge": false,
+      "battery_before": 0.005274433171963671,
+      "battery_after": 0.0013863358977546088,
       "clean_energy_pct": 14.83,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
+      "model_probs": [
+        0.9999983310699463, 1.7245362187168212e-6, 0.0, 0.0, 0.0, 4.922404485018634e-24, 0.0
+      ],
       "charge_prob": 0.0
     },
     {
       "timestep": 31,
-      "model": "YOLOv10_L",
+      "model": "YOLOv10_N",
       "should_charge": true,
-      "battery_before": 0.005316920191025384,
-      "battery_after": 0.005676161776485688,
+      "battery_before": 0.0013863358977546088,
+      "battery_after": 0.005412798763228435,
       "clean_energy_pct": 14.83,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
-      "charge_prob": 0.0
+      "model_probs": [
+        0.9994962215423584, 0.000503768038470298, 4.763186069499672e-22, 0.0,
+        3.5813084763311986e-33, 7.889626710545757e-20, 2.0257471031746957e-25
+      ],
+      "charge_prob": 4.0790934947290344e-14
     },
     {
       "timestep": 32,
-      "model": "YOLOv10_L",
-      "should_charge": true,
-      "battery_before": 0.005676161776485688,
-      "battery_after": 0.006035403361945991,
+      "model": "YOLOv10_B",
+      "should_charge": false,
+      "battery_before": 0.005412798763228435,
+      "battery_after": 0.001524701489019373,
       "clean_energy_pct": 14.83,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
+      "model_probs": [
+        0.9999985694885254, 1.4161321360006696e-6, 0.0, 0.0, 0.0, 3.6851649020313145e-24, 0.0
+      ],
       "charge_prob": 0.0
     },
     {
       "timestep": 33,
-      "model": "YOLOv10_L",
+      "model": "YOLOv10_N",
       "should_charge": true,
-      "battery_before": 0.006035403361945991,
-      "battery_after": 0.006394644947406296,
+      "battery_before": 0.001524701489019373,
+      "battery_after": 0.0055511643544931995,
       "clean_energy_pct": 14.83,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
-      "charge_prob": 0.0
+      "model_probs": [
+        0.9996242523193359, 0.0003757188969757408, 9.21859777283744e-24, 0.0,
+        1.3011639091733984e-35, 4.796880472036388e-20, 4.66482380724949e-27
+      ],
+      "charge_prob": 1.9016884929572066e-15
     },
     {
       "timestep": 34,
-      "model": "YOLOv10_X",
+      "model": "YOLOv10_B",
       "should_charge": false,
-      "battery_before": 0.006394644947406296,
-      "battery_after": 0.0003394202687516581,
+      "battery_before": 0.0055511643544931995,
+      "battery_after": 0.0016630670802841373,
       "clean_energy_pct": 14.83,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
+      "model_probs": [
+        0.9999988079071045, 1.1628775382632739e-6, 0.0, 0.0, 0.0, 2.758903556997754e-24, 0.0
+      ],
       "charge_prob": 0.0
     },
     {
       "timestep": 35,
-      "model": "IDLE",
+      "model": "YOLOv10_N",
       "should_charge": true,
-      "battery_before": 0.0003394202687516581,
-      "battery_after": 0.005385253602084991,
+      "battery_before": 0.0016630670802841373,
+      "battery_after": 0.005689529945757964,
       "clean_energy_pct": 14.83,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
-      "charge_prob": 0.0
+      "model_probs": [
+        0.9997119307518005, 0.0002880374086089432, 1.841550177217369e-25, 0.0,
+        5.412416106523332e-38, 3.800816074029028e-20, 1.1027971158058532e-28
+      ],
+      "charge_prob": 1.0115092755565483e-16
     },
     {
       "timestep": 36,
-      "model": "YOLOv10_L",
-      "should_charge": true,
-      "battery_before": 0.005385253602084991,
-      "battery_after": 0.005744495187545295,
+      "model": "YOLOv10_B",
+      "should_charge": false,
+      "battery_before": 0.005689529945757964,
+      "battery_after": 0.0018014326715489015,
       "clean_energy_pct": 16.17,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
+      "model_probs": [
+        0.9999990463256836, 9.552480833008303e-7, 0.0, 0.0, 0.0, 2.0666077068305252e-24, 0.0
+      ],
       "charge_prob": 0.0
     },
     {
       "timestep": 37,
-      "model": "YOLOv10_L",
+      "model": "YOLOv10_N",
       "should_charge": true,
-      "battery_before": 0.005744495187545295,
-      "battery_after": 0.006103736773005598,
+      "battery_before": 0.0018014326715489015,
+      "battery_after": 0.005827895537022728,
       "clean_energy_pct": 16.17,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
-      "charge_prob": 0.0
+      "model_probs": [
+        0.9997754693031311, 0.0002245094656245783, 3.7243983783810245e-27, 0.0,
+        2.0909194775729893e-40, 2.1226805148954624e-20, 2.2470377613708508e-30
+      ],
+      "charge_prob": 6.646301096093134e-18
     },
     {
       "timestep": 38,
-      "model": "YOLOv10_X",
+      "model": "YOLOv10_B",
       "should_charge": false,
-      "battery_before": 0.006103736773005598,
-      "battery_after": 4.851209435095989e-5,
+      "battery_before": 0.005827895537022728,
+      "battery_after": 0.0019397982628136658,
       "clean_energy_pct": 16.17,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
+      "model_probs": [
+        0.9999991655349731, 7.8441576079058e-7, 0.0, 0.0, 0.0, 1.5471626208727326e-24, 0.0
+      ],
       "charge_prob": 0.0
     },
     {
       "timestep": 39,
-      "model": "IDLE",
+      "model": "YOLOv10_N",
       "should_charge": true,
-      "battery_before": 4.851209435095989e-5,
-      "battery_after": 0.005094345427684293,
+      "battery_before": 0.0019397982628136658,
+      "battery_after": 0.005966261128287492,
       "clean_energy_pct": 16.17,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
-      "charge_prob": 0.0
+      "model_probs": [
+        0.9998210072517395, 0.00017899468366522342, 7.687395715710939e-29, 0.0,
+        7.749180507716238e-43, 1.1817378496332449e-20, 4.3179107789072734e-32
+      ],
+      "charge_prob": 5.949163615591099e-19
     },
     {
       "timestep": 40,
-      "model": "YOLOv10_L",
-      "should_charge": true,
-      "battery_before": 0.005094345427684293,
-      "battery_after": 0.005453587013144597,
+      "model": "YOLOv10_B",
+      "should_charge": false,
+      "battery_before": 0.005966261128287492,
+      "battery_after": 0.00207816385407843,
       "clean_energy_pct": 16.17,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
+      "model_probs": [
+        0.9999994039535522, 6.44138765437674e-7, 0.0, 0.0, 0.0, 1.1582985680246925e-24, 0.0
+      ],
       "charge_prob": 0.0
     },
     {
       "timestep": 41,
-      "model": "YOLOv10_L",
+      "model": "YOLOv10_S",
       "should_charge": true,
-      "battery_before": 0.005453587013144597,
-      "battery_after": 0.0058128285986049,
+      "battery_before": 0.00207816385407843,
+      "battery_after": 0.00513006185993848,
       "clean_energy_pct": 16.17,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
-      "charge_prob": 0.0
+      "model_probs": [
+        0.9998595714569092, 0.00014045908756088465, 1.4734299768065609e-30, 0.0,
+        2.802596928649634e-45, 6.567235279580323e-21, 8.09966117239443e-34
+      ],
+      "charge_prob": 4.6611853699561854e-20
     },
     {
       "timestep": 42,
-      "model": "YOLOv10_L",
-      "should_charge": true,
-      "battery_before": 0.0058128285986049,
-      "battery_after": 0.006172070184065205,
+      "model": "YOLOv10_B",
+      "should_charge": false,
+      "battery_before": 0.00513006185993848,
+      "battery_after": 0.0012419645857294176,
       "clean_energy_pct": 16.17,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
+      "model_probs": [
+        0.9999978542327881, 2.1188654955039965e-6, 0.0, 0.0, 0.0, 6.661877490910795e-24, 0.0
+      ],
       "charge_prob": 0.0
     },
     {
       "timestep": 43,
-      "model": "YOLOv10_X",
-      "should_charge": false,
-      "battery_before": 0.006172070184065205,
-      "battery_after": 0.00011684550541056667,
+      "model": "YOLOv10_N",
+      "should_charge": true,
+      "battery_before": 0.0012419645857294176,
+      "battery_after": 0.005268427451203244,
       "clean_energy_pct": 16.17,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
-      "charge_prob": 0.0
+      "model_probs": [
+        0.9993281364440918, 0.0006719291559420526, 2.659206823862262e-20, 0.0,
+        1.2452125446113651e-30, 1.5396071049614274e-19, 8.594294830167342e-24
+      ],
+      "charge_prob": 1.071673132180262e-12
     },
     {
       "timestep": 44,
-      "model": "IDLE",
-      "should_charge": true,
-      "battery_before": 0.00011684550541056667,
-      "battery_after": 0.005162678838743899,
+      "model": "YOLOv10_B",
+      "should_charge": false,
+      "battery_before": 0.005268427451203244,
+      "battery_after": 0.0013803301769941818,
       "clean_energy_pct": 16.17,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
+      "model_probs": [
+        0.9999982118606567, 1.7399357830072404e-6, 0.0, 0.0, 0.0, 4.98738611322531e-24, 0.0
+      ],
       "charge_prob": 0.0
     },
     {
       "timestep": 45,
-      "model": "YOLOv10_L",
+      "model": "YOLOv10_N",
       "should_charge": true,
-      "battery_before": 0.005162678838743899,
-      "battery_after": 0.0055219204242042035,
+      "battery_before": 0.0013803301769941818,
+      "battery_after": 0.005406793042468008,
       "clean_energy_pct": 16.17,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
-      "charge_prob": 0.0
+      "model_probs": [
+        0.9994888305664062, 0.0005111180362291634, 5.642330527601418e-22, 0.0,
+        4.563159234638715e-33, 8.17383369055676e-20, 2.384902531072596e-25
+      ],
+      "charge_prob": 4.682987667353061e-14
     },
     {
       "timestep": 46,
-      "model": "YOLOv10_L",
-      "should_charge": true,
-      "battery_before": 0.0055219204242042035,
-      "battery_after": 0.005881162009664507,
+      "model": "YOLOv10_B",
+      "should_charge": false,
+      "battery_before": 0.005406793042468008,
+      "battery_after": 0.001518695768258946,
       "clean_energy_pct": 16.17,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
+      "model_probs": [
+        0.9999985694885254, 1.428781956747116e-6, 0.0, 0.0, 0.0, 3.733827759122136e-24, 0.0
+      ],
       "charge_prob": 0.0
     },
     {
       "timestep": 47,
-      "model": "YOLOv10_L",
+      "model": "YOLOv10_N",
       "should_charge": true,
-      "battery_before": 0.005881162009664507,
-      "battery_after": 0.006240403595124812,
+      "battery_before": 0.001518695768258946,
+      "battery_after": 0.0055451586337327725,
       "clean_energy_pct": 16.17,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
-      "charge_prob": 0.0
+      "model_probs": [
+        0.9996193647384644, 0.0003806131426244974, 1.0955073107289761e-23, 0.0,
+        1.6625941272331553e-35, 4.8935190782721635e-20, 5.497778878547247e-27
+      ],
+      "charge_prob": 2.1734706607867737e-15
     },
     {
       "timestep": 48,
-      "model": "YOLOv10_X",
+      "model": "YOLOv10_B",
       "should_charge": false,
-      "battery_before": 0.006240403595124812,
-      "battery_after": 0.00018517891647017344,
+      "battery_before": 0.0055451586337327725,
+      "battery_after": 0.0016570613595237103,
       "clean_energy_pct": 17.54,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
+      "model_probs": [
+        0.9999988079071045, 1.1736792657757178e-6, 0.0, 0.0, 0.0, 2.7969140308549233e-24, 0.0
+      ],
       "charge_prob": 0.0
     },
     {
       "timestep": 49,
-      "model": "IDLE",
+      "model": "YOLOv10_N",
       "should_charge": true,
-      "battery_before": 0.00018517891647017344,
-      "battery_after": 0.005231012249803506,
+      "battery_before": 0.0016570613595237103,
+      "battery_after": 0.005683524224997537,
       "clean_energy_pct": 17.54,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
-      "charge_prob": 0.0
+      "model_probs": [
+        0.999708354473114, 0.0002916057128459215, 2.1939059938908136e-25, 0.0,
+        6.919286715592223e-38, 3.8897631930377674e-20, 1.3052802419914913e-28
+      ],
+      "charge_prob": 1.158339392938427e-16
     },
     {
       "timestep": 50,
-      "model": "YOLOv10_L",
-      "should_charge": true,
-      "battery_before": 0.005231012249803506,
-      "battery_after": 0.00559025383526381,
+      "model": "YOLOv10_B",
+      "should_charge": false,
+      "battery_before": 0.005683524224997537,
+      "battery_after": 0.0017954269507884746,
       "clean_energy_pct": 17.54,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
+      "model_probs": [
+        0.9999990463256836, 9.63787442742614e-7, 0.0, 0.0, 0.0, 2.09392162124335e-24, 0.0
+      ],
       "charge_prob": 0.0
     },
     {
       "timestep": 51,
-      "model": "YOLOv10_L",
+      "model": "YOLOv10_N",
       "should_charge": true,
-      "battery_before": 0.00559025383526381,
-      "battery_after": 0.0059494954207241135,
+      "battery_before": 0.0017954269507884746,
+      "battery_after": 0.005821889816262301,
       "clean_energy_pct": 17.54,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
-      "charge_prob": 0.0
+      "model_probs": [
+        0.9997732043266296, 0.00022681834525428712, 4.4110952482141044e-27, 0.0,
+        2.6680162241358787e-40, 2.1782919321008878e-20, 2.669150259587289e-30
+      ],
+      "charge_prob": 7.384085818305718e-18
     },
     {
       "timestep": 52,
-      "model": "YOLOv10_L",
-      "should_charge": true,
-      "battery_before": 0.0059494954207241135,
-      "battery_after": 0.0063087370061844185,
+      "model": "YOLOv10_B",
+      "should_charge": false,
+      "battery_before": 0.005821889816262301,
+      "battery_after": 0.0019337925420532388,
       "clean_energy_pct": 17.54,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
+      "model_probs": [
+        0.9999991655349731, 7.914302386780037e-7, 0.0, 0.0, 0.0, 1.567611078827419e-24, 0.0
+      ],
       "charge_prob": 0.0
     },
     {
       "timestep": 53,
-      "model": "YOLOv10_X",
-      "should_charge": false,
-      "battery_before": 0.0063087370061844185,
-      "battery_after": 0.0002535123275297802,
+      "model": "YOLOv10_N",
+      "should_charge": true,
+      "battery_before": 0.0019337925420532388,
+      "battery_after": 0.005960255407527065,
       "clean_energy_pct": 17.54,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
-      "charge_prob": 0.0
+      "model_probs": [
+        0.9998190999031067, 0.00018095890118274838, 9.132961417075325e-29, 0.0,
+        9.921193127419705e-43, 1.2127815987490619e-20, 5.13413438318393e-32
+      ],
+      "charge_prob": 6.64660198304095e-19
     },
     {
       "timestep": 54,
-      "model": "IDLE",
-      "should_charge": true,
-      "battery_before": 0.0002535123275297802,
-      "battery_after": 0.005299345660863113,
+      "model": "YOLOv10_B",
+      "should_charge": false,
+      "battery_before": 0.005960255407527065,
+      "battery_after": 0.002072158133318003,
       "clean_energy_pct": 17.54,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
+      "model_probs": [
+        0.9999994039535522, 6.498981974800699e-7, 0.0, 0.0, 0.0, 1.1735986238890671e-24, 0.0
+      ],
       "charge_prob": 0.0
     },
     {
       "timestep": 55,
-      "model": "YOLOv10_L",
+      "model": "YOLOv10_S",
       "should_charge": true,
-      "battery_before": 0.005299345660863113,
-      "battery_after": 0.005658587246323417,
+      "battery_before": 0.002072158133318003,
+      "battery_after": 0.005124056139178053,
       "clean_energy_pct": 17.54,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
-      "charge_prob": 0.0
+      "model_probs": [
+        0.999858021736145, 0.00014198652934283018, 1.7505130853236314e-30, 0.0,
+        2.802596928649634e-45, 6.739858745352833e-21, 9.631200823466288e-34
+      ],
+      "charge_prob": 5.206279299052731e-20
     },
     {
       "timestep": 56,
-      "model": "YOLOv10_L",
-      "should_charge": true,
-      "battery_before": 0.005658587246323417,
-      "battery_after": 0.00601782883178372,
+      "model": "YOLOv10_B",
+      "should_charge": false,
+      "battery_before": 0.005124056139178053,
+      "battery_after": 0.0012359588649689906,
       "clean_energy_pct": 17.54,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
+      "model_probs": [
+        0.9999978542327881, 2.13781709135219e-6, 0.0, 0.0, 0.0, 6.74995223325691e-24, 0.0
+      ],
       "charge_prob": 0.0
     },
     {
       "timestep": 57,
-      "model": "YOLOv10_L",
+      "model": "YOLOv10_N",
       "should_charge": true,
-      "battery_before": 0.00601782883178372,
-      "battery_after": 0.006377070417244025,
+      "battery_before": 0.0012359588649689906,
+      "battery_after": 0.005262421730442817,
       "clean_energy_pct": 17.54,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
-      "charge_prob": 0.0
+      "model_probs": [
+        0.9993224143981934, 0.0006776455556973815, 3.1367018407786124e-20, 0.0,
+        1.5910267137814667e-30, 1.5577584202811672e-19, 9.920371589565673e-24
+      ],
+      "charge_prob": 1.2249471185651895e-12
     },
     {
       "timestep": 58,
-      "model": "YOLOv10_X",
+      "model": "YOLOv10_B",
       "should_charge": false,
-      "battery_before": 0.006377070417244025,
-      "battery_after": 0.000321845738589387,
+      "battery_before": 0.005262421730442817,
+      "battery_after": 0.0013743244562337549,
       "clean_energy_pct": 17.54,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
+      "model_probs": [
+        0.9999982118606567, 1.7555047406858648e-6, 0.0, 0.0, 0.0, 5.0533226575577554e-24, 0.0
+      ],
       "charge_prob": 0.0
     },
     {
       "timestep": 59,
-      "model": "IDLE",
+      "model": "YOLOv10_N",
       "should_charge": true,
-      "battery_before": 0.000321845738589387,
-      "battery_after": 0.00536767907192272,
+      "battery_before": 0.0013743244562337549,
+      "battery_after": 0.005400787321707581,
       "clean_energy_pct": 17.54,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
-      "charge_prob": 0.0
+      "model_probs": [
+        0.9994814991950989, 0.0005185812478885055, 6.68386724107932e-22, 0.0, 5.814282687941001e-33,
+        8.468310634860491e-20, 2.8077667354546948e-25
+      ],
+      "charge_prob": 5.376377985931262e-14
     },
     {
       "timestep": 60,
-      "model": "YOLOv10_L",
-      "should_charge": true,
-      "battery_before": 0.00536767907192272,
-      "battery_after": 0.005726920657383024,
+      "model": "YOLOv10_B",
+      "should_charge": false,
+      "battery_before": 0.005400787321707581,
+      "battery_after": 0.0015126900474985191,
       "clean_energy_pct": 18.93,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
+      "model_probs": [
+        0.9999985694885254, 1.4420769502976327e-6, 0.0, 0.0, 0.0, 3.785385735735118e-24, 0.0
+      ],
       "charge_prob": 0.0
     },
     {
       "timestep": 61,
-      "model": "YOLOv10_L",
+      "model": "YOLOv10_N",
       "should_charge": true,
-      "battery_before": 0.005726920657383024,
-      "battery_after": 0.006086162242843327,
+      "battery_before": 0.0015126900474985191,
+      "battery_after": 0.005539152912972346,
       "clean_energy_pct": 18.93,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
-      "charge_prob": 0.0
+      "model_probs": [
+        0.9996142387390137, 0.0003857310221064836, 1.3031209070563998e-23, 0.0,
+        2.126333249308834e-35, 4.993113562728109e-20, 6.482655540904148e-27
+      ],
+      "charge_prob": 2.4866924332530996e-15
     },
     {
       "timestep": 62,
-      "model": "YOLOv10_X",
+      "model": "YOLOv10_B",
       "should_charge": false,
-      "battery_before": 0.006086162242843327,
-      "battery_after": 3.09375641886888e-5,
+      "battery_before": 0.005539152912972346,
+      "battery_after": 0.0016510556387632834,
       "clean_energy_pct": 18.93,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
+      "model_probs": [
+        0.9999988079071045, 1.1841848390758969e-6, 0.0, 0.0, 0.0, 2.8339236374385933e-24, 0.0
+      ],
       "charge_prob": 0.0
     },
     {
       "timestep": 63,
-      "model": "IDLE",
+      "model": "YOLOv10_N",
       "should_charge": true,
-      "battery_before": 3.09375641886888e-5,
-      "battery_after": 0.0050767708975220215,
+      "battery_before": 0.0016510556387632834,
+      "battery_after": 0.00567751850423711,
       "clean_energy_pct": 18.93,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
-      "charge_prob": 0.0
+      "model_probs": [
+        0.999704897403717, 0.000295074685709551, 2.6103424610095582e-25, 0.0, 8.834019255687496e-38,
+        3.9791381195195614e-20, 1.5437509340060848e-28
+      ],
+      "charge_prob": 1.324748676896089e-16
     },
     {
       "timestep": 64,
-      "model": "YOLOv10_L",
-      "should_charge": true,
-      "battery_before": 0.0050767708975220215,
-      "battery_after": 0.005436012482982326,
+      "model": "YOLOv10_B",
+      "should_charge": false,
+      "battery_before": 0.00567751850423711,
+      "battery_after": 0.0017894212300280476,
       "clean_energy_pct": 18.93,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
+      "model_probs": [
+        0.9999990463256836, 9.724152505441452e-7, 0.0, 0.0, 0.0, 2.1216287828174277e-24, 0.0
+      ],
       "charge_prob": 0.0
     },
     {
       "timestep": 65,
-      "model": "YOLOv10_L",
+      "model": "YOLOv10_N",
       "should_charge": true,
-      "battery_before": 0.005436012482982326,
-      "battery_after": 0.005795254068442629,
+      "battery_before": 0.0017894212300280476,
+      "battery_after": 0.005815884095501874,
       "clean_energy_pct": 18.93,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
-      "charge_prob": 0.0
+      "model_probs": [
+        0.9997708201408386, 0.0002291533601237461, 5.2245429602911525e-27, 0.0,
+        3.4044826450464296e-40, 2.2353856505016597e-20, 3.170630255580287e-30
+      ],
+      "charge_prob": 8.203956635785615e-18
     },
     {
       "timestep": 66,
-      "model": "YOLOv10_L",
-      "should_charge": true,
-      "battery_before": 0.005795254068442629,
-      "battery_after": 0.006154495653902934,
+      "model": "YOLOv10_B",
+      "should_charge": false,
+      "battery_before": 0.005815884095501874,
+      "battery_after": 0.0019277868212928119,
       "clean_energy_pct": 18.93,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
+      "model_probs": [
+        0.9999991655349731, 7.985128149812226e-7, 0.0, 0.0, 0.0, 1.5883601913946079e-24, 0.0
+      ],
       "charge_prob": 0.0
     },
     {
       "timestep": 67,
-      "model": "YOLOv10_X",
-      "should_charge": false,
-      "battery_before": 0.006154495653902934,
-      "battery_after": 9.927097524829558e-5,
+      "model": "YOLOv10_N",
+      "should_charge": true,
+      "battery_before": 0.0019277868212928119,
+      "battery_after": 0.005954249686766638,
       "clean_energy_pct": 18.93,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
-      "charge_prob": 0.0
+      "model_probs": [
+        0.9998170733451843, 0.0001829450047807768, 1.0850355880056065e-28, 0.0,
+        1.2695764086782843e-42, 1.2446595562814644e-20, 6.104742419646594e-32
+      ],
+      "charge_prob": 7.425859886805718e-19
     },
     {
       "timestep": 68,
-      "model": "IDLE",
-      "should_charge": true,
-      "battery_before": 9.927097524829558e-5,
-      "battery_after": 0.005145104308581628,
+      "model": "YOLOv10_B",
+      "should_charge": false,
+      "battery_before": 0.005954249686766638,
+      "battery_after": 0.002066152412557576,
       "clean_energy_pct": 18.93,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
+      "model_probs": [
+        0.9999992847442627, 6.557122560479911e-7, 0.0, 0.0, 0.0, 1.1891278438464085e-24, 0.0
+      ],
       "charge_prob": 0.0
     },
     {
       "timestep": 69,
-      "model": "YOLOv10_L",
+      "model": "YOLOv10_S",
       "should_charge": true,
-      "battery_before": 0.005145104308581628,
-      "battery_after": 0.005504345894041932,
+      "battery_before": 0.002066152412557576,
+      "battery_after": 0.005118050418417626,
       "clean_energy_pct": 18.93,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
-      "charge_prob": 0.0
+      "model_probs": [
+        0.9998564720153809, 0.00014353154983837157, 2.0797026610680197e-30, 0.0,
+        4.203895392974451e-45, 6.917125812444934e-21, 1.1452422690199067e-33
+      ],
+      "charge_prob": 5.815163070543893e-20
     },
     {
       "timestep": 70,
-      "model": "YOLOv10_L",
-      "should_charge": true,
-      "battery_before": 0.005504345894041932,
-      "battery_after": 0.005863587479502236,
+      "model": "YOLOv10_B",
+      "should_charge": false,
+      "battery_before": 0.005118050418417626,
+      "battery_after": 0.0012299531442085637,
       "clean_energy_pct": 18.93,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
+      "model_probs": [
+        0.9999978542327881, 2.156948539777659e-6, 0.0, 0.0, 0.0, 6.839294675077716e-24, 0.0
+      ],
       "charge_prob": 0.0
     },
     {
       "timestep": 71,
-      "model": "YOLOv10_L",
+      "model": "YOLOv10_N",
       "should_charge": true,
-      "battery_before": 0.005863587479502236,
-      "battery_after": 0.006222829064962541,
+      "battery_before": 0.0012299531442085637,
+      "battery_after": 0.00525641600968239,
       "clean_energy_pct": 18.93,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
-      "charge_prob": 0.0
+      "model_probs": [
+        0.9993165731430054, 0.0006834163796156645, 3.699993420233898e-20, 0.0,
+        2.0329095223459667e-30, 1.5761236393374343e-19, 1.1451013392323202e-23
+      ],
+      "charge_prob": 1.4001587432879714e-12
     },
     {
       "timestep": 72,
-      "model": "YOLOv10_X",
+      "model": "YOLOv10_B",
       "should_charge": false,
-      "battery_before": 0.006222829064962541,
-      "battery_after": 0.00016760438630790235,
+      "battery_before": 0.00525641600968239,
+      "battery_after": 0.001368318735473328,
       "clean_energy_pct": 19.96,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
+      "model_probs": [
+        0.9999982118606567, 1.7716811271384358e-6, 0.0, 0.0, 0.0, 5.12237756904854e-24, 0.0
+      ],
       "charge_prob": 0.0
     },
     {
       "timestep": 73,
-      "model": "IDLE",
+      "model": "YOLOv10_N",
       "should_charge": true,
-      "battery_before": 0.00016760438630790235,
-      "battery_after": 0.005213437719641235,
+      "battery_before": 0.001368318735473328,
+      "battery_after": 0.005394781600947154,
       "clean_energy_pct": 19.96,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
-      "charge_prob": 0.0
+      "model_probs": [
+        0.9994736313819885, 0.0005263388156890869, 7.924670976522519e-22, 0.0,
+        7.415502521722735e-33, 8.775367833058418e-20, 3.307082654909189e-25
+      ],
+      "charge_prob": 6.178290843338041e-14
     },
     {
       "timestep": 74,
-      "model": "YOLOv10_L",
-      "should_charge": true,
-      "battery_before": 0.005213437719641235,
-      "battery_after": 0.005572679305101539,
+      "model": "YOLOv10_B",
+      "should_charge": false,
+      "battery_before": 0.005394781600947154,
+      "battery_after": 0.0015066843267380922,
       "clean_energy_pct": 19.96,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
+      "model_probs": [
+        0.9999985694885254, 1.4548434137395816e-6, 0.0, 0.0, 0.0, 3.834860725127864e-24, 0.0
+      ],
       "charge_prob": 0.0
     },
     {
       "timestep": 75,
-      "model": "YOLOv10_L",
+      "model": "YOLOv10_N",
       "should_charge": true,
-      "battery_before": 0.005572679305101539,
-      "battery_after": 0.005931920890561842,
+      "battery_before": 0.0015066843267380922,
+      "battery_after": 0.005533147192211919,
       "clean_energy_pct": 19.96,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
-      "charge_prob": 0.0
+      "model_probs": [
+        0.9996092915534973, 0.00039071988430805504, 1.5482423939582765e-23, 0.0,
+        2.716456094211215e-35, 5.093472543015812e-20, 7.639387554430588e-27
+      ],
+      "charge_prob": 2.841408867497756e-15
     },
     {
       "timestep": 76,
-      "model": "YOLOv10_L",
-      "should_charge": true,
-      "battery_before": 0.005931920890561842,
-      "battery_after": 0.006291162476022147,
+      "model": "YOLOv10_B",
+      "should_charge": false,
+      "battery_before": 0.005533147192211919,
+      "battery_after": 0.0016450499180028564,
       "clean_energy_pct": 19.96,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
+      "model_probs": [
+        0.9999988079071045, 1.1946714266741765e-6, 0.0, 0.0, 0.0, 2.870995564033776e-24, 0.0
+      ],
       "charge_prob": 0.0
     },
     {
       "timestep": 77,
-      "model": "YOLOv10_X",
-      "should_charge": false,
-      "battery_before": 0.006291162476022147,
-      "battery_after": 0.00023593779736750913,
+      "model": "YOLOv10_N",
+      "should_charge": true,
+      "battery_before": 0.0016450499180028564,
+      "battery_after": 0.005671512783476683,
       "clean_energy_pct": 19.96,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
-      "charge_prob": 0.0
+      "model_probs": [
+        0.9997014403343201, 0.0002985444734804332, 3.1047235624638294e-25, 0.0,
+        1.1274645656978615e-37, 4.0700536698922354e-20, 1.825378706808858e-28
+      ],
+      "charge_prob": 1.514527335170701e-16
     },
     {
       "timestep": 78,
-      "model": "IDLE",
-      "should_charge": true,
-      "battery_before": 0.00023593779736750913,
-      "battery_after": 0.005281771130700842,
+      "model": "YOLOv10_B",
+      "should_charge": false,
+      "battery_before": 0.005671512783476683,
+      "battery_after": 0.0017834155092676207,
       "clean_energy_pct": 19.96,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
+      "model_probs": [
+        0.9999990463256836, 9.81025664259505e-7, 0.0, 0.0, 0.0, 2.1493501438877993e-24, 0.0
+      ],
       "charge_prob": 0.0
     },
     {
       "timestep": 79,
-      "model": "YOLOv10_L",
+      "model": "YOLOv10_N",
       "should_charge": true,
-      "battery_before": 0.005281771130700842,
-      "battery_after": 0.005641012716161146,
+      "battery_before": 0.0017834155092676207,
+      "battery_after": 0.005809878374741447,
       "clean_energy_pct": 19.96,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
-      "charge_prob": 0.0
+      "model_probs": [
+        0.9997685551643372, 0.00023148019681684673, 6.185779988138666e-27, 0.0,
+        4.3427080188504676e-40, 2.2936960675729662e-20, 3.7655240604862376e-30
+      ],
+      "charge_prob": 9.111175244409273e-18
     },
     {
       "timestep": 80,
-      "model": "YOLOv10_L",
-      "should_charge": true,
-      "battery_before": 0.005641012716161146,
-      "battery_after": 0.006000254301621449,
+      "model": "YOLOv10_B",
+      "should_charge": false,
+      "battery_before": 0.005809878374741447,
+      "battery_after": 0.001921781100532385,
       "clean_energy_pct": 19.96,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
+      "model_probs": [
+        0.9999991655349731, 8.055857279032352e-7, 0.0, 0.0, 0.0, 1.6091258700408063e-24, 0.0
+      ],
       "charge_prob": 0.0
     },
     {
       "timestep": 81,
-      "model": "YOLOv10_L",
+      "model": "YOLOv10_N",
       "should_charge": true,
-      "battery_before": 0.006000254301621449,
-      "battery_after": 0.006359495887081754,
+      "battery_before": 0.001921781100532385,
+      "battery_after": 0.005948243966006211,
       "clean_energy_pct": 19.96,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
-      "charge_prob": 0.0
+      "model_probs": [
+        0.999815046787262, 0.00018493561947252601, 1.288853142901462e-28, 0.0,
+        1.6255062186167878e-42, 1.2772293082245997e-20, 7.257737220846968e-32
+      ],
+      "charge_prob": 8.295909651592189e-19
     },
     {
       "timestep": 82,
-      "model": "YOLOv10_X",
+      "model": "YOLOv10_B",
       "should_charge": false,
-      "battery_before": 0.006359495887081754,
-      "battery_after": 0.0003042712084271159,
+      "battery_before": 0.005948243966006211,
+      "battery_after": 0.002060146691797149,
       "clean_energy_pct": 19.96,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
+      "model_probs": [
+        0.9999992847442627, 6.61521539768728e-7, 0.0, 0.0, 0.0, 1.2046787574786435e-24, 0.0
+      ],
       "charge_prob": 0.0
     },
     {
       "timestep": 83,
-      "model": "IDLE",
+      "model": "YOLOv10_S",
       "should_charge": true,
-      "battery_before": 0.0003042712084271159,
-      "battery_after": 0.005350104541760449,
+      "battery_before": 0.002060146691797149,
+      "battery_after": 0.005112044697657199,
       "clean_energy_pct": 19.96,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
-      "charge_prob": 0.0
+      "model_probs": [
+        0.9998549222946167, 0.00014507870946545154, 2.47038244034347e-30, 0.0,
+        5.605193857299268e-45, 7.098160428733273e-21, 1.3615952185311142e-33
+      ],
+      "charge_prob": 6.494785647809971e-20
     },
     {
       "timestep": 84,
-      "model": "YOLOv10_L",
-      "should_charge": true,
-      "battery_before": 0.005350104541760449,
-      "battery_after": 0.005709346127220753,
+      "model": "YOLOv10_B",
+      "should_charge": false,
+      "battery_before": 0.005112044697657199,
+      "battery_after": 0.0012239474234481368,
       "clean_energy_pct": 20.61,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
+      "model_probs": [
+        0.9999978542327881, 2.1764087705378188e-6, 0.0, 0.0, 0.0, 6.930534327375578e-24, 0.0
+      ],
       "charge_prob": 0.0
     },
     {
       "timestep": 85,
-      "model": "YOLOv10_L",
+      "model": "YOLOv10_N",
       "should_charge": true,
-      "battery_before": 0.005709346127220753,
-      "battery_after": 0.006068587712681056,
+      "battery_before": 0.0012239474234481368,
+      "battery_after": 0.005250410288921963,
       "clean_energy_pct": 20.61,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
-      "charge_prob": 0.0
+      "model_probs": [
+        0.9993107318878174, 0.0006892961682751775, 4.365190096864022e-20, 0.0,
+        2.5978353683116024e-30, 1.594644471746438e-19, 1.3218628222148217e-23
+      ],
+      "charge_prob": 1.6007678039012263e-12
     },
     {
       "timestep": 86,
-      "model": "YOLOv10_X",
+      "model": "YOLOv10_B",
       "should_charge": false,
-      "battery_before": 0.006068587712681056,
-      "battery_after": 1.3363034026417711e-5,
+      "battery_before": 0.005250410288921963,
+      "battery_after": 0.001362313014712901,
       "clean_energy_pct": 20.61,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
+      "model_probs": [
+        0.9999982118606567, 1.7871967656901688e-6, 0.0, 0.0, 0.0, 5.188554321526625e-24, 0.0
+      ],
       "charge_prob": 0.0
     },
     {
       "timestep": 87,
-      "model": "IDLE",
+      "model": "YOLOv10_N",
       "should_charge": true,
-      "battery_before": 1.3363034026417711e-5,
-      "battery_after": 0.0050591963673597504,
+      "battery_before": 0.001362313014712901,
+      "battery_after": 0.0053887758801867275,
       "clean_energy_pct": 20.61,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
-      "charge_prob": 0.0
+      "model_probs": [
+        0.9994661211967468, 0.0005339412018656731, 9.38475380981015e-22, 0.0, 9.447668502749504e-33,
+        9.091098149225933e-20, 3.892922564081554e-25
+      ],
+      "charge_prob": 7.09066323451718e-14
     },
     {
       "timestep": 88,
-      "model": "YOLOv10_L",
-      "should_charge": true,
-      "battery_before": 0.0050591963673597504,
-      "battery_after": 0.0054184379528200545,
+      "model": "YOLOv10_B",
+      "should_charge": false,
+      "battery_before": 0.0053887758801867275,
+      "battery_after": 0.0015006786059776653,
       "clean_energy_pct": 20.61,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
+      "model_probs": [
+        0.9999985694885254, 1.4675871398139861e-6, 0.0, 0.0, 0.0, 3.884418939346111e-24, 0.0
+      ],
       "charge_prob": 0.0
     },
     {
       "timestep": 89,
-      "model": "YOLOv10_L",
+      "model": "YOLOv10_N",
       "should_charge": true,
-      "battery_before": 0.0054184379528200545,
-      "battery_after": 0.005777679538280358,
+      "battery_before": 0.0015006786059776653,
+      "battery_after": 0.005527141471451492,
       "clean_energy_pct": 20.61,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
-      "charge_prob": 0.0
+      "model_probs": [
+        0.9996042847633362, 0.00039573133108206093, 1.8390021663542664e-23, 0.0,
+        3.4694824819171503e-35, 5.195630318018391e-20, 9.001386722173775e-27
+      ],
+      "charge_prob": 3.2458082310218503e-15
     },
     {
       "timestep": 90,
-      "model": "YOLOv10_L",
-      "should_charge": true,
-      "battery_before": 0.005777679538280358,
-      "battery_after": 0.006136921123740663,
+      "model": "YOLOv10_B",
+      "should_charge": false,
+      "battery_before": 0.005527141471451492,
+      "battery_after": 0.0016390441972424295,
       "clean_energy_pct": 20.61,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
+      "model_probs": [
+        0.9999988079071045, 1.2051327757944819e-6, 0.0, 0.0, 0.0, 2.9080753792380106e-24, 0.0
+      ],
       "charge_prob": 0.0
     },
     {
       "timestep": 91,
-      "model": "YOLOv10_X",
-      "should_charge": false,
-      "battery_before": 0.006136921123740663,
-      "battery_after": 8.169644508602449e-5,
+      "model": "YOLOv10_N",
+      "should_charge": true,
+      "battery_before": 0.0016390441972424295,
+      "battery_after": 0.005665507062716256,
       "clean_energy_pct": 20.61,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
-      "charge_prob": 0.0
+      "model_probs": [
+        0.9996979236602783, 0.00030205308576114476, 3.6899200569603736e-25, 0.0,
+        1.4375732610994693e-37, 4.160792151915035e-20, 2.1580218360553973e-28
+      ],
+      "charge_prob": 1.7278508624010225e-16
     },
     {
       "timestep": 92,
-      "model": "IDLE",
-      "should_charge": true,
-      "battery_before": 8.169644508602449e-5,
-      "battery_after": 0.005127529778419357,
+      "model": "YOLOv10_B",
+      "should_charge": false,
+      "battery_before": 0.005665507062716256,
+      "battery_after": 0.0017774097885071938,
       "clean_energy_pct": 20.61,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
+      "model_probs": [
+        0.9999990463256836, 9.896190249492065e-7, 0.0, 0.0, 0.0, 2.177142699654867e-24, 0.0
+      ],
       "charge_prob": 0.0
     },
     {
       "timestep": 93,
-      "model": "YOLOv10_L",
+      "model": "YOLOv10_N",
       "should_charge": true,
-      "battery_before": 0.005127529778419357,
-      "battery_after": 0.005486771363879661,
+      "battery_before": 0.0017774097885071938,
+      "battery_after": 0.00580387265398102,
       "clean_energy_pct": 20.61,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
-      "charge_prob": 0.0
+      "model_probs": [
+        0.9997661709785461, 0.0002337967453058809, 7.321159986743663e-27, 0.0,
+        5.537342985656661e-40, 2.3532309381330498e-20, 4.4710113831830876e-30
+      ],
+      "charge_prob": 1.0114508931489144e-17
     },
     {
       "timestep": 94,
-      "model": "YOLOv10_L",
-      "should_charge": true,
-      "battery_before": 0.005486771363879661,
-      "battery_after": 0.0058460129493399645,
+      "model": "YOLOv10_B",
+      "should_charge": false,
+      "battery_before": 0.00580387265398102,
+      "battery_after": 0.001915775379771958,
       "clean_energy_pct": 20.61,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
+      "model_probs": [
+        0.9999991655349731, 8.126384045681334e-7, 0.0, 0.0, 0.0, 1.629920736540498e-24, 0.0
+      ],
       "charge_prob": 0.0
     },
     {
       "timestep": 95,
-      "model": "YOLOv10_L",
+      "model": "YOLOv10_N",
       "should_charge": true,
-      "battery_before": 0.0058460129493399645,
-      "battery_after": 0.0062052545348002695,
+      "battery_before": 0.001915775379771958,
+      "battery_after": 0.0059422382452457845,
       "clean_energy_pct": 20.61,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
-      "charge_prob": 0.0
+      "model_probs": [
+        0.9998131394386292, 0.00018692259618546814, 1.5304546747818999e-28, 0.0,
+        2.0795269210580285e-42, 1.3104765566323329e-20, 8.626785532739776e-32
+      ],
+      "charge_prob": 9.264752698863165e-19
     },
     {
       "timestep": 96,
-      "model": "YOLOv10_X",
+      "model": "YOLOv10_B",
       "should_charge": false,
-      "battery_before": 0.0062052545348002695,
-      "battery_after": 0.00015002985614563126,
+      "battery_before": 0.0059422382452457845,
+      "battery_after": 0.0020541409710367223,
       "clean_energy_pct": 20.88,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
+      "model_probs": [
+        0.9999992847442627, 6.673587904515443e-7, 0.0, 0.0, 0.0, 1.2203679189845184e-24, 0.0
+      ],
       "charge_prob": 0.0
     },
     {
       "timestep": 97,
-      "model": "IDLE",
+      "model": "YOLOv10_S",
       "should_charge": true,
-      "battery_before": 0.00015002985614563126,
-      "battery_after": 0.005195863189478964,
+      "battery_before": 0.0020541409710367223,
+      "battery_after": 0.005106038976896772,
       "clean_energy_pct": 20.88,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
-      "charge_prob": 0.0
+      "model_probs": [
+        0.9998533725738525, 0.00014663892216049135, 2.934318839483069e-30, 0.0,
+        7.006492321624085e-45, 7.283767156610528e-21, 1.618758576837987e-33
+      ],
+      "charge_prob": 7.253698010433232e-20
     },
     {
       "timestep": 98,
-      "model": "YOLOv10_L",
-      "should_charge": true,
-      "battery_before": 0.005195863189478964,
-      "battery_after": 0.005555104774939268,
+      "model": "YOLOv10_B",
+      "should_charge": false,
+      "battery_before": 0.005106038976896772,
+      "battery_after": 0.0012179417026877098,
       "clean_energy_pct": 20.88,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
+      "model_probs": [
+        0.9999978542327881, 2.195253046011203e-6, 0.0, 0.0, 0.0, 7.018973523459906e-24, 0.0
+      ],
       "charge_prob": 0.0
     },
     {
       "timestep": 99,
-      "model": "YOLOv10_L",
+      "model": "YOLOv10_N",
       "should_charge": true,
-      "battery_before": 0.005555104774939268,
-      "battery_after": 0.005914346360399571,
+      "battery_before": 0.0012179417026877098,
+      "battery_after": 0.005244404568161536,
       "clean_energy_pct": 20.88,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
-      "charge_prob": 0.0
+      "model_probs": [
+        0.999305009841919, 0.0006949303206056356, 5.145580397962678e-20, 0.0, 3.317647547286217e-30,
+        1.6136724692685133e-19, 1.5254910143629783e-23
+      ],
+      "charge_prob": 1.8282701741423324e-12
     },
     {
       "timestep": 100,
-      "model": "YOLOv10_L",
-      "should_charge": true,
-      "battery_before": 0.005914346360399571,
-      "battery_after": 0.006273587945859876,
+      "model": "YOLOv10_B",
+      "should_charge": false,
+      "battery_before": 0.005244404568161536,
+      "battery_after": 0.001356307293952474,
       "clean_energy_pct": 20.88,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
+      "model_probs": [
+        0.9999982118606567, 1.8026746602117782e-6, 0.0, 0.0, 0.0, 5.25476420616273e-24, 0.0
+      ],
       "charge_prob": 0.0
     },
     {
       "timestep": 101,
-      "model": "YOLOv10_X",
-      "should_charge": false,
-      "battery_before": 0.006273587945859876,
-      "battery_after": 0.00021836326720523803,
+      "model": "YOLOv10_N",
+      "should_charge": true,
+      "battery_before": 0.001356307293952474,
+      "battery_after": 0.0053827701594263005,
       "clean_energy_pct": 20.88,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
-      "charge_prob": 0.0
+      "model_probs": [
+        0.999458372592926, 0.0005415927735157311, 1.1110965243470205e-21, 0.0,
+        1.203370244262878e-32, 9.417648375546555e-20, 4.581946712251992e-25
+      ],
+      "charge_prob": 8.135441783132039e-14
     },
     {
       "timestep": 102,
-      "model": "IDLE",
-      "should_charge": true,
-      "battery_before": 0.00021836326720523803,
-      "battery_after": 0.005264196600538571,
+      "model": "YOLOv10_B",
+      "should_charge": false,
+      "battery_before": 0.0053827701594263005,
+      "battery_after": 0.0014946728852172383,
       "clean_energy_pct": 20.88,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
+      "model_probs": [
+        0.9999985694885254, 1.4802941450398066e-6, 0.0, 0.0, 0.0, 3.9339870143256734e-24, 0.0
+      ],
       "charge_prob": 0.0
     },
     {
       "timestep": 103,
-      "model": "YOLOv10_L",
+      "model": "YOLOv10_N",
       "should_charge": true,
-      "battery_before": 0.005264196600538571,
-      "battery_after": 0.005623438185998875,
+      "battery_before": 0.0014946728852172383,
+      "battery_after": 0.005521135750691065,
       "clean_energy_pct": 20.88,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
-      "charge_prob": 0.0
+      "model_probs": [
+        0.999599277973175, 0.0004007612296845764, 2.183774771614196e-23, 0.0, 4.430173320239971e-35,
+        5.299533573360428e-20, 1.0604798126957991e-26
+      ],
+      "charge_prob": 3.706716127072594e-15
     },
     {
       "timestep": 104,
-      "model": "YOLOv10_L",
-      "should_charge": true,
-      "battery_before": 0.005623438185998875,
-      "battery_after": 0.005982679771459178,
+      "model": "YOLOv10_B",
+      "should_charge": false,
+      "battery_before": 0.005521135750691065,
+      "battery_after": 0.0016330384764820026,
       "clean_energy_pct": 20.88,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
+      "model_probs": [
+        0.9999988079071045, 1.2155685453762999e-6, 0.0, 0.0, 0.0, 2.9451735354582917e-24, 0.0
+      ],
       "charge_prob": 0.0
     },
     {
       "timestep": 105,
-      "model": "YOLOv10_L",
+      "model": "YOLOv10_N",
       "should_charge": true,
-      "battery_before": 0.005982679771459178,
-      "battery_after": 0.006341921356919483,
+      "battery_before": 0.0016330384764820026,
+      "battery_after": 0.005659501341955829,
       "clean_energy_pct": 20.88,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
-      "charge_prob": 0.0
+      "model_probs": [
+        0.9996941089630127, 0.0003058704605791718, 4.370420070011833e-25, 0.0, 1.82427110115946e-37,
+        4.2391839939432e-20, 2.5517984354497837e-28
+      ],
+      "charge_prob": 1.9445061407898095e-16
     },
     {
       "timestep": 106,
-      "model": "YOLOv10_X",
+      "model": "YOLOv10_B",
       "should_charge": false,
-      "battery_before": 0.006341921356919483,
-      "battery_after": 0.0002866966782648448,
+      "battery_before": 0.005659501341955829,
+      "battery_after": 0.0017714040677467668,
       "clean_energy_pct": 20.88,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
+      "model_probs": [
+        0.9999990463256836, 9.981828270611004e-7, 0.0, 0.0, 0.0, 2.2049080397207047e-24, 0.0
+      ],
       "charge_prob": 0.0
     },
     {
       "timestep": 107,
-      "model": "IDLE",
+      "model": "YOLOv10_N",
       "should_charge": true,
-      "battery_before": 0.0002866966782648448,
-      "battery_after": 0.0053325300115981775,
+      "battery_before": 0.0017714040677467668,
+      "battery_after": 0.005797866933220593,
       "clean_energy_pct": 20.88,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
-      "charge_prob": 0.0
+      "model_probs": [
+        0.9997639060020447, 0.00023610272910445929, 8.661698131930554e-27, 0.0,
+        7.058130170034455e-40, 2.4140075489642434e-20, 5.307541687635029e-30
+      ],
+      "charge_prob": 1.122357863472983e-17
     },
     {
       "timestep": 108,
-      "model": "YOLOv10_L",
-      "should_charge": true,
-      "battery_before": 0.0053325300115981775,
-      "battery_after": 0.005691771597058482,
+      "model": "YOLOv10_B",
+      "should_charge": false,
+      "battery_before": 0.005797866933220593,
+      "battery_after": 0.001909769659011531,
       "clean_energy_pct": 20.46,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
+      "model_probs": [
+        0.9999991655349731, 8.195901841645536e-7, 0.0, 0.0, 0.0, 1.6504239217204841e-24, 0.0
+      ],
       "charge_prob": 0.0
     },
     {
       "timestep": 109,
-      "model": "YOLOv10_L",
+      "model": "YOLOv10_N",
       "should_charge": true,
-      "battery_before": 0.005691771597058482,
-      "battery_after": 0.006051013182518785,
+      "battery_before": 0.001909769659011531,
+      "battery_after": 0.0059362325244853575,
       "clean_energy_pct": 20.46,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
-      "charge_prob": 0.0
+      "model_probs": [
+        0.9998112320899963, 0.00018873643421102315, 1.8099565820379342e-28, 0.0,
+        2.649855396038229e-42, 1.3441430499013112e-20, 1.0238368892060343e-31
+      ],
+      "charge_prob": 1.0275901381575284e-18
     },
     {
       "timestep": 110,
-      "model": "YOLOv10_L",
-      "should_charge": true,
-      "battery_before": 0.006051013182518785,
-      "battery_after": 0.00641025476797909,
+      "model": "YOLOv10_B",
+      "should_charge": false,
+      "battery_before": 0.0059362325244853575,
+      "battery_after": 0.0020481352502762953,
       "clean_energy_pct": 20.46,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
+      "model_probs": [
+        0.9999992847442627, 6.730183486070018e-7, 0.0, 0.0, 0.0, 1.235601414710015e-24, 0.0
+      ],
       "charge_prob": 0.0
     },
     {
       "timestep": 111,
-      "model": "YOLOv10_X",
-      "should_charge": false,
-      "battery_before": 0.00641025476797909,
-      "battery_after": 0.0003550300893244516,
+      "model": "YOLOv10_S",
+      "should_charge": true,
+      "battery_before": 0.0020481352502762953,
+      "battery_after": 0.005100033256136345,
       "clean_energy_pct": 20.46,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
-      "charge_prob": 0.0
+      "model_probs": [
+        0.9998518228530884, 0.00014816643670201302, 3.4830962142548484e-30, 0.0,
+        9.80908925027372e-45, 7.470948274149762e-21, 1.9233912439314443e-33
+      ],
+      "charge_prob": 8.09971313779318e-20
     },
     {
       "timestep": 112,
-      "model": "IDLE",
-      "should_charge": true,
-      "battery_before": 0.0003550300893244516,
-      "battery_after": 0.005400863422657784,
+      "model": "YOLOv10_B",
+      "should_charge": false,
+      "battery_before": 0.005100033256136345,
+      "battery_after": 0.001211935981927283,
       "clean_energy_pct": 20.46,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
+      "model_probs": [
+        0.9999977350234985, 2.2138697204354685e-6, 0.0, 0.0, 0.0, 7.106479497093357e-24, 0.0
+      ],
       "charge_prob": 0.0
     },
     {
       "timestep": 113,
-      "model": "YOLOv10_L",
+      "model": "YOLOv10_N",
       "should_charge": true,
-      "battery_before": 0.005400863422657784,
-      "battery_after": 0.005760105008118088,
+      "battery_before": 0.001211935981927283,
+      "battery_after": 0.005238398847401109,
       "clean_energy_pct": 20.46,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
-      "charge_prob": 0.0
+      "model_probs": [
+        0.9992995262145996, 0.0007004349608905613, 6.062641292652981e-20, 0.0,
+        4.2355498965212884e-30, 1.6330587393934007e-19, 1.7602056904309983e-23
+      ],
+      "charge_prob": 2.0871338511641024e-12
     },
     {
       "timestep": 114,
-      "model": "YOLOv10_L",
-      "should_charge": true,
-      "battery_before": 0.005760105008118088,
-      "battery_after": 0.006119346593578392,
+      "model": "YOLOv10_B",
+      "should_charge": false,
+      "battery_before": 0.005238398847401109,
+      "battery_after": 0.0013503015731920471,
       "clean_energy_pct": 20.46,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
+      "model_probs": [
+        0.9999982118606567, 1.8179536027673748e-6, 0.0, 0.0, 0.0, 5.3202361114220004e-24, 0.0
+      ],
       "charge_prob": 0.0
     },
     {
       "timestep": 115,
-      "model": "YOLOv10_X",
-      "should_charge": false,
-      "battery_before": 0.006119346593578392,
-      "battery_after": 6.41219149237534e-5,
+      "model": "YOLOv10_N",
+      "should_charge": true,
+      "battery_before": 0.0013503015731920471,
+      "battery_after": 0.005376764438665874,
       "clean_energy_pct": 20.46,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
-      "charge_prob": 0.0
+      "model_probs": [
+        0.9994507431983948, 0.0005492440541274846, 1.3148573019252394e-21, 0.0,
+        1.532127875791849e-32, 9.754811716867144e-20, 5.391648829550877e-25
+      ],
+      "charge_prob": 9.329376057494801e-14
     },
     {
       "timestep": 116,
-      "model": "IDLE",
-      "should_charge": true,
-      "battery_before": 6.41219149237534e-5,
-      "battery_after": 0.005109955248257086,
+      "model": "YOLOv10_B",
+      "should_charge": false,
+      "battery_before": 0.005376764438665874,
+      "battery_after": 0.0014886671644568114,
       "clean_energy_pct": 20.46,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
+      "model_probs": [
+        0.9999984502792358, 1.4928448308637599e-6, 0.0, 0.0, 0.0, 3.983032074525074e-24, 0.0
+      ],
       "charge_prob": 0.0
     },
     {
       "timestep": 117,
-      "model": "YOLOv10_L",
+      "model": "YOLOv10_N",
       "should_charge": true,
-      "battery_before": 0.005109955248257086,
-      "battery_after": 0.00546919683371739,
+      "battery_before": 0.0014886671644568114,
+      "battery_after": 0.005515130029930638,
       "clean_energy_pct": 20.46,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
-      "charge_prob": 0.0
+      "model_probs": [
+        0.9995942711830139, 0.0004057741316501051, 2.591958540790687e-23, 0.0, 5.65441653529625e-35,
+        5.404978745063052e-20, 1.2490867484472233e-26
+      ],
+      "charge_prob": 4.2308939961514455e-15
     },
     {
       "timestep": 118,
-      "model": "YOLOv10_L",
-      "should_charge": true,
-      "battery_before": 0.00546919683371739,
-      "battery_after": 0.0058284384191776934,
+      "model": "YOLOv10_B",
+      "should_charge": false,
+      "battery_before": 0.005515130029930638,
+      "battery_after": 0.0016270327557215756,
       "clean_energy_pct": 20.46,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
+      "model_probs": [
+        0.9999988079071045, 1.2258736887815758e-6, 0.0, 0.0, 0.0, 2.9818916579374827e-24, 0.0
+      ],
       "charge_prob": 0.0
     },
     {
       "timestep": 119,
-      "model": "YOLOv10_L",
+      "model": "YOLOv10_N",
       "should_charge": true,
-      "battery_before": 0.0058284384191776934,
-      "battery_after": 0.006187680004637998,
+      "battery_before": 0.0016270327557215756,
+      "battery_after": 0.005653495621195402,
       "clean_energy_pct": 20.46,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
-      "charge_prob": 0.0
+      "model_probs": [
+        0.9996904134750366, 0.0003096513682976365, 5.173260576549492e-25, 0.0,
+        2.3135581138965477e-37, 4.3183774903072024e-20, 3.0161620524946637e-28
+      ],
+      "charge_prob": 2.1873682215199506e-16
     },
     {
       "timestep": 120,
-      "model": "YOLOv10_X",
+      "model": "YOLOv10_B",
       "should_charge": false,
-      "battery_before": 0.006187680004637998,
-      "battery_after": 0.00013245532598336017,
+      "battery_before": 0.005653495621195402,
+      "battery_after": 0.0017653983469863399,
       "clean_energy_pct": 19.53,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
+      "model_probs": [
+        0.9999990463256836, 1.0064079560834216e-6, 0.0, 0.0, 0.0, 2.231545703122529e-24, 0.0
+      ],
       "charge_prob": 0.0
     },
     {
       "timestep": 121,
-      "model": "IDLE",
+      "model": "YOLOv10_N",
       "should_charge": true,
-      "battery_before": 0.00013245532598336017,
-      "battery_after": 0.005178288659316693,
+      "battery_before": 0.0017653983469863399,
+      "battery_after": 0.005791861212460166,
       "clean_energy_pct": 19.53,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
-      "charge_prob": 0.0
+      "model_probs": [
+        0.9997617602348328, 0.00023828462872188538, 1.023152362960059e-26, 0.0,
+        8.982393221245294e-40, 2.475022458897686e-20, 6.294726733512086e-30
+      ],
+      "charge_prob": 1.2432139140506556e-17
     },
     {
       "timestep": 122,
-      "model": "YOLOv10_L",
-      "should_charge": true,
-      "battery_before": 0.005178288659316693,
-      "battery_after": 0.005537530244776997,
+      "model": "YOLOv10_B",
+      "should_charge": false,
+      "battery_before": 0.005791861212460166,
+      "battery_after": 0.0019037639382511041,
       "clean_energy_pct": 19.53,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
+      "model_probs": [
+        0.9999991655349731, 8.26430436973169e-7, 0.0, 0.0, 0.0, 1.6706431169745907e-24, 0.0
+      ],
       "charge_prob": 0.0
     },
     {
       "timestep": 123,
-      "model": "YOLOv10_L",
+      "model": "YOLOv10_N",
       "should_charge": true,
-      "battery_before": 0.005537530244776997,
-      "battery_after": 0.0058967718302373,
+      "battery_before": 0.0019037639382511041,
+      "battery_after": 0.005930226803724931,
       "clean_energy_pct": 19.53,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
-      "charge_prob": 0.0
+      "model_probs": [
+        0.9998095631599426, 0.00019051085109822452, 2.1388708701708967e-28, 0.0,
+        3.3743267020941595e-42, 1.3783014894525598e-20, 1.2145548526057613e-31
+      ],
+      "charge_prob": 1.1387626954967724e-18
     },
     {
       "timestep": 124,
-      "model": "YOLOv10_L",
-      "should_charge": true,
-      "battery_before": 0.0058967718302373,
-      "battery_after": 0.006256013415697605,
+      "model": "YOLOv10_B",
+      "should_charge": false,
+      "battery_before": 0.005930226803724931,
+      "battery_after": 0.0020421295295158684,
       "clean_energy_pct": 19.53,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
+      "model_probs": [
+        0.9999992847442627, 6.786365815969475e-7, 0.0, 0.0, 0.0, 1.2507243713011676e-24, 0.0
+      ],
       "charge_prob": 0.0
     },
     {
       "timestep": 125,
-      "model": "YOLOv10_X",
-      "should_charge": false,
-      "battery_before": 0.006256013415697605,
-      "battery_after": 0.00020078873704296694,
+      "model": "YOLOv10_S",
+      "should_charge": true,
+      "battery_before": 0.0020421295295158684,
+      "battery_after": 0.005094027535375918,
       "clean_energy_pct": 19.53,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
-      "charge_prob": 0.0
+      "model_probs": [
+        0.9998502731323242, 0.00014969901531003416, 4.1334962981693394e-30, 0.0,
+        1.1210387714598537e-44, 7.661567361109919e-21, 2.2847945943688565e-33
+      ],
+      "charge_prob": 9.045159898425977e-20
     },
     {
       "timestep": 126,
-      "model": "IDLE",
-      "should_charge": true,
-      "battery_before": 0.00020078873704296694,
-      "battery_after": 0.0052466220703763,
+      "model": "YOLOv10_B",
+      "should_charge": false,
+      "battery_before": 0.005094027535375918,
+      "battery_after": 0.001205930261166856,
       "clean_energy_pct": 19.53,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
+      "model_probs": [
+        0.9999977350234985, 2.232352926512249e-6, 0.0, 0.0, 0.0, 7.193567374447041e-24, 0.0
+      ],
       "charge_prob": 0.0
     },
     {
       "timestep": 127,
-      "model": "YOLOv10_L",
+      "model": "YOLOv10_N",
       "should_charge": true,
-      "battery_before": 0.0052466220703763,
-      "battery_after": 0.005605863655836604,
+      "battery_before": 0.001205930261166856,
+      "battery_after": 0.005232393126640682,
       "clean_energy_pct": 19.53,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
-      "charge_prob": 0.0
+      "model_probs": [
+        0.9992941617965698, 0.0007058728951960802, 7.140937783305769e-20, 0.0,
+        5.406132749827196e-30, 1.6527789836906063e-19, 2.0308248972836096e-23
+      ],
+      "charge_prob": 2.3817911618678744e-12
     },
     {
       "timestep": 128,
-      "model": "YOLOv10_L",
-      "should_charge": true,
-      "battery_before": 0.005605863655836604,
-      "battery_after": 0.005965105241296907,
+      "model": "YOLOv10_B",
+      "should_charge": false,
+      "battery_before": 0.005232393126640682,
+      "battery_after": 0.0013442958524316202,
       "clean_energy_pct": 19.53,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
+      "model_probs": [
+        0.9999982118606567, 1.8331365936319344e-6, 0.0, 0.0, 0.0, 5.385496207528219e-24, 0.0
+      ],
       "charge_prob": 0.0
     },
     {
       "timestep": 129,
-      "model": "YOLOv10_L",
+      "model": "YOLOv10_N",
       "should_charge": true,
-      "battery_before": 0.005965105241296907,
-      "battery_after": 0.006324346826757212,
+      "battery_before": 0.0013442958524316202,
+      "battery_after": 0.005370758717905447,
       "clean_energy_pct": 19.53,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
-      "charge_prob": 0.0
+      "model_probs": [
+        0.9994431138038635, 0.000556919549126178, 1.5554449843237574e-21, 0.0,
+        1.950046386488706e-32, 1.0103237639215525e-19, 6.343349361056005e-25
+      ],
+      "charge_prob": 1.0694488914234079e-13
     },
     {
       "timestep": 130,
-      "model": "YOLOv10_X",
+      "model": "YOLOv10_B",
       "should_charge": false,
-      "battery_before": 0.006324346826757212,
-      "battery_after": 0.0002691221481025737,
+      "battery_before": 0.005370758717905447,
+      "battery_after": 0.0014826614436963845,
       "clean_energy_pct": 19.53,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
+      "model_probs": [
+        0.9999984502792358, 1.505311047367286e-6, 0.0, 0.0, 0.0, 4.0318436318965295e-24, 0.0
+      ],
       "charge_prob": 0.0
     },
     {
       "timestep": 131,
-      "model": "IDLE",
+      "model": "YOLOv10_N",
       "should_charge": true,
-      "battery_before": 0.0002691221481025737,
-      "battery_after": 0.0053149554814359064,
+      "battery_before": 0.0014826614436963845,
+      "battery_after": 0.005509124309170211,
       "clean_energy_pct": 19.53,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
-      "charge_prob": 0.0
+      "model_probs": [
+        0.9995892643928528, 0.00041078904177993536, 3.075347102188975e-23, 0.0,
+        7.214437587969066e-35, 5.512185552976473e-20, 1.470985078105732e-26
+      ],
+      "charge_prob": 4.827392385299816e-15
     },
     {
       "timestep": 132,
-      "model": "YOLOv10_L",
-      "should_charge": true,
-      "battery_before": 0.0053149554814359064,
-      "battery_after": 0.0056741970668962105,
+      "model": "YOLOv10_B",
+      "should_charge": false,
+      "battery_before": 0.005509124309170211,
+      "battery_after": 0.0016210270349611487,
       "clean_energy_pct": 18.6,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
+      "model_probs": [
+        0.9999988079071045, 1.235814806932467e-6, 0.0, 0.0, 0.0, 3.017271477890966e-24, 0.0
+      ],
       "charge_prob": 0.0
     },
     {
       "timestep": 133,
-      "model": "YOLOv10_L",
+      "model": "YOLOv10_N",
       "should_charge": true,
-      "battery_before": 0.0056741970668962105,
-      "battery_after": 0.006033438652356514,
+      "battery_before": 0.0016210270349611487,
+      "battery_after": 0.005647489900434975,
       "clean_energy_pct": 18.6,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
-      "charge_prob": 0.0
+      "model_probs": [
+        0.9996867179870605, 0.0003133008722215891, 6.115668326591116e-25, 0.0,
+        2.930407904230298e-37, 4.3975073325381296e-20, 3.561915468989348e-28
+      ],
+      "charge_prob": 2.458235990813177e-16
     },
     {
       "timestep": 134,
-      "model": "YOLOv10_L",
-      "should_charge": true,
-      "battery_before": 0.006033438652356514,
-      "battery_after": 0.006392680237816819,
+      "model": "YOLOv10_B",
+      "should_charge": false,
+      "battery_before": 0.005647489900434975,
+      "battery_after": 0.001759392626225913,
       "clean_energy_pct": 18.6,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
+      "model_probs": [
+        0.999998927116394, 1.0148120281883166e-6, 0.0, 0.0, 0.0, 2.258892749693373e-24, 0.0
+      ],
       "charge_prob": 0.0
     },
     {
       "timestep": 135,
-      "model": "YOLOv10_X",
-      "should_charge": false,
-      "battery_before": 0.006392680237816819,
-      "battery_after": 0.0003374555591621805,
+      "model": "YOLOv10_N",
+      "should_charge": true,
+      "battery_before": 0.001759392626225913,
+      "battery_after": 0.005785855491699739,
       "clean_energy_pct": 18.6,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
-      "charge_prob": 0.0
+      "model_probs": [
+        0.9997594952583313, 0.00024052520166151226, 1.2090840279443338e-26, 0.0,
+        1.1435912689446973e-39, 2.53792792889521e-20, 7.467290059700259e-30
+      ],
+      "charge_prob": 1.3777143915504517e-17
     },
     {
       "timestep": 136,
-      "model": "IDLE",
-      "should_charge": true,
-      "battery_before": 0.0003374555591621805,
-      "battery_after": 0.005383288892495513,
+      "model": "YOLOv10_B",
+      "should_charge": false,
+      "battery_before": 0.005785855491699739,
+      "battery_after": 0.0018977582174906772,
       "clean_energy_pct": 18.6,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
+      "model_probs": [
+        0.9999991655349731, 8.333284995387658e-7, 0.0, 0.0, 0.0, 1.691116621263018e-24, 0.0
+      ],
       "charge_prob": 0.0
     },
     {
       "timestep": 137,
-      "model": "YOLOv10_L",
+      "model": "YOLOv10_N",
       "should_charge": true,
-      "battery_before": 0.005383288892495513,
-      "battery_after": 0.005742530477955817,
+      "battery_before": 0.0018977582174906772,
+      "battery_after": 0.005924221082964504,
       "clean_energy_pct": 18.6,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
-      "charge_prob": 0.0
+      "model_probs": [
+        0.9998077750205994, 0.00019230211910326034, 2.5275377366815807e-28, 0.0,
+        4.2935784946912395e-42, 1.4133330730703207e-20, 1.4408101261206775e-31
+      ],
+      "charge_prob": 1.2619627691352672e-18
     },
     {
       "timestep": 138,
-      "model": "YOLOv10_L",
-      "should_charge": true,
-      "battery_before": 0.005742530477955817,
-      "battery_after": 0.0061017720634161205,
+      "model": "YOLOv10_B",
+      "should_charge": false,
+      "battery_before": 0.005924221082964504,
+      "battery_after": 0.0020361238087554414,
       "clean_energy_pct": 18.6,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
+      "model_probs": [
+        0.9999992847442627, 6.843004030088196e-7, 0.0, 0.0, 0.0, 1.2660614050204745e-24, 0.0
+      ],
       "charge_prob": 0.0
     },
     {
       "timestep": 139,
-      "model": "YOLOv10_X",
-      "should_charge": false,
-      "battery_before": 0.0061017720634161205,
-      "battery_after": 4.6547384761482305e-5,
+      "model": "YOLOv10_S",
+      "should_charge": true,
+      "battery_before": 0.0020361238087554414,
+      "battery_after": 0.005088021814615491,
       "clean_energy_pct": 18.6,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
-      "charge_prob": 0.0
+      "model_probs": [
+        0.9998487234115601, 0.000151247440953739, 4.9053089618006015e-30, 0.0,
+        1.5414283107572988e-44, 7.857048557549525e-21, 2.7140847639471713e-33
+      ],
+      "charge_prob": 1.0100926703379205e-19
     },
     {
       "timestep": 140,
-      "model": "IDLE",
-      "should_charge": true,
-      "battery_before": 4.6547384761482305e-5,
-      "battery_after": 0.005092380718094815,
+      "model": "YOLOv10_B",
+      "should_charge": false,
+      "battery_before": 0.005088021814615491,
+      "battery_after": 0.001199924540406429,
       "clean_energy_pct": 18.6,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
+      "model_probs": [
+        0.9999977350234985, 2.250988472951576e-6, 0.0, 0.0, 0.0, 7.281779378590665e-24, 0.0
+      ],
       "charge_prob": 0.0
     },
     {
       "timestep": 141,
-      "model": "YOLOv10_L",
+      "model": "YOLOv10_N",
       "should_charge": true,
-      "battery_before": 0.005092380718094815,
-      "battery_after": 0.005451622303555119,
+      "battery_before": 0.001199924540406429,
+      "battery_after": 0.0052263874058802555,
       "clean_energy_pct": 18.6,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
-      "charge_prob": 0.0
+      "model_probs": [
+        0.9992885589599609, 0.0007113529718481004, 8.411017391448684e-20, 0.0,
+        6.900333899891883e-30, 1.672743246268515e-19, 2.3430494171384822e-23
+      ],
+      "charge_prob": 2.7180267585247275e-12
     },
     {
       "timestep": 142,
-      "model": "YOLOv10_L",
-      "should_charge": true,
-      "battery_before": 0.005451622303555119,
-      "battery_after": 0.005810863889015422,
+      "model": "YOLOv10_B",
+      "should_charge": false,
+      "battery_before": 0.0052263874058802555,
+      "battery_after": 0.0013382901316711933,
       "clean_energy_pct": 18.6,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
+      "model_probs": [
+        0.9999980926513672, 1.8484408883523429e-6, 0.0, 0.0, 0.0, 5.451493888580819e-24, 0.0
+      ],
       "charge_prob": 0.0
     },
     {
       "timestep": 143,
-      "model": "YOLOv10_L",
+      "model": "YOLOv10_N",
       "should_charge": true,
-      "battery_before": 0.005810863889015422,
-      "battery_after": 0.006170105474475727,
+      "battery_before": 0.0013382901316711933,
+      "battery_after": 0.00536475299714502,
       "clean_energy_pct": 18.6,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
-      "charge_prob": 0.0
+      "model_probs": [
+        0.9994352459907532, 0.0005647317739203572, 1.8405457273320688e-21, 0.0,
+        2.4840061730156865e-32, 1.0477846412890624e-19, 7.464289152938854e-25
+      ],
+      "charge_prob": 1.2265035720989553e-13
     },
     {
       "timestep": 144,
-      "model": "YOLOv10_X",
+      "model": "YOLOv10_B",
       "should_charge": false,
-      "battery_before": 0.006170105474475727,
-      "battery_after": 0.00011488079582108908,
+      "battery_before": 0.00536475299714502,
+      "battery_after": 0.0014766557229359575,
       "clean_energy_pct": 18.37,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
+      "model_probs": [
+        0.9999984502792358, 1.5177830618995358e-6, 0.0, 0.0, 0.0, 4.080817300184008e-24, 0.0
+      ],
       "charge_prob": 0.0
     },
     {
       "timestep": 145,
-      "model": "IDLE",
+      "model": "YOLOv10_N",
       "should_charge": true,
-      "battery_before": 0.00011488079582108908,
-      "battery_after": 0.005160714129154422,
+      "battery_before": 0.0014766557229359575,
+      "battery_after": 0.005503118588409784,
       "clean_energy_pct": 18.37,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
-      "charge_prob": 0.0
+      "model_probs": [
+        0.9995841383934021, 0.0004158377123530954, 3.648328647631567e-23, 0.0,
+        9.203735631826499e-35, 5.621303600469288e-20, 1.7321578185993606e-26
+      ],
+      "charge_prob": 5.507043575363668e-15
     },
     {
       "timestep": 146,
-      "model": "YOLOv10_L",
-      "should_charge": true,
-      "battery_before": 0.005160714129154422,
-      "battery_after": 0.005519955714614726,
+      "model": "YOLOv10_B",
+      "should_charge": false,
+      "battery_before": 0.005503118588409784,
+      "battery_after": 0.0016150213142007218,
       "clean_energy_pct": 18.37,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
+      "model_probs": [
+        0.9999988079071045, 1.2463534631024231e-6, 0.0, 0.0, 0.0, 3.0551332514675012e-24, 0.0
+      ],
       "charge_prob": 0.0
     },
     {
       "timestep": 147,
-      "model": "YOLOv10_L",
+      "model": "YOLOv10_N",
       "should_charge": true,
-      "battery_before": 0.005519955714614726,
-      "battery_after": 0.005879197300075029,
+      "battery_before": 0.0016150213142007218,
+      "battery_after": 0.005641484179674548,
       "clean_energy_pct": 18.37,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
-      "charge_prob": 0.0
+      "model_probs": [
+        0.9996827840805054, 0.00031719717662781477, 7.240349784355042e-25, 0.0,
+        3.7170511237203746e-37, 4.4798631791580137e-20, 4.210576377978747e-28
+      ],
+      "charge_prob": 2.7655882484715043e-16
     },
     {
       "timestep": 148,
-      "model": "YOLOv10_L",
-      "should_charge": true,
-      "battery_before": 0.005879197300075029,
-      "battery_after": 0.006238438885535334,
+      "model": "YOLOv10_B",
+      "should_charge": false,
+      "battery_before": 0.005641484179674548,
+      "battery_after": 0.001753386905465486,
       "clean_energy_pct": 18.37,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
+      "model_probs": [
+        0.999998927116394, 1.023467916638765e-6, 0.0, 0.0, 0.0, 2.2872380997397745e-24, 0.0
+      ],
       "charge_prob": 0.0
     },
     {
       "timestep": 149,
-      "model": "YOLOv10_X",
-      "should_charge": false,
-      "battery_before": 0.006238438885535334,
-      "battery_after": 0.00018321420688069585,
+      "model": "YOLOv10_N",
+      "should_charge": true,
+      "battery_before": 0.001753386905465486,
+      "battery_after": 0.0057798497709393125,
       "clean_energy_pct": 18.37,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
-      "charge_prob": 0.0
+      "model_probs": [
+        0.9997571110725403, 0.00024285166000481695, 1.429774337304525e-26, 0.0,
+        1.4569356185523696e-39, 2.60303738286079e-20, 8.861856684747441e-30
+      ],
+      "charge_prob": 1.5279430466534536e-17
     },
     {
       "timestep": 150,
-      "model": "IDLE",
-      "should_charge": true,
-      "battery_before": 0.00018321420688069585,
-      "battery_after": 0.005229047540214029,
+      "model": "YOLOv10_B",
+      "should_charge": false,
+      "battery_before": 0.0057798497709393125,
+      "battery_after": 0.0018917524967302503,
       "clean_energy_pct": 18.37,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
+      "model_probs": [
+        0.9999991655349731, 8.404364848502155e-7, 0.0, 0.0, 0.0, 1.7123243578389796e-24, 0.0
+      ],
       "charge_prob": 0.0
     },
     {
       "timestep": 151,
-      "model": "YOLOv10_L",
+      "model": "YOLOv10_N",
       "should_charge": true,
-      "battery_before": 0.005229047540214029,
-      "battery_after": 0.005588289125674333,
+      "battery_before": 0.0018917524967302503,
+      "battery_after": 0.005918215362204077,
       "clean_energy_pct": 18.37,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
-      "charge_prob": 0.0
+      "model_probs": [
+        0.9998058676719666, 0.00019416205759625882, 2.9888711437002104e-28, 0.0,
+        5.470669204724086e-42, 1.4495978343473818e-20, 1.7098790197823729e-31
+      ],
+      "charge_prob": 1.399569640707445e-18
     },
     {
       "timestep": 152,
-      "model": "YOLOv10_L",
-      "should_charge": true,
-      "battery_before": 0.005588289125674333,
-      "battery_after": 0.005947530711134636,
+      "model": "YOLOv10_B",
+      "should_charge": false,
+      "battery_before": 0.005918215362204077,
+      "battery_after": 0.0020301180879950145,
       "clean_energy_pct": 18.37,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
+      "model_probs": [
+        0.9999992847442627, 6.901378810653114e-7, 0.0, 0.0, 0.0, 1.2819288490909294e-24, 0.0
+      ],
       "charge_prob": 0.0
     },
     {
       "timestep": 153,
-      "model": "YOLOv10_L",
+      "model": "YOLOv10_S",
       "should_charge": true,
-      "battery_before": 0.005947530711134636,
-      "battery_after": 0.006306772296594941,
+      "battery_before": 0.0020301180879950145,
+      "battery_after": 0.005082016093855064,
       "clean_energy_pct": 18.37,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
-      "charge_prob": 0.0
+      "model_probs": [
+        0.9998471736907959, 0.00015284061373677105, 5.823189870018714e-30, 0.0,
+        1.961817850054744e-44, 8.059392768133908e-21, 3.224993730735901e-33
+      ],
+      "charge_prob": 1.128155965297158e-19
     },
     {
       "timestep": 154,
-      "model": "YOLOv10_X",
+      "model": "YOLOv10_B",
       "should_charge": false,
-      "battery_before": 0.006306772296594941,
-      "battery_after": 0.00025154761794030263,
+      "battery_before": 0.005082016093855064,
+      "battery_after": 0.001193918819646002,
       "clean_energy_pct": 18.37,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
+      "model_probs": [
+        0.9999977350234985, 2.2701838133798447e-6, 0.0, 0.0, 0.0, 7.373068729125556e-24, 0.0
+      ],
       "charge_prob": 0.0
     },
     {
       "timestep": 155,
-      "model": "IDLE",
+      "model": "YOLOv10_N",
       "should_charge": true,
-      "battery_before": 0.00025154761794030263,
-      "battery_after": 0.005297380951273635,
+      "battery_before": 0.001193918819646002,
+      "battery_after": 0.0052203816851198286,
       "clean_energy_pct": 18.37,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
-      "charge_prob": 0.0
+      "model_probs": [
+        0.9992830157279968, 0.0007170260068960488, 9.911188272965733e-20, 0.0,
+        8.810207155684175e-30, 1.6927873834743234e-19, 2.7036579317541803e-23
+      ],
+      "charge_prob": 3.1033023373261415e-12
     },
     {
       "timestep": 156,
-      "model": "YOLOv10_L",
-      "should_charge": true,
-      "battery_before": 0.005297380951273635,
-      "battery_after": 0.0056566225367339395,
+      "model": "YOLOv10_B",
+      "should_charge": false,
+      "battery_before": 0.0052203816851198286,
+      "battery_after": 0.0013322844109107663,
       "clean_energy_pct": 22.13,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
+      "model_probs": [
+        0.9999980926513672, 1.8660037994777667e-6, 0.0, 0.0, 0.0, 5.52847764102998e-24, 0.0
+      ],
       "charge_prob": 0.0
     },
     {
       "timestep": 157,
-      "model": "YOLOv10_L",
+      "model": "YOLOv10_N",
       "should_charge": true,
-      "battery_before": 0.0056566225367339395,
-      "battery_after": 0.006015864122194243,
+      "battery_before": 0.0013322844109107663,
+      "battery_after": 0.005358747276384593,
       "clean_energy_pct": 22.13,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
-      "charge_prob": 0.0
+      "model_probs": [
+        0.9994266033172607, 0.0005734389997087419, 2.1853164645693747e-21, 0.0,
+        3.176579820402934e-32, 1.0893478821304378e-19, 8.79856306461095e-25
+      ],
+      "charge_prob": 1.412192303200388e-13
     },
     {
       "timestep": 158,
-      "model": "YOLOv10_L",
-      "should_charge": true,
-      "battery_before": 0.006015864122194243,
-      "battery_after": 0.006375105707654548,
+      "model": "YOLOv10_B",
+      "should_charge": false,
+      "battery_before": 0.005358747276384593,
+      "battery_after": 0.0014706500021755306,
       "clean_energy_pct": 22.13,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
+      "model_probs": [
+        0.9999984502792358, 1.5323022353186389e-6, 0.0, 0.0, 0.0, 4.138918878005798e-24, 0.0
+      ],
       "charge_prob": 0.0
     },
     {
       "timestep": 159,
-      "model": "YOLOv10_X",
-      "should_charge": false,
-      "battery_before": 0.006375105707654548,
-      "battery_after": 0.0003198810289999094,
+      "model": "YOLOv10_N",
+      "should_charge": true,
+      "battery_before": 0.0014706500021755306,
+      "battery_after": 0.005497112867649357,
       "clean_energy_pct": 22.13,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
-      "charge_prob": 0.0
+      "model_probs": [
+        0.9995784163475037, 0.0004215507651679218, 4.342764795763796e-23, 0.0,
+        1.1778517680086631e-34, 5.736472344895958e-20, 2.0431656141851623e-26
+      ],
+      "charge_prob": 6.305360693206058e-15
     },
     {
       "timestep": 160,
-      "model": "IDLE",
-      "should_charge": true,
-      "battery_before": 0.0003198810289999094,
-      "battery_after": 0.005365714362333242,
+      "model": "YOLOv10_B",
+      "should_charge": false,
+      "battery_before": 0.005497112867649357,
+      "battery_after": 0.0016090155934402948,
       "clean_energy_pct": 22.13,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
+      "model_probs": [
+        0.9999986886978149, 1.2582746649059118e-6, 0.0, 0.0, 0.0, 3.0985951486102002e-24, 0.0
+      ],
       "charge_prob": 0.0
     },
     {
       "timestep": 161,
-      "model": "YOLOv10_L",
+      "model": "YOLOv10_N",
       "should_charge": true,
-      "battery_before": 0.005365714362333242,
-      "battery_after": 0.005724955947793546,
+      "battery_before": 0.0016090155934402948,
+      "battery_after": 0.005635478458914121,
       "clean_energy_pct": 22.13,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
-      "charge_prob": 0.0
+      "model_probs": [
+        0.999678373336792, 0.00032165052834898233, 8.602388148624457e-25, 0.0,
+        4.731436060125572e-37, 4.568130459100811e-20, 4.989472040185013e-28
+      ],
+      "charge_prob": 3.1194735845762266e-16
     },
     {
       "timestep": 162,
-      "model": "YOLOv10_L",
-      "should_charge": true,
-      "battery_before": 0.005724955947793546,
-      "battery_after": 0.0060841975332538495,
+      "model": "YOLOv10_B",
+      "should_charge": false,
+      "battery_before": 0.005635478458914121,
+      "battery_after": 0.001747381184705059,
       "clean_energy_pct": 22.13,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
+      "model_probs": [
+        0.999998927116394, 1.0332526017009513e-6, 0.0, 0.0, 0.0, 2.319767370812242e-24, 0.0
+      ],
       "charge_prob": 0.0
     },
     {
       "timestep": 163,
-      "model": "YOLOv10_X",
-      "should_charge": false,
-      "battery_before": 0.0060841975332538495,
-      "battery_after": 2.8972854599211215e-5,
+      "model": "YOLOv10_N",
+      "should_charge": true,
+      "battery_before": 0.001747381184705059,
+      "battery_after": 0.0057738440501788856,
       "clean_energy_pct": 22.13,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
-      "charge_prob": 0.0
+      "model_probs": [
+        0.9997541308403015, 0.0002458134258631617, 1.6958745310422695e-26, 0.0,
+        1.857865326075736e-39, 2.6802955673971028e-20, 1.0529948243931528e-29
+      ],
+      "charge_prob": 1.710621087288237e-17
     },
     {
       "timestep": 164,
-      "model": "IDLE",
-      "should_charge": true,
-      "battery_before": 2.8972854599211215e-5,
-      "battery_after": 0.005074806187932544,
+      "model": "YOLOv10_B",
+      "should_charge": false,
+      "battery_before": 0.0057738440501788856,
+      "battery_after": 0.0018857467759698233,
       "clean_energy_pct": 22.13,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
+      "model_probs": [
+        0.9999991655349731, 8.484736895297829e-7, 0.0, 0.0, 0.0, 1.7367037096843824e-24, 0.0
+      ],
       "charge_prob": 0.0
     },
     {
       "timestep": 165,
-      "model": "YOLOv10_L",
+      "model": "YOLOv10_N",
       "should_charge": true,
-      "battery_before": 0.005074806187932544,
-      "battery_after": 0.005434047773392848,
+      "battery_before": 0.0018857467759698233,
+      "battery_after": 0.00591220964144365,
       "clean_energy_pct": 22.13,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
-      "charge_prob": 0.0
+      "model_probs": [
+        0.9998037219047546, 0.00019633704505395144, 3.548241366384199e-28, 0.0,
+        6.998084530838136e-42, 1.48876208985364e-20, 2.0339073289707187e-31
+      ],
+      "charge_prob": 1.559035587146949e-18
     },
     {
       "timestep": 166,
-      "model": "YOLOv10_L",
-      "should_charge": true,
-      "battery_before": 0.005434047773392848,
-      "battery_after": 0.005793289358853151,
+      "model": "YOLOv10_B",
+      "should_charge": false,
+      "battery_before": 0.00591220964144365,
+      "battery_after": 0.0020241123672345876,
       "clean_energy_pct": 22.13,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
+      "model_probs": [
+        0.9999992847442627, 6.967404146962508e-7, 0.0, 0.0, 0.0, 1.3001854570204593e-24, 0.0
+      ],
       "charge_prob": 0.0
     },
     {
       "timestep": 167,
-      "model": "YOLOv10_L",
+      "model": "YOLOv10_S",
       "should_charge": true,
-      "battery_before": 0.005793289358853151,
-      "battery_after": 0.006152530944313456,
+      "battery_before": 0.0020241123672345876,
+      "battery_after": 0.005076010373094637,
       "clean_energy_pct": 22.13,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
-      "charge_prob": 0.0
+      "model_probs": [
+        0.9998453855514526, 0.00015461792645510286, 6.926178976965898e-30, 0.0,
+        2.382207389352189e-44, 8.277518033842154e-21, 3.838484967114022e-33
+      ],
+      "charge_prob": 1.2610190077551325e-19
     },
     {
       "timestep": 168,
-      "model": "YOLOv10_X",
+      "model": "YOLOv10_B",
       "should_charge": false,
-      "battery_before": 0.006152530944313456,
-      "battery_after": 9.730626565881799e-5,
+      "battery_before": 0.005076010373094637,
+      "battery_after": 0.0011879130988855752,
       "clean_energy_pct": 26.14,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
+      "model_probs": [
+        0.9999977350234985, 2.2942579107620986e-6, 0.0, 0.0, 0.0, 7.490491463728609e-24, 0.0
+      ],
       "charge_prob": 0.0
     },
     {
       "timestep": 169,
-      "model": "IDLE",
+      "model": "YOLOv10_N",
       "should_charge": true,
-      "battery_before": 9.730626565881799e-5,
-      "battery_after": 0.005143139598992151,
+      "battery_before": 0.0011879130988855752,
+      "battery_after": 0.005214375964359402,
       "clean_energy_pct": 26.14,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
-      "charge_prob": 0.0
+      "model_probs": [
+        0.9992755055427551, 0.0007244811276905239, 1.173571024359675e-19, 0.0,
+        1.1290284321116842e-29, 1.7113048554620886e-19, 3.1247026580406707e-23
+      ],
+      "charge_prob": 3.5635366185671202e-12
     },
     {
       "timestep": 170,
-      "model": "YOLOv10_L",
-      "should_charge": true,
-      "battery_before": 0.005143139598992151,
-      "battery_after": 0.005502381184452455,
+      "model": "YOLOv10_B",
+      "should_charge": false,
+      "battery_before": 0.005214375964359402,
+      "battery_after": 0.0013262786901503394,
       "clean_energy_pct": 26.14,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
+      "model_probs": [
+        0.9999980926513672, 1.8839707536244532e-6, 0.0, 0.0, 0.0, 5.607768022766007e-24, 0.0
+      ],
       "charge_prob": 0.0
     },
     {
       "timestep": 171,
-      "model": "YOLOv10_L",
+      "model": "YOLOv10_N",
       "should_charge": true,
-      "battery_before": 0.005502381184452455,
-      "battery_after": 0.005861622769912758,
+      "battery_before": 0.0013262786901503394,
+      "battery_after": 0.005352741555624166,
       "clean_energy_pct": 26.14,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
-      "charge_prob": 0.0
+      "model_probs": [
+        0.9994176626205444, 0.0005823641549795866, 2.5955396853104645e-21, 0.0,
+        4.0635843476464157e-32, 1.1326807724947939e-19, 1.0373121542823037e-24
+      ],
+      "charge_prob": 1.6265833894645726e-13
     },
     {
       "timestep": 172,
-      "model": "YOLOv10_L",
-      "should_charge": true,
-      "battery_before": 0.005861622769912758,
-      "battery_after": 0.006220864355373063,
+      "model": "YOLOv10_B",
+      "should_charge": false,
+      "battery_before": 0.005352741555624166,
+      "battery_after": 0.0014646442814151036,
       "clean_energy_pct": 26.14,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
+      "model_probs": [
+        0.9999984502792358, 1.5470502603420755e-6, 0.0, 0.0, 0.0, 4.198231751747556e-24, 0.0
+      ],
       "charge_prob": 0.0
     },
     {
       "timestep": 173,
-      "model": "YOLOv10_X",
-      "should_charge": false,
-      "battery_before": 0.006220864355373063,
-      "battery_after": 0.00016563967671842476,
+      "model": "YOLOv10_N",
+      "should_charge": true,
+      "battery_before": 0.0014646442814151036,
+      "battery_after": 0.00549110714688893,
       "clean_energy_pct": 26.14,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
-      "charge_prob": 0.0
+      "model_probs": [
+        0.9995725750923157, 0.00042737324838526547, 5.170210150036616e-23, 0.0,
+        1.5076018106433159e-34, 5.854178207357693e-20, 2.4101985577787932e-26
+      ],
+      "charge_prob": 7.220725482381257e-15
     },
     {
       "timestep": 174,
-      "model": "IDLE",
-      "should_charge": true,
-      "battery_before": 0.00016563967671842476,
-      "battery_after": 0.0052114730100517575,
+      "model": "YOLOv10_B",
+      "should_charge": false,
+      "battery_before": 0.00549110714688893,
+      "battery_after": 0.001603009872679868,
       "clean_energy_pct": 26.14,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
+      "model_probs": [
+        0.9999986886978149, 1.2703876564046368e-6, 0.0, 0.0, 0.0, 3.143035627705826e-24, 0.0
+      ],
       "charge_prob": 0.0
     },
     {
       "timestep": 175,
-      "model": "YOLOv10_L",
+      "model": "YOLOv10_N",
       "should_charge": true,
-      "battery_before": 0.0052114730100517575,
-      "battery_after": 0.005570714595512062,
+      "battery_before": 0.001603009872679868,
+      "battery_after": 0.005629472738153694,
       "clean_energy_pct": 26.14,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
-      "charge_prob": 0.0
+      "model_probs": [
+        0.9996738433837891, 0.00032619747798889875, 1.0222910593555378e-24, 0.0,
+        6.023932779109616e-37, 4.65836746287725e-20, 5.913331004857848e-28
+      ],
+      "charge_prob": 3.519219666725461e-16
     },
     {
       "timestep": 176,
-      "model": "YOLOv10_L",
-      "should_charge": true,
-      "battery_before": 0.005570714595512062,
-      "battery_after": 0.005929956180972365,
+      "model": "YOLOv10_B",
+      "should_charge": false,
+      "battery_before": 0.005629472738153694,
+      "battery_after": 0.0017413754639446321,
       "clean_energy_pct": 26.14,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
+      "model_probs": [
+        0.999998927116394, 1.04320133686997e-6, 0.0, 0.0, 0.0, 2.3530377767051643e-24, 0.0
+      ],
       "charge_prob": 0.0
     },
     {
       "timestep": 177,
-      "model": "YOLOv10_L",
+      "model": "YOLOv10_N",
       "should_charge": true,
-      "battery_before": 0.005929956180972365,
-      "battery_after": 0.00628919776643267,
+      "battery_before": 0.0017413754639446321,
+      "battery_after": 0.005767838329418459,
       "clean_energy_pct": 26.14,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
-      "charge_prob": 0.0
+      "model_probs": [
+        0.9997509121894836, 0.00024911182117648423, 2.0099876960704012e-26, 0.0,
+        2.3617610434592256e-39, 2.7681654129049623e-20, 1.2498669191954234e-29
+      ],
+      "charge_prob": 1.9266222643358416e-17
     },
     {
       "timestep": 178,
-      "model": "YOLOv10_X",
+      "model": "YOLOv10_B",
       "should_charge": false,
-      "battery_before": 0.00628919776643267,
-      "battery_after": 0.00023397308777803154,
+      "battery_before": 0.005767838329418459,
+      "battery_after": 0.0018797410552093964,
       "clean_energy_pct": 26.14,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
+      "model_probs": [
+        0.9999991655349731, 8.566432256884582e-7, 0.0, 0.0, 0.0, 1.761605090233815e-24, 0.0
+      ],
       "charge_prob": 0.0
     },
     {
       "timestep": 179,
-      "model": "IDLE",
+      "model": "YOLOv10_N",
       "should_charge": true,
-      "battery_before": 0.00023397308777803154,
-      "battery_after": 0.005279806421111364,
+      "battery_before": 0.0018797410552093964,
+      "battery_after": 0.005906203920683223,
       "clean_energy_pct": 26.14,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
-      "charge_prob": 0.0
+      "model_probs": [
+        0.9998014569282532, 0.00019855567370541394, 4.213341531896401e-28, 0.0,
+        8.952895888571256e-42, 1.5291125094336023e-20, 2.4196718961676406e-31
+      ],
+      "charge_prob": 1.737134500667246e-18
     },
     {
       "timestep": 180,
-      "model": "YOLOv10_L",
-      "should_charge": true,
-      "battery_before": 0.005279806421111364,
-      "battery_after": 0.005639048006571668,
+      "model": "YOLOv10_B",
+      "should_charge": false,
+      "battery_before": 0.005906203920683223,
+      "battery_after": 0.0020181066464741606,
       "clean_energy_pct": 27.3,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
+      "model_probs": [
+        0.9999992847442627, 7.036563260953699e-7, 0.0, 0.0, 0.0, 1.319451806908672e-24, 0.0
+      ],
       "charge_prob": 0.0
     },
     {
       "timestep": 181,
-      "model": "YOLOv10_L",
+      "model": "YOLOv10_S",
       "should_charge": true,
-      "battery_before": 0.005639048006571668,
-      "battery_after": 0.005998289592031972,
+      "battery_before": 0.0020181066464741606,
+      "battery_after": 0.0050700046523342104,
       "clean_energy_pct": 27.3,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
-      "charge_prob": 0.0
+      "model_probs": [
+        0.9998434782028198, 0.00015647514373995364, 8.24349549870077e-30, 0.0,
+        3.0828566215145976e-44, 8.50534086132159e-21, 4.5713652872334086e-33
+      ],
+      "charge_prob": 1.4099272861451043e-19
     },
     {
       "timestep": 182,
-      "model": "YOLOv10_L",
-      "should_charge": true,
-      "battery_before": 0.005998289592031972,
-      "battery_after": 0.0063575311774922766,
+      "model": "YOLOv10_B",
+      "should_charge": false,
+      "battery_before": 0.0050700046523342104,
+      "battery_after": 0.0011819073781251482,
       "clean_energy_pct": 27.3,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
+      "model_probs": [
+        0.9999977350234985, 2.3146524199546548e-6, 0.0, 0.0, 0.0, 7.588855318861522e-24, 0.0
+      ],
       "charge_prob": 0.0
     },
     {
       "timestep": 183,
-      "model": "YOLOv10_X",
-      "should_charge": false,
-      "battery_before": 0.0063575311774922766,
-      "battery_after": 0.0003023064988376383,
+      "model": "YOLOv10_N",
+      "should_charge": true,
+      "battery_before": 0.0011819073781251482,
+      "battery_after": 0.005208370243598975,
       "clean_energy_pct": 27.3,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
-      "charge_prob": 0.0
+      "model_probs": [
+        0.999269425868988, 0.0007305642357096076, 1.3840521718556506e-19, 0.0,
+        1.4424660073968616e-29, 1.7314931030402402e-19, 3.606587177237064e-23
+      ],
+      "charge_prob": 4.072707015384536e-12
     },
     {
       "timestep": 184,
-      "model": "IDLE",
-      "should_charge": true,
-      "battery_before": 0.0003023064988376383,
-      "battery_after": 0.005348139832170971,
+      "model": "YOLOv10_B",
+      "should_charge": false,
+      "battery_before": 0.005208370243598975,
+      "battery_after": 0.0013202729693899125,
       "clean_energy_pct": 27.3,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
+      "model_probs": [
+        0.9999980926513672, 1.900714437397255e-6, 0.0, 0.0, 0.0, 5.681407793837936e-24, 0.0
+      ],
       "charge_prob": 0.0
     },
     {
       "timestep": 185,
-      "model": "YOLOv10_L",
+      "model": "YOLOv10_N",
       "should_charge": true,
-      "battery_before": 0.005348139832170971,
-      "battery_after": 0.005707381417631275,
+      "battery_before": 0.0013202729693899125,
+      "battery_after": 0.005346735834863739,
       "clean_energy_pct": 27.3,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
-      "charge_prob": 0.0
+      "model_probs": [
+        0.9994090795516968, 0.0005909322644583881, 3.0767083858105733e-21, 0.0,
+        5.188523331302126e-32, 1.1770458291672512e-19, 1.2217338316419086e-24
+      ],
+      "charge_prob": 1.8694669022458615e-13
     },
     {
       "timestep": 186,
-      "model": "YOLOv10_L",
-      "should_charge": true,
-      "battery_before": 0.005707381417631275,
-      "battery_after": 0.006066623003091578,
+      "model": "YOLOv10_B",
+      "should_charge": false,
+      "battery_before": 0.005346735834863739,
+      "battery_after": 0.0014586385606546767,
       "clean_energy_pct": 27.3,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
+      "model_probs": [
+        0.9999984502792358, 1.5608040939696366e-6, 0.0, 0.0, 0.0, 4.253394033836493e-24, 0.0
+      ],
       "charge_prob": 0.0
     },
     {
       "timestep": 187,
-      "model": "YOLOv10_X",
-      "should_charge": false,
-      "battery_before": 0.006066623003091578,
-      "battery_after": 1.1398324436940124e-5,
+      "model": "YOLOv10_N",
+      "should_charge": true,
+      "battery_before": 0.0014586385606546767,
+      "battery_after": 0.005485101426128503,
       "clean_energy_pct": 27.3,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
-      "charge_prob": 0.0
+      "model_probs": [
+        0.9995670914649963, 0.00043291860492900014, 6.14332687461191e-23, 0.0,
+        1.9261535638203806e-34, 5.972001038327922e-20, 2.8404015413251387e-26
+      ],
+      "charge_prob": 8.251551026662585e-15
     },
     {
       "timestep": 188,
-      "model": "IDLE",
-      "should_charge": true,
-      "battery_before": 1.1398324436940124e-5,
-      "battery_after": 0.005057231657770273,
+      "model": "YOLOv10_B",
+      "should_charge": false,
+      "battery_before": 0.005485101426128503,
+      "battery_after": 0.001597004151919441,
       "clean_energy_pct": 27.3,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
+      "model_probs": [
+        0.9999986886978149, 1.281684262721683e-6, 0.0, 0.0, 0.0, 3.184309224697442e-24, 0.0
+      ],
       "charge_prob": 0.0
     },
     {
       "timestep": 189,
-      "model": "YOLOv10_L",
+      "model": "YOLOv10_N",
       "should_charge": true,
-      "battery_before": 0.005057231657770273,
-      "battery_after": 0.005416473243230577,
+      "battery_before": 0.001597004151919441,
+      "battery_after": 0.005623467017393267,
       "clean_energy_pct": 27.3,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
-      "charge_prob": 0.0
+      "model_probs": [
+        0.9996695518493652, 0.00033043581061065197, 1.211788464994561e-24, 0.0,
+        7.650219689126848e-37, 4.74718210374101e-20, 6.996127819673726e-28
+      ],
+      "charge_prob": 3.962792027659021e-16
     },
     {
       "timestep": 190,
-      "model": "YOLOv10_L",
-      "should_charge": true,
-      "battery_before": 0.005416473243230577,
-      "battery_after": 0.00577571482869088,
+      "model": "YOLOv10_B",
+      "should_charge": false,
+      "battery_before": 0.005623467017393267,
+      "battery_after": 0.0017353697431842052,
       "clean_energy_pct": 27.3,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
+      "model_probs": [
+        0.999998927116394, 1.0524787512622424e-6, 0.0, 0.0, 0.0, 2.3839374583626714e-24, 0.0
+      ],
       "charge_prob": 0.0
     },
     {
       "timestep": 191,
-      "model": "YOLOv10_L",
+      "model": "YOLOv10_N",
       "should_charge": true,
-      "battery_before": 0.00577571482869088,
-      "battery_after": 0.006134956414151185,
+      "battery_before": 0.0017353697431842052,
+      "battery_after": 0.005761832608658032,
       "clean_energy_pct": 27.3,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
-      "charge_prob": 0.0
+      "model_probs": [
+        0.9997478127479553, 0.0002521905698813498, 2.3755666395932174e-26, 0.0,
+        2.993633145694108e-39, 2.856452403010793e-20, 1.4810478008609065e-29
+      ],
+      "charge_prob": 2.1634758374452954e-17
     },
     {
       "timestep": 192,
-      "model": "YOLOv10_X",
+      "model": "YOLOv10_B",
       "should_charge": false,
-      "battery_before": 0.006134956414151185,
-      "battery_after": 7.97317354965469e-5,
+      "battery_before": 0.005761832608658032,
+      "battery_after": 0.0018737353344489695,
       "clean_energy_pct": 27.1,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
+      "model_probs": [
+        0.9999991655349731, 8.642112447887484e-7, 0.0, 0.0, 0.0, 1.784581255744056e-24, 0.0
+      ],
       "charge_prob": 0.0
     },
     {
       "timestep": 193,
-      "model": "IDLE",
+      "model": "YOLOv10_N",
       "should_charge": true,
-      "battery_before": 7.97317354965469e-5,
-      "battery_after": 0.00512556506882988,
+      "battery_before": 0.0018737353344489695,
+      "battery_after": 0.005900198199922796,
       "clean_energy_pct": 27.1,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
-      "charge_prob": 0.0
+      "model_probs": [
+        0.9997994303703308, 0.00020056690846104175, 4.988211037553925e-28, 0.0,
+        1.141777988731861e-41, 1.5689701749377272e-20, 2.8735570662913246e-31
+      ],
+      "charge_prob": 1.929099546193346e-18
     },
     {
       "timestep": 194,
-      "model": "YOLOv10_L",
-      "should_charge": true,
-      "battery_before": 0.00512556506882988,
-      "battery_after": 0.005484806654290184,
+      "model": "YOLOv10_B",
+      "should_charge": false,
+      "battery_before": 0.005900198199922796,
+      "battery_after": 0.0020121009257137337,
       "clean_energy_pct": 27.1,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
+      "model_probs": [
+        0.9999992847442627, 7.096636522874178e-7, 0.0, 0.0, 0.0, 1.3360341561744835e-24, 0.0
+      ],
       "charge_prob": 0.0
     },
     {
       "timestep": 195,
-      "model": "YOLOv10_L",
+      "model": "YOLOv10_S",
       "should_charge": true,
-      "battery_before": 0.005484806654290184,
-      "battery_after": 0.005844048239750487,
+      "battery_before": 0.0020121009257137337,
+      "battery_after": 0.0050639989315737835,
       "clean_energy_pct": 27.1,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
-      "charge_prob": 0.0
+      "model_probs": [
+        0.9998418092727661, 0.00015812501078471541, 9.786315095115467e-30, 0.0,
+        4.0637655465419695e-44, 8.724479907956354e-21, 5.432018537209316e-33
+      ],
+      "charge_prob": 1.574724670126454e-19
     },
     {
       "timestep": 196,
-      "model": "YOLOv10_L",
-      "should_charge": true,
-      "battery_before": 0.005844048239750487,
-      "battery_after": 0.006203289825210792,
+      "model": "YOLOv10_B",
+      "should_charge": false,
+      "battery_before": 0.0050639989315737835,
+      "battery_after": 0.0011759016573647213,
       "clean_energy_pct": 27.1,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
+      "model_probs": [
+        0.999997615814209, 2.334415512450505e-6, 0.0, 0.0, 0.0, 7.684170226595756e-24, 0.0
+      ],
       "charge_prob": 0.0
     },
     {
       "timestep": 197,
-      "model": "YOLOv10_X",
-      "should_charge": false,
-      "battery_before": 0.006203289825210792,
-      "battery_after": 0.00014806514655615367,
+      "model": "YOLOv10_N",
+      "should_charge": true,
+      "battery_before": 0.0011759016573647213,
+      "battery_after": 0.005202364522838548,
       "clean_energy_pct": 27.1,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
-      "charge_prob": 0.0
+      "model_probs": [
+        0.9992635846138, 0.000736397982109338, 1.630939347567675e-19, 0.0, 1.8417389701112862e-29,
+        1.7522540439456141e-19, 4.1616918723898995e-23
+      ],
+      "charge_prob": 4.650095412894739e-12
     },
     {
       "timestep": 198,
-      "model": "IDLE",
-      "should_charge": true,
-      "battery_before": 0.00014806514655615367,
-      "battery_after": 0.005193898479889486,
+      "model": "YOLOv10_B",
+      "should_charge": false,
+      "battery_before": 0.005202364522838548,
+      "battery_after": 0.0013142672486294855,
       "clean_energy_pct": 27.1,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
+      "model_probs": [
+        0.9999980926513672, 1.916945166158257e-6, 0.0, 0.0, 0.0, 5.75276539031106e-24, 0.0
+      ],
       "charge_prob": 0.0
     },
     {
       "timestep": 199,
-      "model": "YOLOv10_L",
+      "model": "YOLOv10_N",
       "should_charge": true,
-      "battery_before": 0.005193898479889486,
-      "battery_after": 0.0055531400653497905,
+      "battery_before": 0.0013142672486294855,
+      "battery_after": 0.005340730114103312,
       "clean_energy_pct": 27.1,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
-      "charge_prob": 0.0
+      "model_probs": [
+        0.9994006156921387, 0.0005993864615447819, 3.643657492978278e-21, 0.0,
+        6.618924219847402e-32, 1.2228036511960948e-19, 1.4382740793652001e-24
+      ],
+      "charge_prob": 2.1463940921926522e-13
     },
     {
       "timestep": 200,
-      "model": "YOLOv10_L",
-      "should_charge": true,
-      "battery_before": 0.0055531400653497905,
-      "battery_after": 0.005912381650810094,
+      "model": "YOLOv10_B",
+      "should_charge": false,
+      "battery_before": 0.005340730114103312,
+      "battery_after": 0.0014526328398942498,
       "clean_energy_pct": 27.1,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
+      "model_probs": [
+        0.9999984502792358, 1.574126144987531e-6, 0.0, 0.0, 0.0, 4.306799917119955e-24, 0.0
+      ],
       "charge_prob": 0.0
     },
     {
       "timestep": 201,
-      "model": "YOLOv10_L",
+      "model": "YOLOv10_N",
       "should_charge": true,
-      "battery_before": 0.005912381650810094,
-      "battery_after": 0.006271623236270399,
+      "battery_before": 0.0014526328398942498,
+      "battery_after": 0.005479095705368076,
       "clean_energy_pct": 27.1,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
-      "charge_prob": 0.0
+      "model_probs": [
+        0.999561607837677, 0.0004383619816508144, 7.292697844607648e-23, 0.0,
+        2.4587487024251023e-34, 6.091032328474303e-20, 3.345822258109912e-26
+      ],
+      "charge_prob": 9.420009260477369e-15
     },
     {
       "timestep": 202,
-      "model": "YOLOv10_X",
+      "model": "YOLOv10_B",
       "should_charge": false,
-      "battery_before": 0.006271623236270399,
-      "battery_after": 0.00021639855761576045,
+      "battery_before": 0.005479095705368076,
+      "battery_after": 0.001590998431159014,
       "clean_energy_pct": 27.1,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
+      "model_probs": [
+        0.9999986886978149, 1.292626393478713e-6, 0.0, 0.0, 0.0, 3.2243038809464683e-24, 0.0
+      ],
       "charge_prob": 0.0
     },
     {
       "timestep": 203,
-      "model": "IDLE",
+      "model": "YOLOv10_N",
       "should_charge": true,
-      "battery_before": 0.00021639855761576045,
-      "battery_after": 0.005262231890949093,
+      "battery_before": 0.001590998431159014,
+      "battery_after": 0.0056174612966328405,
       "clean_energy_pct": 27.1,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
-      "charge_prob": 0.0
+      "model_probs": [
+        0.9996659755706787, 0.0003339855174999684, 1.4344418916952496e-24, 0.0,
+        9.675030052996447e-37, 4.7431825562323453e-20, 8.187389157097604e-28
+      ],
+      "charge_prob": 4.514890484959538e-16
     },
     {
       "timestep": 204,
-      "model": "YOLOv10_L",
-      "should_charge": true,
-      "battery_before": 0.005262231890949093,
-      "battery_after": 0.005621473476409397,
+      "model": "YOLOv10_B",
+      "should_charge": false,
+      "battery_before": 0.0056174612966328405,
+      "battery_after": 0.0017293640224237783,
       "clean_energy_pct": 26.18,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
+      "model_probs": [
+        0.999998927116394, 1.0612079677230213e-6, 0.0, 0.0, 0.0, 2.4129403239735745e-24, 0.0
+      ],
       "charge_prob": 0.0
     },
     {
       "timestep": 205,
-      "model": "YOLOv10_L",
+      "model": "YOLOv10_N",
       "should_charge": true,
-      "battery_before": 0.005621473476409397,
-      "battery_after": 0.0059807150618697005,
+      "battery_before": 0.0017293640224237783,
+      "battery_after": 0.005755826887897605,
       "clean_energy_pct": 26.18,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
-      "charge_prob": 0.0
+      "model_probs": [
+        0.9997449517250061, 0.00025509277475066483, 2.80133659463077e-26, 0.0,
+        3.785855831201679e-39, 2.94556625061175e-20, 1.7526344670647186e-29
+      ],
+      "charge_prob": 2.4236803883748762e-17
     },
     {
       "timestep": 206,
-      "model": "YOLOv10_L",
-      "should_charge": true,
-      "battery_before": 0.0059807150618697005,
-      "battery_after": 0.0063399566473300055,
+      "model": "YOLOv10_B",
+      "should_charge": false,
+      "battery_before": 0.005755826887897605,
+      "battery_after": 0.0018677296136885425,
       "clean_energy_pct": 26.18,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
+      "model_probs": [
+        0.9999991655349731, 8.714305295143276e-7, 0.0, 0.0, 0.0, 1.806464848900566e-24, 0.0
+      ],
       "charge_prob": 0.0
     },
     {
       "timestep": 207,
-      "model": "YOLOv10_X",
-      "should_charge": false,
-      "battery_before": 0.0063399566473300055,
-      "battery_after": 0.0002847319686753672,
+      "model": "YOLOv10_N",
+      "should_charge": true,
+      "battery_before": 0.0018677296136885425,
+      "battery_after": 0.005894192479162369,
       "clean_energy_pct": 26.18,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
-      "charge_prob": 0.0
+      "model_probs": [
+        0.999797523021698, 0.00020245327323209494, 5.8946923363385545e-28, 0.0,
+        1.4537070268905652e-41, 1.608847712163599e-20, 3.4088362864523857e-31
+      ],
+      "charge_prob": 2.1378044525708347e-18
     },
     {
       "timestep": 208,
-      "model": "IDLE",
-      "should_charge": true,
-      "battery_before": 0.0002847319686753672,
-      "battery_after": 0.0053305653020087,
+      "model": "YOLOv10_B",
+      "should_charge": false,
+      "battery_before": 0.005894192479162369,
+      "battery_after": 0.0020060952049533068,
       "clean_energy_pct": 26.18,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
+      "model_probs": [
+        0.9999992847442627, 7.155878165576723e-7, 0.0, 0.0, 0.0, 1.3523967090705777e-24, 0.0
+      ],
       "charge_prob": 0.0
     },
     {
       "timestep": 209,
-      "model": "YOLOv10_L",
+      "model": "YOLOv10_S",
       "should_charge": true,
-      "battery_before": 0.0053305653020087,
-      "battery_after": 0.005689806887469004,
+      "battery_before": 0.0020060952049533068,
+      "battery_after": 0.0050579932108133566,
       "clean_energy_pct": 26.18,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
-      "charge_prob": 0.0
+      "model_probs": [
+        0.999840259552002, 0.00015976150461938232, 1.1613718676519605e-29, 0.0,
+        5.184804318001823e-44, 8.947115085148861e-21, 6.452689629110754e-33
+      ],
+      "charge_prob": 1.7585426845525485e-19
     },
     {
       "timestep": 210,
-      "model": "YOLOv10_L",
-      "should_charge": true,
-      "battery_before": 0.005689806887469004,
-      "battery_after": 0.006049048472929307,
+      "model": "YOLOv10_B",
+      "should_charge": false,
+      "battery_before": 0.0050579932108133566,
+      "battery_after": 0.0011698959366042943,
       "clean_energy_pct": 26.18,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
+      "model_probs": [
+        0.999997615814209, 2.3539114408777095e-6, 0.0, 0.0, 0.0, 7.778307364998495e-24, 0.0
+      ],
       "charge_prob": 0.0
     },
     {
       "timestep": 211,
-      "model": "YOLOv10_L",
+      "model": "YOLOv10_N",
       "should_charge": true,
-      "battery_before": 0.006049048472929307,
-      "battery_after": 0.006408290058389612,
+      "battery_before": 0.0011698959366042943,
+      "battery_after": 0.005196358802078121,
       "clean_energy_pct": 26.18,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
-      "charge_prob": 0.0
+      "model_probs": [
+        0.9992578625679016, 0.0007421552436426282, 1.9208256979656785e-19, 0.0,
+        2.3502749038589365e-29, 1.7736158540178253e-19, 4.801282939403181e-23
+      ],
+      "charge_prob": 5.3058070090261644e-12
     },
     {
       "timestep": 212,
-      "model": "YOLOv10_X",
+      "model": "YOLOv10_B",
       "should_charge": false,
-      "battery_before": 0.006408290058389612,
-      "battery_after": 0.000353065379734974,
+      "battery_before": 0.005196358802078121,
+      "battery_after": 0.0013082615278690586,
       "clean_energy_pct": 26.18,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
+      "model_probs": [
+        0.9999980926513672, 1.93294931705168e-6, 0.0, 0.0, 0.0, 5.823242618013958e-24, 0.0
+      ],
       "charge_prob": 0.0
     },
     {
       "timestep": 213,
-      "model": "IDLE",
+      "model": "YOLOv10_N",
       "should_charge": true,
-      "battery_before": 0.000353065379734974,
-      "battery_after": 0.005398898713068307,
+      "battery_before": 0.0013082615278690586,
+      "battery_after": 0.005334724393342885,
       "clean_energy_pct": 26.18,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
-      "charge_prob": 0.0
+      "model_probs": [
+        0.9993921518325806, 0.0006078328588046134, 4.312939100897093e-21, 0.0,
+        8.439736757406706e-32, 1.2701513402116594e-19, 1.6927805261273554e-24
+      ],
+      "charge_prob": 2.46300809608746e-13
     },
     {
       "timestep": 214,
-      "model": "YOLOv10_L",
-      "should_charge": true,
-      "battery_before": 0.005398898713068307,
-      "battery_after": 0.005758140298528611,
+      "model": "YOLOv10_B",
+      "should_charge": false,
+      "battery_before": 0.005334724393342885,
+      "battery_after": 0.0014466271191338228,
       "clean_energy_pct": 26.18,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
+      "model_probs": [
+        0.9999984502792358, 1.587277211001492e-6, 0.0, 0.0, 0.0, 4.359595616493229e-24, 0.0
+      ],
       "charge_prob": 0.0
     },
     {
       "timestep": 215,
-      "model": "YOLOv10_L",
+      "model": "YOLOv10_N",
       "should_charge": true,
-      "battery_before": 0.005758140298528611,
-      "battery_after": 0.006117381883988914,
+      "battery_before": 0.0014466271191338228,
+      "battery_after": 0.005473089984607649,
       "clean_energy_pct": 26.18,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
-      "charge_prob": 0.0
+      "model_probs": [
+        0.9995562434196472, 0.00044377989252097905, 8.652849924123544e-23, 0.0,
+        3.1371981239716477e-34, 6.211821377422359e-20, 3.940200908653954e-26
+      ],
+      "charge_prob": 1.0748184026826424e-14
     },
     {
       "timestep": 216,
-      "model": "YOLOv10_X",
+      "model": "YOLOv10_B",
       "should_charge": false,
-      "battery_before": 0.006117381883988914,
-      "battery_after": 6.215720533427581e-5,
+      "battery_before": 0.005473089984607649,
+      "battery_after": 0.001584992710398587,
       "clean_energy_pct": 24.86,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
+      "model_probs": [
+        0.9999986886978149, 1.3029746241954854e-6, 0.0, 0.0, 0.0, 3.2620370701954523e-24, 0.0
+      ],
       "charge_prob": 0.0
     },
     {
       "timestep": 217,
-      "model": "IDLE",
+      "model": "YOLOv10_N",
       "should_charge": true,
-      "battery_before": 6.215720533427581e-5,
-      "battery_after": 0.0051079905386676085,
+      "battery_before": 0.001584992710398587,
+      "battery_after": 0.0056114555758724136,
       "clean_energy_pct": 24.86,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
-      "charge_prob": 0.0
+      "model_probs": [
+        0.9996627569198608, 0.00033729380811564624, 1.694919325256636e-24, 0.0,
+        1.2213281555180762e-36, 4.7357912450947865e-20, 9.568492779517135e-28
+      ],
+      "charge_prob": 5.137769397612789e-16
     },
     {
       "timestep": 218,
-      "model": "YOLOv10_L",
-      "should_charge": true,
-      "battery_before": 0.0051079905386676085,
-      "battery_after": 0.005467232124127913,
+      "model": "YOLOv10_B",
+      "should_charge": false,
+      "battery_before": 0.0056114555758724136,
+      "battery_after": 0.0017233583016633513,
       "clean_energy_pct": 24.86,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
+      "model_probs": [
+        0.999998927116394, 1.069959694177669e-6, 0.0, 0.0, 0.0, 2.442110033665932e-24, 0.0
+      ],
       "charge_prob": 0.0
     },
     {
       "timestep": 219,
-      "model": "YOLOv10_L",
+      "model": "YOLOv10_N",
       "should_charge": true,
-      "battery_before": 0.005467232124127913,
-      "battery_after": 0.005826473709588216,
+      "battery_before": 0.0017233583016633513,
+      "battery_after": 0.005749821167137178,
       "clean_energy_pct": 24.86,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
-      "charge_prob": 0.0
+      "model_probs": [
+        0.9997419714927673, 0.0002580093569122255, 3.3027489119408894e-26, 0.0,
+        4.786740265838001e-39, 3.037251789812437e-20, 2.0737540954155705e-29
+      ],
+      "charge_prob": 2.7146003061181436e-17
     },
     {
       "timestep": 220,
-      "model": "YOLOv10_L",
-      "should_charge": true,
-      "battery_before": 0.005826473709588216,
-      "battery_after": 0.006185715295048521,
+      "model": "YOLOv10_B",
+      "should_charge": false,
+      "battery_before": 0.005749821167137178,
+      "battery_after": 0.0018617238929281156,
       "clean_energy_pct": 24.86,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
+      "model_probs": [
+        0.9999991655349731, 8.786171292740619e-7, 0.0, 0.0, 0.0, 1.8282888830587314e-24, 0.0
+      ],
       "charge_prob": 0.0
     },
     {
       "timestep": 221,
-      "model": "YOLOv10_X",
-      "should_charge": false,
-      "battery_before": 0.006185715295048521,
-      "battery_after": 0.00013049061639388258,
+      "model": "YOLOv10_N",
+      "should_charge": true,
+      "battery_before": 0.0018617238929281156,
+      "battery_after": 0.005888186758401942,
       "clean_energy_pct": 24.86,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
-      "charge_prob": 0.0
+      "model_probs": [
+        0.9997957348823547, 0.00020432702149264514, 6.963247862180661e-28, 0.0,
+        1.850134362448056e-41, 1.6495314273692833e-20, 4.042962356376353e-31
+      ],
+      "charge_prob": 2.368094843828048e-18
     },
     {
       "timestep": 222,
-      "model": "IDLE",
-      "should_charge": true,
-      "battery_before": 0.00013049061639388258,
-      "battery_after": 0.005176323949727215,
+      "model": "YOLOv10_B",
+      "should_charge": false,
+      "battery_before": 0.005888186758401942,
+      "battery_after": 0.00200008948419288,
       "clean_energy_pct": 24.86,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
+      "model_probs": [
+        0.9999992847442627, 7.214905508590164e-7, 0.0, 0.0, 0.0, 1.3687507817119408e-24, 0.0
+      ],
       "charge_prob": 0.0
     },
     {
       "timestep": 223,
-      "model": "YOLOv10_L",
+      "model": "YOLOv10_S",
       "should_charge": true,
-      "battery_before": 0.005176323949727215,
-      "battery_after": 0.005535565535187519,
+      "battery_before": 0.00200008948419288,
+      "battery_after": 0.00505198749005293,
       "clean_energy_pct": 24.86,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
-      "charge_prob": 0.0
+      "model_probs": [
+        0.9998385906219482, 0.00016139705257955939, 1.3779724816271324e-29, 0.0,
+        6.58610278232664e-44, 9.174277137490536e-21, 7.663915334778193e-33
+      ],
+      "charge_prob": 1.9636528449336408e-19
     },
     {
       "timestep": 224,
-      "model": "YOLOv10_L",
-      "should_charge": true,
-      "battery_before": 0.005535565535187519,
-      "battery_after": 0.005894807120647823,
+      "model": "YOLOv10_B",
+      "should_charge": false,
+      "battery_before": 0.00505198749005293,
+      "battery_after": 0.0011638902158438674,
       "clean_energy_pct": 24.86,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
+      "model_probs": [
+        0.999997615814209, 2.3733148282190086e-6, 0.0, 0.0, 0.0, 7.87233800717903e-24, 0.0
+      ],
       "charge_prob": 0.0
     },
     {
       "timestep": 225,
-      "model": "YOLOv10_L",
+      "model": "YOLOv10_N",
       "should_charge": true,
-      "battery_before": 0.005894807120647823,
-      "battery_after": 0.006254048706108128,
+      "battery_before": 0.0011638902158438674,
+      "battery_after": 0.005190353081317694,
       "clean_energy_pct": 24.86,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
-      "charge_prob": 0.0
+      "model_probs": [
+        0.9992521405220032, 0.000747869024053216, 2.2614089141312914e-19, 0.0,
+        2.9991348456710253e-29, 1.7956903318865393e-19, 5.536128645177538e-23
+      ],
+      "charge_prob": 6.05537798722966e-12
     },
     {
       "timestep": 226,
-      "model": "YOLOv10_X",
+      "model": "YOLOv10_B",
       "should_charge": false,
-      "battery_before": 0.006254048706108128,
-      "battery_after": 0.00019882402745348936,
+      "battery_before": 0.005190353081317694,
+      "battery_after": 0.0013022558071086317,
       "clean_energy_pct": 24.86,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
+      "model_probs": [
+        0.9999980926513672, 1.948890030689654e-6, 0.0, 0.0, 0.0, 5.893638593043618e-24, 0.0
+      ],
       "charge_prob": 0.0
     },
     {
       "timestep": 227,
-      "model": "IDLE",
+      "model": "YOLOv10_N",
       "should_charge": true,
-      "battery_before": 0.00019882402745348936,
-      "battery_after": 0.005244657360786822,
+      "battery_before": 0.0013022558071086317,
+      "battery_after": 0.005328718672582458,
       "clean_energy_pct": 24.86,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
-      "charge_prob": 0.0
+      "model_probs": [
+        0.9993836879730225, 0.0006163265788927674, 5.103755270446898e-21, 0.0,
+        1.0758567460095835e-31, 1.3192265442377527e-19, 1.992041813055867e-24
+      ],
+      "charge_prob": 2.8254530876417605e-13
     },
     {
       "timestep": 228,
-      "model": "YOLOv10_L",
-      "should_charge": true,
-      "battery_before": 0.005244657360786822,
-      "battery_after": 0.005603898946247126,
+      "model": "YOLOv10_B",
+      "should_charge": false,
+      "battery_before": 0.005328718672582458,
+      "battery_after": 0.001440621398373396,
       "clean_energy_pct": 22.96,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
+      "model_probs": [
+        0.9999984502792358, 1.5995814237612649e-6, 0.0, 0.0, 0.0, 4.408781488364212e-24, 0.0
+      ],
       "charge_prob": 0.0
     },
     {
       "timestep": 229,
-      "model": "YOLOv10_L",
+      "model": "YOLOv10_N",
       "should_charge": true,
-      "battery_before": 0.005603898946247126,
-      "battery_after": 0.005963140531707429,
+      "battery_before": 0.001440621398373396,
+      "battery_after": 0.005467084263847222,
       "clean_energy_pct": 22.96,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
-      "charge_prob": 0.0
+      "model_probs": [
+        0.999550998210907, 0.0004489645652938634, 1.0250442825223723e-22, 0.0,
+        3.996933799587693e-34, 6.332976195297528e-20, 4.6365080918723286e-26
+      ],
+      "charge_prob": 1.2242637289952129e-14
     },
     {
       "timestep": 230,
-      "model": "YOLOv10_L",
-      "should_charge": true,
-      "battery_before": 0.005963140531707429,
-      "battery_after": 0.006322382117167734,
+      "model": "YOLOv10_B",
+      "should_charge": false,
+      "battery_before": 0.005467084263847222,
+      "battery_after": 0.0015789869896381602,
       "clean_energy_pct": 22.96,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
+      "model_probs": [
+        0.9999986886978149, 1.3135221479387837e-6, 0.0, 0.0, 0.0, 3.300640175807669e-24, 0.0
+      ],
       "charge_prob": 0.0
     },
     {
       "timestep": 231,
-      "model": "YOLOv10_X",
-      "should_charge": false,
-      "battery_before": 0.006322382117167734,
-      "battery_after": 0.00026715743851309613,
+      "model": "YOLOv10_N",
+      "should_charge": true,
+      "battery_before": 0.0015789869896381602,
+      "battery_after": 0.005605449855111987,
       "clean_energy_pct": 22.96,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
-      "charge_prob": 0.0
+      "model_probs": [
+        0.9996592998504639, 0.00034067966043949127, 2.0032917584252237e-24, 0.0,
+        1.542202814023725e-36, 4.728589603886747e-20, 1.1184698522107904e-27
+      ],
+      "charge_prob": 5.848076404103668e-16
     },
     {
       "timestep": 232,
-      "model": "IDLE",
-      "should_charge": true,
-      "battery_before": 0.00026715743851309613,
-      "battery_after": 0.005312990771846429,
+      "model": "YOLOv10_B",
+      "should_charge": false,
+      "battery_before": 0.005605449855111987,
+      "battery_after": 0.0017173525809029244,
       "clean_energy_pct": 22.96,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
+      "model_probs": [
+        0.999998927116394, 1.0786209259094903e-6, 0.0, 0.0, 0.0, 2.4710099529287036e-24, 0.0
+      ],
       "charge_prob": 0.0
     },
     {
       "timestep": 233,
-      "model": "YOLOv10_L",
+      "model": "YOLOv10_N",
       "should_charge": true,
-      "battery_before": 0.005312990771846429,
-      "battery_after": 0.005672232357306733,
+      "battery_before": 0.0017173525809029244,
+      "battery_after": 0.005743815446376751,
       "clean_energy_pct": 22.96,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
-      "charge_prob": 0.0
+      "model_probs": [
+        0.9997391104698181, 0.0002608269569464028, 3.9054534346717153e-26, 0.0,
+        6.07179962124861e-39, 3.116310546209473e-20, 2.4501555867974583e-29
+      ],
+      "charge_prob": 3.068731877347611e-17
     },
     {
       "timestep": 234,
-      "model": "YOLOv10_L",
-      "should_charge": true,
-      "battery_before": 0.005672232357306733,
-      "battery_after": 0.006031473942767036,
+      "model": "YOLOv10_B",
+      "should_charge": false,
+      "battery_before": 0.005743815446376751,
+      "battery_after": 0.0018557181721676887,
       "clean_energy_pct": 22.96,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
+      "model_probs": [
+        0.9999991655349731, 8.857294915287639e-7, 0.0, 0.0, 0.0, 1.8499389733872958e-24, 0.0
+      ],
       "charge_prob": 0.0
     },
     {
       "timestep": 235,
-      "model": "YOLOv10_L",
+      "model": "YOLOv10_N",
       "should_charge": true,
-      "battery_before": 0.006031473942767036,
-      "battery_after": 0.006390715528227341,
+      "battery_before": 0.0018557181721676887,
+      "battery_after": 0.005882181037641515,
       "clean_energy_pct": 22.96,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
-      "charge_prob": 0.0
+      "model_probs": [
+        0.9997938275337219, 0.00020617205882444978, 8.220736634084669e-28, 0.0,
+        2.353340640987098e-41, 1.690908391014121e-20, 4.793331652059915e-31
+      ],
+      "charge_prob": 2.6214817721489666e-18
     },
     {
       "timestep": 236,
-      "model": "YOLOv10_X",
+      "model": "YOLOv10_B",
       "should_charge": false,
-      "battery_before": 0.006390715528227341,
-      "battery_after": 0.0003354908495727029,
+      "battery_before": 0.005882181037641515,
+      "battery_after": 0.001994083763432453,
       "clean_energy_pct": 22.96,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
+      "model_probs": [
+        0.9999992847442627, 7.273324058587605e-7, 0.0, 0.0, 0.0, 1.3849644371121746e-24, 0.0
+      ],
       "charge_prob": 0.0
     },
     {
       "timestep": 237,
-      "model": "IDLE",
+      "model": "YOLOv10_S",
       "should_charge": true,
-      "battery_before": 0.0003354908495727029,
-      "battery_after": 0.005381324182906036,
+      "battery_before": 0.001994083763432453,
+      "battery_after": 0.005045981769292503,
       "clean_energy_pct": 22.96,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
-      "charge_prob": 0.0
+      "model_probs": [
+        0.9998369216918945, 0.00016302356380037963, 1.634508456705389e-29, 0.0,
+        8.407790785948902e-44, 9.405446653717831e-21, 9.10013800603271e-33
+      ],
+      "charge_prob": 2.1924357512232643e-19
     },
     {
       "timestep": 238,
-      "model": "YOLOv10_L",
-      "should_charge": true,
-      "battery_before": 0.005381324182906036,
-      "battery_after": 0.00574056576836634,
+      "model": "YOLOv10_B",
+      "should_charge": false,
+      "battery_before": 0.005045981769292503,
+      "battery_after": 0.0011578844950834405,
       "clean_energy_pct": 22.96,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
+      "model_probs": [
+        0.999997615814209, 2.39252449318883e-6, 0.0, 0.0, 0.0, 7.96562159808232e-24, 0.0
+      ],
       "charge_prob": 0.0
     },
     {
       "timestep": 239,
-      "model": "YOLOv10_L",
+      "model": "YOLOv10_N",
       "should_charge": true,
-      "battery_before": 0.00574056576836634,
-      "battery_after": 0.006099807353826643,
+      "battery_before": 0.0011578844950834405,
+      "battery_after": 0.005184347360557267,
       "clean_energy_pct": 22.96,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
-      "charge_prob": 0.0
+      "model_probs": [
+        0.9992465972900391, 0.0007534738397225738, 2.6615079046170653e-19, 0.0,
+        3.8267228918815726e-29, 1.8181645706356636e-19, 6.382031766910719e-23
+      ],
+      "charge_prob": 6.9097102171900016e-12
     },
     {
       "timestep": 240,
-      "model": "YOLOv10_X",
+      "model": "YOLOv10_B",
       "should_charge": false,
-      "battery_before": 0.006099807353826643,
-      "battery_after": 4.458267517200472e-5,
+      "battery_before": 0.005184347360557267,
+      "battery_after": 0.0012962500863482047,
       "clean_energy_pct": 20.19,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
+      "model_probs": [
+        0.9999980926513672, 1.9632709609140875e-6, 0.0, 0.0, 0.0, 5.956539995043226e-24, 0.0
+      ],
       "charge_prob": 0.0
     },
     {
       "timestep": 241,
-      "model": "IDLE",
+      "model": "YOLOv10_N",
       "should_charge": true,
-      "battery_before": 4.458267517200472e-5,
-      "battery_after": 0.0050904160085053374,
+      "battery_before": 0.0012962500863482047,
+      "battery_after": 0.005322712951822031,
       "clean_energy_pct": 20.19,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
-      "charge_prob": 0.0
+      "model_probs": [
+        0.9993757605552673, 0.0006242942181415856, 6.026850463861647e-21, 0.0,
+        1.3691715037007745e-31, 1.3703607817542495e-19, 2.3422250574925262e-24
+      ],
+      "charge_prob": 3.233311242443332e-13
     },
     {
       "timestep": 242,
-      "model": "YOLOv10_L",
-      "should_charge": true,
-      "battery_before": 0.0050904160085053374,
-      "battery_after": 0.0054496575939656415,
+      "model": "YOLOv10_B",
+      "should_charge": false,
+      "battery_before": 0.005322712951822031,
+      "battery_after": 0.001434615677612969,
       "clean_energy_pct": 20.19,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
+      "model_probs": [
+        0.9999983310699463, 1.6121745147756883e-6, 0.0, 0.0, 0.0, 4.459388887586403e-24, 0.0
+      ],
       "charge_prob": 0.0
     },
     {
       "timestep": 243,
-      "model": "YOLOv10_L",
+      "model": "YOLOv10_N",
       "should_charge": true,
-      "battery_before": 0.0054496575939656415,
-      "battery_after": 0.005808899179425945,
+      "battery_before": 0.001434615677612969,
+      "battery_after": 0.0054610785430867954,
       "clean_energy_pct": 20.19,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
-      "charge_prob": 0.0
+      "model_probs": [
+        0.9995457530021667, 0.00045426961150951684, 1.2146708562460164e-22, 0.0,
+        5.093675998212137e-34, 6.456912407982407e-20, 5.456697560238303e-26
+      ],
+      "charge_prob": 1.394961958987341e-14
     },
     {
       "timestep": 244,
-      "model": "YOLOv10_L",
-      "should_charge": true,
-      "battery_before": 0.005808899179425945,
-      "battery_after": 0.00616814076488625,
+      "model": "YOLOv10_B",
+      "should_charge": false,
+      "battery_before": 0.0054610785430867954,
+      "battery_after": 0.0015729812688777332,
       "clean_energy_pct": 20.19,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
+      "model_probs": [
+        0.9999986886978149, 1.3238633300716174e-6, 0.0, 0.0, 0.0, 3.338527981794076e-24, 0.0
+      ],
       "charge_prob": 0.0
     },
     {
       "timestep": 245,
-      "model": "YOLOv10_X",
-      "should_charge": false,
-      "battery_before": 0.00616814076488625,
-      "battery_after": 0.00011291608623161149,
+      "model": "YOLOv10_N",
+      "should_charge": true,
+      "battery_before": 0.0015729812688777332,
+      "battery_after": 0.00559944413435156,
       "clean_energy_pct": 20.19,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
-      "charge_prob": 0.0
+      "model_probs": [
+        0.9996559619903564, 0.00034398402203805745, 2.3659366385816594e-24, 0.0,
+        1.945909502739813e-36, 4.720932367106949e-20, 1.306771778436922e-27
+      ],
+      "charge_prob": 6.652293953456631e-16
     },
     {
       "timestep": 246,
-      "model": "IDLE",
-      "should_charge": true,
-      "battery_before": 0.00011291608623161149,
-      "battery_after": 0.005158749419564944,
+      "model": "YOLOv10_B",
+      "should_charge": false,
+      "battery_before": 0.00559944413435156,
+      "battery_after": 0.0017113468601424975,
       "clean_energy_pct": 20.19,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
+      "model_probs": [
+        0.999998927116394, 1.087109694708488e-6, 0.0, 0.0, 0.0, 2.499393365513782e-24, 0.0
+      ],
       "charge_prob": 0.0
     },
     {
       "timestep": 247,
-      "model": "YOLOv10_L",
+      "model": "YOLOv10_N",
       "should_charge": true,
-      "battery_before": 0.005158749419564944,
-      "battery_after": 0.005517991005025248,
+      "battery_before": 0.0017113468601424975,
+      "battery_after": 0.005737809725616324,
       "clean_energy_pct": 20.19,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
-      "charge_prob": 0.0
+      "model_probs": [
+        0.999736487865448, 0.00026352383429184556, 4.6279843881616574e-26, 0.0,
+        7.720089551596855e-39, 3.183590056813298e-20, 2.8905515172595806e-29
+      ],
+      "charge_prob": 3.4950961683876585e-17
     },
     {
       "timestep": 248,
-      "model": "YOLOv10_L",
-      "should_charge": true,
-      "battery_before": 0.005517991005025248,
-      "battery_after": 0.0058772325904855515,
+      "model": "YOLOv10_B",
+      "should_charge": false,
+      "battery_before": 0.005737809725616324,
+      "battery_after": 0.0018497124514072617,
       "clean_energy_pct": 20.19,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
+      "model_probs": [
+        0.9999991655349731, 8.927001999836648e-7, 0.0, 0.0, 0.0, 1.8711672203467932e-24, 0.0
+      ],
       "charge_prob": 0.0
     },
     {
       "timestep": 249,
-      "model": "YOLOv10_L",
+      "model": "YOLOv10_N",
       "should_charge": true,
-      "battery_before": 0.0058772325904855515,
-      "battery_after": 0.0062364741759458565,
+      "battery_before": 0.0018497124514072617,
+      "battery_after": 0.005876175316881088,
       "clean_energy_pct": 20.19,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
-      "charge_prob": 0.0
+      "model_probs": [
+        0.9997920393943787, 0.0002079647674690932, 9.69720941845534e-28, 0.0, 2.990791312408457e-41,
+        1.7328207602351305e-20, 5.680195119981298e-31
+      ],
+      "charge_prob": 2.8992043540911954e-18
     },
     {
       "timestep": 250,
-      "model": "YOLOv10_X",
+      "model": "YOLOv10_B",
       "should_charge": false,
-      "battery_before": 0.0062364741759458565,
-      "battery_after": 0.00018124949729121827,
+      "battery_before": 0.005876175316881088,
+      "battery_after": 0.001988078042672026,
       "clean_energy_pct": 20.19,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
+      "model_probs": [
+        0.9999992847442627, 7.330557991735986e-7, 0.0, 0.0, 0.0, 1.4008570261239834e-24, 0.0
+      ],
       "charge_prob": 0.0
     },
     {
       "timestep": 251,
-      "model": "IDLE",
+      "model": "YOLOv10_N",
       "should_charge": true,
-      "battery_before": 0.00018124949729121827,
-      "battery_after": 0.005227082830624551,
+      "battery_before": 0.001988078042672026,
+      "battery_after": 0.006014540908145852,
       "clean_energy_pct": 20.19,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
-      "charge_prob": 0.0
+      "model_probs": [
+        0.9998353719711304, 0.00016462815983686596, 1.938005073748713e-29, 0.0,
+        1.064986832886861e-43, 9.63975767912698e-21, 1.0801800526014347e-32
+      ],
+      "charge_prob": 2.44745320762789e-19
     },
     {
       "timestep": 252,
-      "model": "YOLOv10_L",
-      "should_charge": true,
-      "battery_before": 0.005227082830624551,
-      "battery_after": 0.005586324416084855,
+      "model": "YOLOv10_B",
+      "should_charge": false,
+      "battery_before": 0.006014540908145852,
+      "battery_after": 0.00212644363393679,
       "clean_energy_pct": 15.35,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
+      "model_probs": [
+        0.9999994039535522, 6.012152766743384e-7, 0.0, 0.0, 0.0, 1.0466472384118497e-24, 0.0
+      ],
       "charge_prob": 0.0
     },
     {
       "timestep": 253,
-      "model": "YOLOv10_L",
+      "model": "YOLOv10_S",
       "should_charge": true,
-      "battery_before": 0.005586324416084855,
-      "battery_after": 0.005945566001545158,
+      "battery_before": 0.00212644363393679,
+      "battery_after": 0.00517834163979684,
       "clean_energy_pct": 15.35,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
-      "charge_prob": 0.0
+      "model_probs": [
+        0.9998708963394165, 0.00012911553494632244, 3.7056702391310684e-31, 0.0, 0.0,
+        5.348113632241726e-21, 2.0215327621863683e-34
+      ],
+      "charge_prob": 1.919693946866644e-20
     },
     {
       "timestep": 254,
-      "model": "YOLOv10_L",
-      "should_charge": true,
-      "battery_before": 0.005945566001545158,
-      "battery_after": 0.006304807587005463,
+      "model": "YOLOv10_B",
+      "should_charge": false,
+      "battery_before": 0.00517834163979684,
+      "battery_after": 0.0012902443655877778,
       "clean_energy_pct": 15.35,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
+      "model_probs": [
+        0.9999979734420776, 1.9776725821429864e-6, 0.0, 0.0, 0.0, 6.019791256854299e-24, 0.0
+      ],
       "charge_prob": 0.0
     },
     {
       "timestep": 255,
-      "model": "YOLOv10_X",
-      "should_charge": false,
-      "battery_before": 0.006304807587005463,
-      "battery_after": 0.00024958290835082504,
+      "model": "YOLOv10_N",
+      "should_charge": true,
+      "battery_before": 0.0012902443655877778,
+      "battery_after": 0.005316707231061604,
       "clean_energy_pct": 15.35,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
-      "charge_prob": 0.0
+      "model_probs": [
+        0.9993703961372375, 0.000629607995506376, 7.093665865326784e-21, 0.0,
+        1.7444136332163107e-31, 1.399301504942007e-19, 2.7172315852490015e-24
+      ],
+      "charge_prob": 3.685809253292649e-13
     },
     {
       "timestep": 256,
-      "model": "IDLE",
-      "should_charge": true,
-      "battery_before": 0.00024958290835082504,
-      "battery_after": 0.005295416241684158,
+      "model": "YOLOv10_B",
+      "should_charge": false,
+      "battery_before": 0.005316707231061604,
+      "battery_after": 0.001428609956852542,
       "clean_energy_pct": 15.35,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
+      "model_probs": [
+        0.9999983310699463, 1.6239979458987364e-6, 0.0, 0.0, 0.0, 4.506725669495548e-24, 0.0
+      ],
       "charge_prob": 0.0
     },
     {
       "timestep": 257,
-      "model": "YOLOv10_L",
+      "model": "YOLOv10_N",
       "should_charge": true,
-      "battery_before": 0.005295416241684158,
-      "battery_after": 0.005654657827144462,
+      "battery_before": 0.001428609956852542,
+      "battery_after": 0.0054550728223263685,
       "clean_energy_pct": 15.35,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
-      "charge_prob": 0.0
+      "model_probs": [
+        0.9995406866073608, 0.00045936089009046555, 1.4373306963858644e-22, 0.0,
+        6.482945935345958e-34, 6.581417953573269e-20, 6.417424139613356e-26
+      ],
+      "charge_prob": 1.587018887074139e-14
     },
     {
       "timestep": 258,
-      "model": "YOLOv10_L",
-      "should_charge": true,
-      "battery_before": 0.005654657827144462,
-      "battery_after": 0.006013899412604765,
+      "model": "YOLOv10_B",
+      "should_charge": false,
+      "battery_before": 0.0054550728223263685,
+      "battery_after": 0.0015669755481173063,
       "clean_energy_pct": 15.35,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
+      "model_probs": [
+        0.9999986886978149, 1.333573550255096e-6, 0.0, 0.0, 0.0, 3.373953752895289e-24, 0.0
+      ],
       "charge_prob": 0.0
     },
     {
       "timestep": 259,
-      "model": "YOLOv10_L",
+      "model": "YOLOv10_N",
       "should_charge": true,
-      "battery_before": 0.006013899412604765,
-      "battery_after": 0.00637314099806507,
+      "battery_before": 0.0015669755481173063,
+      "battery_after": 0.005593438413591133,
       "clean_energy_pct": 15.35,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
-      "charge_prob": 0.0
+      "model_probs": [
+        0.9996529817581177, 0.0003470451047178358, 2.789086755738094e-24, 0.0,
+        2.4509546884380068e-36, 4.7122456782054353e-20, 1.5250704487328737e-27
+      ],
+      "charge_prob": 7.555627063132557e-16
     },
     {
       "timestep": 260,
-      "model": "YOLOv10_X",
+      "model": "YOLOv10_B",
       "should_charge": false,
-      "battery_before": 0.00637314099806507,
-      "battery_after": 0.0003179163194104318,
+      "battery_before": 0.005593438413591133,
+      "battery_after": 0.0017053411393820705,
       "clean_energy_pct": 15.35,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
+      "model_probs": [
+        0.999998927116394, 1.0950855084956856e-6, 0.0, 0.0, 0.0, 2.5259054028164497e-24, 0.0
+      ],
       "charge_prob": 0.0
     },
     {
       "timestep": 261,
-      "model": "IDLE",
+      "model": "YOLOv10_N",
       "should_charge": true,
-      "battery_before": 0.0003179163194104318,
-      "battery_after": 0.0053637496527437645,
+      "battery_before": 0.0017053411393820705,
+      "battery_after": 0.005731804004855897,
       "clean_energy_pct": 15.35,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
-      "charge_prob": 0.0
+      "model_probs": [
+        0.9997339844703674, 0.00026604507002048194, 5.47319523021632e-26, 0.0,
+        9.795559713600663e-39, 3.2501522467296743e-20, 3.4059454167052955e-29
+      ],
+      "charge_prob": 3.9725219877683596e-17
     },
     {
       "timestep": 262,
-      "model": "YOLOv10_L",
-      "should_charge": true,
-      "battery_before": 0.0053637496527437645,
-      "battery_after": 0.005722991238204069,
+      "model": "YOLOv10_B",
+      "should_charge": false,
+      "battery_before": 0.005731804004855897,
+      "battery_after": 0.0018437067306468348,
       "clean_energy_pct": 15.35,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
+      "model_probs": [
+        0.9999990463256836, 8.992495850179694e-7, 0.0, 0.0, 0.0, 1.8910295546489005e-24, 0.0
+      ],
       "charge_prob": 0.0
     },
     {
       "timestep": 263,
-      "model": "YOLOv10_L",
+      "model": "YOLOv10_N",
       "should_charge": true,
-      "battery_before": 0.005722991238204069,
-      "battery_after": 0.006082232823664372,
+      "battery_before": 0.0018437067306468348,
+      "battery_after": 0.005870169596120661,
       "clean_energy_pct": 15.35,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
-      "charge_prob": 0.0
+      "model_probs": [
+        0.999790370464325, 0.0002096086973324418, 1.1415673374408321e-27, 0.0,
+        3.793034683234415e-41, 1.7745668855400626e-20, 6.723037754499732e-31
+      ],
+      "charge_prob": 3.1990552581901366e-18
     },
     {
       "timestep": 264,
-      "model": "YOLOv10_X",
+      "model": "YOLOv10_B",
       "should_charge": false,
-      "battery_before": 0.006082232823664372,
-      "battery_after": 2.7008145009733628e-5,
+      "battery_before": 0.005870169596120661,
+      "battery_after": 0.001982072321911599,
       "clean_energy_pct": 13.23,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
+      "model_probs": [
+        0.9999992847442627, 7.380292004199873e-7, 0.0, 0.0, 0.0, 1.4144640878781406e-24, 0.0
+      ],
       "charge_prob": 0.0
     },
     {
       "timestep": 265,
-      "model": "IDLE",
+      "model": "YOLOv10_N",
       "should_charge": true,
-      "battery_before": 2.7008145009733628e-5,
-      "battery_after": 0.005072841478343066,
+      "battery_before": 0.001982072321911599,
+      "battery_after": 0.0060085351873854255,
       "clean_energy_pct": 13.23,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
-      "charge_prob": 0.0
+      "model_probs": [
+        0.9998339414596558, 0.00016606033022981137, 2.2932320186350016e-29, 0.0,
+        1.3592595103950726e-43, 9.866612769913215e-21, 1.2799185098568223e-32
+      ],
+      "charge_prob": 2.7298630085111505e-19
     },
     {
       "timestep": 266,
-      "model": "YOLOv10_L",
-      "should_charge": true,
-      "battery_before": 0.005072841478343066,
-      "battery_after": 0.0054320830638033704,
+      "model": "YOLOv10_B",
+      "should_charge": false,
+      "battery_before": 0.0060085351873854255,
+      "battery_after": 0.0021204379131763633,
       "clean_energy_pct": 13.23,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
+      "model_probs": [
+        0.9999994039535522, 6.060467967472505e-7, 0.0, 0.0, 0.0, 1.0589403537207482e-24, 0.0
+      ],
       "charge_prob": 0.0
     },
     {
       "timestep": 267,
-      "model": "YOLOv10_L",
+      "model": "YOLOv10_S",
       "should_charge": true,
-      "battery_before": 0.0054320830638033704,
-      "battery_after": 0.005791324649263674,
+      "battery_before": 0.0021204379131763633,
+      "battery_after": 0.005172335919036413,
       "clean_energy_pct": 13.23,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
-      "charge_prob": 0.0
+      "model_probs": [
+        0.9998695850372314, 0.0001303968601860106, 4.395150808232997e-31, 0.0, 0.0,
+        5.482540983097963e-21, 2.4002416853552885e-34
+      ],
+      "charge_prob": 2.142733667077478e-20
     },
     {
       "timestep": 268,
-      "model": "YOLOv10_L",
-      "should_charge": true,
-      "battery_before": 0.005791324649263674,
-      "battery_after": 0.006150566234723979,
+      "model": "YOLOv10_B",
+      "should_charge": false,
+      "battery_before": 0.005172335919036413,
+      "battery_after": 0.0012842386448273508,
       "clean_energy_pct": 13.23,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
+      "model_probs": [
+        0.9999979734420776, 1.9935696400352754e-6, 0.0, 0.0, 0.0, 6.090518553464152e-24, 0.0
+      ],
       "charge_prob": 0.0
     },
     {
       "timestep": 269,
-      "model": "YOLOv10_X",
-      "should_charge": false,
-      "battery_before": 0.006150566234723979,
-      "battery_after": 9.53415560693404e-5,
+      "model": "YOLOv10_N",
+      "should_charge": true,
+      "battery_before": 0.0012842386448273508,
+      "battery_after": 0.005310701510301177,
       "clean_energy_pct": 13.23,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
-      "charge_prob": 0.0
+      "model_probs": [
+        0.9993657469749451, 0.0006342986598610878, 8.349737202107856e-21, 0.0,
+        2.225280630471029e-31, 1.4164378438007502e-19, 3.134319503564039e-24
+      ],
+      "charge_prob": 4.202451646222183e-13
     },
     {
       "timestep": 270,
-      "model": "IDLE",
-      "should_charge": true,
-      "battery_before": 9.53415560693404e-5,
-      "battery_after": 0.005141174889402673,
+      "model": "YOLOv10_B",
+      "should_charge": false,
+      "battery_before": 0.005310701510301177,
+      "battery_after": 0.001422604236092115,
       "clean_energy_pct": 13.23,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
+      "model_probs": [
+        0.9999983310699463, 1.637053628655849e-6, 0.0, 0.0, 0.0, 4.559640881295963e-24, 0.0
+      ],
       "charge_prob": 0.0
     },
     {
       "timestep": 271,
-      "model": "YOLOv10_L",
+      "model": "YOLOv10_N",
       "should_charge": true,
-      "battery_before": 0.005141174889402673,
-      "battery_after": 0.005500416474862977,
+      "battery_before": 0.001422604236092115,
+      "battery_after": 0.005449067101565942,
       "clean_energy_pct": 13.23,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
-      "charge_prob": 0.0
+      "model_probs": [
+        0.9995352029800415, 0.0004648768517654389, 1.7040006446658858e-22, 0.0,
+        8.265304856814599e-34, 6.710829714172337e-20, 7.554382245214784e-26
+      ],
+      "charge_prob": 1.8091720816230082e-14
     },
     {
       "timestep": 272,
-      "model": "YOLOv10_L",
-      "should_charge": true,
-      "battery_before": 0.005500416474862977,
-      "battery_after": 0.0058596580603232805,
+      "model": "YOLOv10_B",
+      "should_charge": false,
+      "battery_before": 0.005449067101565942,
+      "battery_after": 0.0015609698273568793,
       "clean_energy_pct": 13.23,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
+      "model_probs": [
+        0.9999986886978149, 1.3442918316286523e-6, 0.0, 0.0, 0.0, 3.41359480224355e-24, 0.0
+      ],
       "charge_prob": 0.0
     },
     {
       "timestep": 273,
-      "model": "YOLOv10_L",
+      "model": "YOLOv10_N",
       "should_charge": true,
-      "battery_before": 0.0058596580603232805,
-      "battery_after": 0.006218899645783585,
+      "battery_before": 0.0015609698273568793,
+      "battery_after": 0.005587432692830706,
       "clean_energy_pct": 13.23,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
-      "charge_prob": 0.0
+      "model_probs": [
+        0.9996495246887207, 0.00035049906000494957, 3.2958898526516542e-24, 0.0,
+        3.0943410807880426e-36, 4.704972951163504e-20, 1.7824581783660976e-27
+      ],
+      "charge_prob": 8.598829664597401e-16
     },
     {
       "timestep": 274,
-      "model": "YOLOv10_X",
+      "model": "YOLOv10_B",
       "should_charge": false,
-      "battery_before": 0.006218899645783585,
-      "battery_after": 0.00016367496712894718,
+      "battery_before": 0.005587432692830706,
+      "battery_after": 0.0016993354186216436,
       "clean_energy_pct": 13.23,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
+      "model_probs": [
+        0.999998927116394, 1.1038912361982511e-6, 0.0, 0.0, 0.0, 2.5556020715934947e-24, 0.0
+      ],
       "charge_prob": 0.0
     },
     {
       "timestep": 275,
-      "model": "IDLE",
+      "model": "YOLOv10_N",
       "should_charge": true,
-      "battery_before": 0.00016367496712894718,
-      "battery_after": 0.00520950830046228,
+      "battery_before": 0.0016993354186216436,
+      "battery_after": 0.00572579828409547,
       "clean_energy_pct": 13.23,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
-      "charge_prob": 0.0
+      "model_probs": [
+        0.9997311234474182, 0.00026886066189035773, 6.489924154588661e-26, 0.0,
+        1.2462609041796158e-38, 3.321029669880678e-20, 4.019730563111447e-29
+      ],
+      "charge_prob": 4.5274093010477115e-17
     },
     {
       "timestep": 276,
-      "model": "YOLOv10_L",
-      "should_charge": true,
-      "battery_before": 0.00520950830046228,
-      "battery_after": 0.005568749885922584,
+      "model": "YOLOv10_B",
+      "should_charge": false,
+      "battery_before": 0.00572579828409547,
+      "battery_after": 0.0018377010098864078,
       "clean_energy_pct": 12.88,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
+      "model_probs": [
+        0.9999990463256836, 9.063992933988629e-7, 0.0, 0.0, 0.0, 1.912962846042439e-24, 0.0
+      ],
       "charge_prob": 0.0
     },
     {
       "timestep": 277,
-      "model": "YOLOv10_L",
+      "model": "YOLOv10_N",
       "should_charge": true,
-      "battery_before": 0.005568749885922584,
-      "battery_after": 0.005927991471382887,
+      "battery_before": 0.0018377010098864078,
+      "battery_after": 0.005864163875360234,
       "clean_energy_pct": 12.88,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
-      "charge_prob": 0.0
+      "model_probs": [
+        0.9997885823249817, 0.000211455873795785, 1.3469822104843137e-27, 0.0,
+        4.821868015741696e-41, 1.8187263749056035e-20, 7.968272774563085e-31
+      ],
+      "charge_prob": 3.5391274059841624e-18
     },
     {
       "timestep": 278,
-      "model": "YOLOv10_L",
-      "should_charge": true,
-      "battery_before": 0.005927991471382887,
-      "battery_after": 0.006287233056843192,
+      "model": "YOLOv10_B",
+      "should_charge": false,
+      "battery_before": 0.005864163875360234,
+      "battery_after": 0.001976066601151172,
       "clean_energy_pct": 12.88,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
+      "model_probs": [
+        0.9999992847442627, 7.443022695952095e-7, 0.0, 0.0, 0.0, 1.4321422635489172e-24, 0.0
+      ],
       "charge_prob": 0.0
     },
     {
       "timestep": 279,
-      "model": "YOLOv10_X",
-      "should_charge": false,
-      "battery_before": 0.006287233056843192,
-      "battery_after": 0.00023200837818855395,
+      "model": "YOLOv10_N",
+      "should_charge": true,
+      "battery_before": 0.001976066601151172,
+      "battery_after": 0.0060025294666249986,
       "clean_energy_pct": 12.88,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
-      "charge_prob": 0.0
+      "model_probs": [
+        0.9998321533203125, 0.0001678046683082357, 2.722195147464755e-29, 0.0,
+        1.7516230804060213e-43, 1.0120282568154233e-20, 1.520773335046875e-32
+      ],
+      "charge_prob": 3.048857456923983e-19
     },
     {
       "timestep": 280,
-      "model": "IDLE",
-      "should_charge": true,
-      "battery_before": 0.00023200837818855395,
-      "battery_after": 0.005277841711521887,
+      "model": "YOLOv10_B",
+      "should_charge": false,
+      "battery_before": 0.0060025294666249986,
+      "battery_after": 0.0021144321924159363,
       "clean_energy_pct": 12.88,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
+      "model_probs": [
+        0.9999994039535522, 6.111980610512546e-7, 0.0, 0.0, 0.0, 1.0721832575595328e-24, 0.0
+      ],
       "charge_prob": 0.0
     },
     {
       "timestep": 281,
-      "model": "YOLOv10_L",
+      "model": "YOLOv10_S",
       "should_charge": true,
-      "battery_before": 0.005277841711521887,
-      "battery_after": 0.005637083296982191,
+      "battery_before": 0.0021144321924159363,
+      "battery_after": 0.005166330198275986,
       "clean_energy_pct": 12.88,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
-      "charge_prob": 0.0
+      "model_probs": [
+        0.9998682737350464, 0.00013175446656532586, 5.217373371604922e-31, 0.0, 0.0,
+        5.623585374957841e-21, 2.8520723264526052e-34
+      ],
+      "charge_prob": 2.392517655144057e-20
     },
     {
       "timestep": 282,
-      "model": "YOLOv10_L",
-      "should_charge": true,
-      "battery_before": 0.005637083296982191,
-      "battery_after": 0.005996324882442494,
+      "model": "YOLOv10_B",
+      "should_charge": false,
+      "battery_before": 0.005166330198275986,
+      "battery_after": 0.001278232924066924,
       "clean_energy_pct": 12.88,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
+      "model_probs": [
+        0.9999979734420776, 2.0105105704715243e-6, 0.0, 0.0, 0.0, 6.1665911715677826e-24, 0.0
+      ],
       "charge_prob": 0.0
     },
     {
       "timestep": 283,
-      "model": "YOLOv10_L",
+      "model": "YOLOv10_N",
       "should_charge": true,
-      "battery_before": 0.005996324882442494,
-      "battery_after": 0.006355566467902799,
+      "battery_before": 0.001278232924066924,
+      "battery_after": 0.00530469578954075,
       "clean_energy_pct": 12.88,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
-      "charge_prob": 0.0
+      "model_probs": [
+        0.9993606209754944, 0.0006393659277819097, 9.838757624344205e-21, 0.0, 2.84104289254758e-31,
+        1.4334548877055266e-19, 3.616683097988173e-24
+      ],
+      "charge_prob": 4.797583771226632e-13
     },
     {
       "timestep": 284,
-      "model": "YOLOv10_X",
+      "model": "YOLOv10_B",
       "should_charge": false,
-      "battery_before": 0.006355566467902799,
-      "battery_after": 0.0003003417892481607,
+      "battery_before": 0.00530469578954075,
+      "battery_after": 0.0014165985153316882,
       "clean_energy_pct": 12.88,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
+      "model_probs": [
+        0.9999983310699463, 1.6509619626958738e-6, 0.0, 0.0, 0.0, 4.616609654857856e-24, 0.0
+      ],
       "charge_prob": 0.0
     },
     {
       "timestep": 285,
-      "model": "IDLE",
+      "model": "YOLOv10_N",
       "should_charge": true,
-      "battery_before": 0.0003003417892481607,
-      "battery_after": 0.0053461751225814935,
+      "battery_before": 0.0014165985153316882,
+      "battery_after": 0.005443061380805515,
       "clean_energy_pct": 12.88,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
-      "charge_prob": 0.0
+      "model_probs": [
+        0.9995293617248535, 0.00047070125583559275, 2.022597456695389e-22, 0.0,
+        1.0549750476298055e-33, 6.844454279781743e-20, 8.898129760061002e-26
+      ],
+      "charge_prob": 2.0651268035584182e-14
     },
     {
       "timestep": 286,
-      "model": "YOLOv10_L",
-      "should_charge": true,
-      "battery_before": 0.0053461751225814935,
-      "battery_after": 0.0057054167080417975,
+      "model": "YOLOv10_B",
+      "should_charge": false,
+      "battery_before": 0.005443061380805515,
+      "battery_after": 0.0015549641065964524,
       "clean_energy_pct": 12.88,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
+      "model_probs": [
+        0.9999986886978149, 1.355718040940701e-6, 0.0, 0.0, 0.0, 3.4562449615147765e-24, 0.0
+      ],
       "charge_prob": 0.0
     },
     {
       "timestep": 287,
-      "model": "YOLOv10_L",
+      "model": "YOLOv10_N",
       "should_charge": true,
-      "battery_before": 0.0057054167080417975,
-      "battery_after": 0.006064658293502101,
+      "battery_before": 0.0015549641065964524,
+      "battery_after": 0.005581426972070279,
       "clean_energy_pct": 50.0,
-      "model_probs": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
-      "charge_prob": 0.0
+      "model_probs": [
+        0.999640703201294, 0.0003593193250708282, 4.032200591456142e-24, 0.0, 4.039350218930591e-36,
+        4.717943530909248e-20, 2.1275665280658186e-27
+      ],
+      "charge_prob": 1.006989931266473e-15
     }
   ]
 }
