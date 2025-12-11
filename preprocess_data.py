@@ -76,27 +76,14 @@ def process_timestep_to_training_sample(
         should_charge = bool(timestep.get("charged", False))
         outcome = str(timestep.get("outcome", ""))
 
-        battery_percentage = (
-            (battery_level / battery_capacity_wh) * 100
-            if battery_capacity_wh > 0
-            else 0.0
-        )
-        energy_efficiency_score = clean_energy_pct * (1 - battery_percentage / 100)
-
         return {
             "battery_level": battery_level,
-            "battery_percentage": battery_percentage,
             "clean_energy_percentage": clean_energy_pct,
             "battery_capacity_wh": battery_capacity_wh,
             "charge_rate_hours": charge_rate_hours,
             "task_interval_seconds": task_interval_seconds,
             "user_accuracy_requirement": user_accuracy_req,
             "user_latency_requirement": user_latency_req,
-            "energy_efficiency_score": energy_efficiency_score,
-            "time_to_full_charge": (battery_capacity_wh - battery_level)
-            / (battery_capacity_wh / charge_rate_hours)
-            if charge_rate_hours > 0
-            else 0.0,
             "optimal_model": optimal_model,
             "should_charge": should_charge,
             "outcome": outcome,

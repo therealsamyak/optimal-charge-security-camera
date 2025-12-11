@@ -138,17 +138,17 @@ def train_unified_controller(
     weights = []
 
     for sample in training_data:
-        # Extract features using production format
+        # Extract features using cleaned format
         feature_vector = torch.tensor(
             [
-                sample["battery_level"] / 100.0,  # Normalize to 0-1
+                sample["battery_level"]
+                / sample["battery_capacity_wh"],  # True battery percentage 0-1
                 sample["clean_energy_percentage"] / 100.0,  # Normalize to 0-1
                 sample["battery_capacity_wh"] / 4.0,  # Normalize by max capacity
                 sample["charge_rate_hours"] / 4.45,  # Normalize by max rate
-                sample["task_interval_seconds"] / 300.0,  # Normalize by max interval
                 sample["user_accuracy_requirement"]
                 / 100.0,  # Normalize percentage to 0-1
-                sample["user_latency_requirement"] / 0.1,  # Normalize by 100ms max
+                sample["user_latency_requirement"] / 0.5,  # Normalize by actual max 0.5
             ],
             dtype=torch.float32,
         )

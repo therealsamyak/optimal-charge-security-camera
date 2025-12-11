@@ -7,7 +7,7 @@ class NeuralController(nn.Module):
     def __init__(self):
         super().__init__()
         self.shared_layers = nn.Sequential(
-            nn.Linear(7, 128), nn.ReLU(), nn.Linear(128, 64), nn.ReLU()
+            nn.Linear(6, 128), nn.ReLU(), nn.Linear(128, 64), nn.ReLU()
         )
 
         self.model_head = nn.Linear(64, 7)
@@ -28,7 +28,10 @@ class NeuralLoss(nn.Module):
     def __init__(self):
         super().__init__()
         self.ce_loss = nn.CrossEntropyLoss()
-        self.bce_loss = nn.BCELoss()
+        # Use weighted BCE to handle class imbalance
+        self.bce_loss = nn.BCEWithLogitsLoss(
+            pos_weight=torch.tensor(2.0)
+        )  # Weight positive class more
 
     def forward(self, model_probs, charge_prob, model_targets, charge_targets):
         # Add small epsilon to prevent log(0)
