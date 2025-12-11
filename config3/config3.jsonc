@@ -11,19 +11,19 @@
     // Example: If set to 2, the simulation will run twice as fast as real-time
     "time_acceleration": 1,
     // Minimum required accuracy percentage for tasks (0-100)
-    "user_accuracy_requirement": 94.0,
+    "user_accuracy_requirement": 90.0,
     // Maximum allowed latency for task processing in seconds
-    "user_latency_requirement": 0.0084,
+    "user_latency_requirement": 0.0060,
     // Number of days to offset from season start dates (Jan 1, Apr 1, Jul 1, Oct 1)
     "offset_date": 42
   },
   // Battery configuration
   "battery": {
     // Total battery capacity in watt-hours
-    "capacity_wh": 0.06055,
+    "capacity_wh": 0.080,
     // Hours required to charge from 0% to 100% capacity
     // Lower values indicate faster charging capability
-    "charge_rate_hours": 1
+    "charge_rate_hours": 2.0
     // Note: The relationship between charge rate and model energy consumption
     // determines the sustainability of continuous operation. The tree search
     // algorithm will optimize the balance between model usage and charging
@@ -54,7 +54,7 @@
   // Parallel processing configuration
   "parallel": {
     // Number of workers for parallel processing
-    "max_workers": 100,
+    "max_workers": 50,
     // Target leaf count before switching to parallel beaming
     "leaf_target": 100
   },
@@ -65,7 +65,7 @@
 
     // Number of states to keep per bucket during beam search
     // Higher values provide better solution quality but increase computation time
-    "beam_width_per_bucket": 30,
+    "beam_width_per_bucket": 15,
 
     // Maximum number of states to maintain in each bucket category
     // Categories include different optimization objectives

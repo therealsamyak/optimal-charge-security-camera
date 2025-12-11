@@ -11,19 +11,19 @@
     // Example: If set to 2, the simulation will run twice as fast as real-time
     "time_acceleration": 1,
     // Minimum required accuracy percentage for tasks (0-100)
-    "user_accuracy_requirement": 87.0,
+    "user_accuracy_requirement": 81.0,
     // Maximum allowed latency for task processing in seconds
-    "user_latency_requirement": 0.0060,
+    "user_latency_requirement": 0.0027,
     // Number of days to offset from season start dates (Jan 1, Apr 1, Jul 1, Oct 1)
     "offset_date": 25
   },
   // Battery configuration
   "battery": {
     // Total battery capacity in watt-hours
-    "capacity_wh": 0.06055,
+    "capacity_wh": 0.040,
     // Hours required to charge from 0% to 100% capacity
     // Lower values indicate faster charging capability
-    "charge_rate_hours": 1
+    "charge_rate_hours": 0.5
     // Note: The relationship between charge rate and model energy consumption
     // determines the sustainability of continuous operation. The tree search
     // algorithm will optimize the balance between model usage and charging
