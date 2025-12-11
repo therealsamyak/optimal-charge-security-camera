@@ -7,10 +7,10 @@ class NeuralController(nn.Module):
     def __init__(self):
         super().__init__()
         self.shared_layers = nn.Sequential(
-            nn.Linear(4, 128), nn.ReLU(), nn.Linear(128, 64), nn.ReLU()
+            nn.Linear(7, 128), nn.ReLU(), nn.Linear(128, 64), nn.ReLU()
         )
 
-        self.model_head = nn.Linear(64, 6)
+        self.model_head = nn.Linear(64, 7)
         self.charge_head = nn.Linear(64, 1)
 
     def forward(self, x):

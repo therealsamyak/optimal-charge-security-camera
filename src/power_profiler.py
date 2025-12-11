@@ -441,3 +441,20 @@ class PowerProfiler:
     def get_all_models_data(self) -> Dict[str, Dict]:
         """Get all loaded models data."""
         return self.power_profiles
+
+
+def load_power_profiles() -> Dict[str, Dict]:
+    """Load power profiles from file."""
+    profiles_file = Path("model-data/power_profiles.json")
+    try:
+        if profiles_file.exists():
+            with open(profiles_file, "r") as f:
+                power_profiles = json.load(f)
+            logging.info(f"Loaded {len(power_profiles)} power profiles")
+            return power_profiles
+        else:
+            logging.info("No existing power profiles found")
+            return {}
+    except Exception as e:
+        logging.error(f"Failed to load profiles: {e}")
+        return {}
