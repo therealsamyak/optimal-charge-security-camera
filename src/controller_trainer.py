@@ -181,15 +181,21 @@ def train_unified_controller(
     # Setup optimizer with adjusted learning rate for larger dataset
     optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
 
-    # Training parameters
-    epochs = 100
-    batch_size = 512  # Optimized for Apple Silicon
+    # Training parameters - increased for larger dataset
+    epochs = 200
+    batch_size = 1024  # Increased for Apple Silicon efficiency
+    patience = 15  # Early stopping patience
+    min_delta = 1e-6  # Minimum improvement threshold
 
     model.train()
 
     print(
-        f"🚀 Starting training: {epochs} epochs, batch_size={batch_size}, lr={learning_rate}"
+        f"🚀 Starting training: {epochs} epochs max, batch_size={batch_size}, lr={learning_rate}"
     )
+    print(f"⏹️ Early stopping: patience={patience}, min_delta={min_delta}")
+
+    best_loss = float("inf")
+    patience_counter = 0
 
     for epoch in range(epochs):
         epoch_loss = 0.0
@@ -224,9 +230,24 @@ def train_unified_controller(
 
         avg_loss = epoch_loss / num_batches
 
+        # Early stopping logic
+        if avg_loss < best_loss - min_delta:
+            best_loss = avg_loss
+            patience_counter = 0
+        else:
+            patience_counter += 1
+
         # Log progress every 10 epochs
         if (epoch + 1) % 10 == 0 or epoch == epochs - 1:
-            print(f"📈 Epoch {epoch + 1}/{epochs} - Loss: {avg_loss:.6f}")
+            print(
+                f"📈 Epoch {epoch + 1}/{epochs} - Loss: {avg_loss:.6f} - Patience: {patience_counter}/{patience}"
+            )
+
+        # Check early stopping
+        if patience_counter >= patience:
+            print(f"⏹️ Early stopping triggered at epoch {epoch + 1}")
+            print(f"🎯 Best loss achieved: {best_loss:.6f}")
+            break
 
     print("✅ Training completed!")
     return model, model_to_idx, idx_to_model
@@ -265,8 +286,8 @@ def save_controller(
             "network_architecture": "7-input Multilayer Perceptron with dual heads",
             "loss_function": "Combined Cross-Entropy (0.5) + Binary Cross-Entropy (0.5)",
             "optimization": "Adam with learning rate 0.0005",
-            "epochs": 100,
-            "batch_size": 512,
+            "epochs": 200,
+            "batch_size": 1024,
             "device": "mps",
             "apple_silicon_optimized": True,
         },
@@ -294,10 +315,10 @@ def main():
         help="Output controller file",
     )
     parser.add_argument(
-        "--epochs", type=int, default=100, help="Number of training epochs"
+        "--epochs", type=int, default=200, help="Number of training epochs"
     )
     parser.add_argument(
-        "--batch-size", type=int, default=512, help="Batch size for training"
+        "--batch-size", type=int, default=1024, help="Batch size for training"
     )
     parser.add_argument(
         "--learning-rate",
